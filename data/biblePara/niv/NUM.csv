@@ -1,0 +1,424 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+num,1,1,"The Census",1,5
+num,1,2,"The Census",16,16
+num,1,3,"The Census",17,19
+num,1,4,"The Census",44,46
+num,1,5,"The Census",47,53
+num,1,6,"The Census",54,54
+num,2,1,"The Arrangement of the Tribal Camps",1,2
+num,2,2,"The Arrangement of the Tribal Camps",34,34
+num,3,1,"The Levites",1,1
+num,3,2,"The Levites",2,4
+num,3,3,"The Levites",5,10
+num,3,4,"The Levites",11,13
+num,3,5,"The Levites",14,16
+num,3,6,"The Levites",20,20
+num,3,7,"The Levites",21,26
+num,3,8,"The Levites",27,32
+num,3,9,"The Levites",33,37
+num,3,10,"The Levites",38,38
+num,3,11,"The Levites",39,39
+num,3,12,"The Levites",40,41
+num,3,13,"The Levites",42,43
+num,3,14,"The Levites",44,48
+num,3,15,"The Levites",49,51
+num,4,1,"The Kohathites",1,3
+num,4,2,"The Kohathites",4,6
+num,4,3,"The Kohathites",7,8
+num,4,4,"The Kohathites",9,10
+num,4,5,"The Kohathites",11,11
+num,4,6,"The Kohathites",12,12
+num,4,7,"The Kohathites",13,14
+num,4,8,"The Kohathites",15,15
+num,4,9,"The Kohathites",16,16
+num,4,10,"The Kohathites",17,20
+num,4,11,"The Gershonites",21,23
+num,4,12,"The Gershonites",24,28
+num,4,13,"The Merarites",29,33
+num,4,14,"The Numbering of the Levite Clans",34,37
+num,4,15,"The Numbering of the Levite Clans",38,41
+num,4,16,"The Numbering of the Levite Clans",42,45
+num,4,17,"The Numbering of the Levite Clans",46,49
+num,4,18,"The Numbering of the Levite Clans",49,49
+num,5,1,"The Purity of the Camp",1,4
+num,5,2,"Restitution for Wrongs",5,10
+num,5,3,"The Test for an Unfaithful Wife",11,15
+num,5,4,"The Test for an Unfaithful Wife",16,22
+num,5,5,"The Test for an Unfaithful Wife",22,22
+num,5,6,"The Test for an Unfaithful Wife",23,28
+num,5,7,"The Test for an Unfaithful Wife",29,31
+num,6,1,"The Nazirite",1,4
+num,6,2,"The Nazirite",5,5
+num,6,3,"The Nazirite",6,8
+num,6,4,"The Nazirite",9,12
+num,6,5,"The Nazirite",13,15
+num,6,6,"The Nazirite",16,17
+num,6,7,"The Nazirite",18,18
+num,6,8,"The Nazirite",19,20
+num,6,9,"The Nazirite",21,21
+num,6,10,"The Priestly Blessing",22,23
+num,6,11,"The Priestly Blessing",24,26
+num,6,12,"The Priestly Blessing",27,27
+num,7,1,"Offerings at the Dedication of the Tabernacle",1,3
+num,7,2,"Offerings at the Dedication of the Tabernacle",4,5
+num,7,3,"Offerings at the Dedication of the Tabernacle",6,9
+num,7,4,"Offerings at the Dedication of the Tabernacle",10,11
+num,7,5,"Offerings at the Dedication of the Tabernacle",12,12
+num,7,6,"Offerings at the Dedication of the Tabernacle",18,18
+num,7,7,"Offerings at the Dedication of the Tabernacle",24,24
+num,7,8,"Offerings at the Dedication of the Tabernacle",30,30
+num,7,9,"Offerings at the Dedication of the Tabernacle",36,36
+num,7,10,"Offerings at the Dedication of the Tabernacle",42,42
+num,7,11,"Offerings at the Dedication of the Tabernacle",48,48
+num,7,12,"Offerings at the Dedication of the Tabernacle",54,54
+num,7,13,"Offerings at the Dedication of the Tabernacle",60,60
+num,7,14,"Offerings at the Dedication of the Tabernacle",66,66
+num,7,15,"Offerings at the Dedication of the Tabernacle",72,72
+num,7,16,"Offerings at the Dedication of the Tabernacle",78,78
+num,7,17,"Offerings at the Dedication of the Tabernacle",84,88
+num,7,18,"Offerings at the Dedication of the Tabernacle",89,89
+num,8,1,"Setting Up the Lamps",1,2
+num,8,2,"Setting Up the Lamps",3,4
+num,8,3,"The Setting Apart of the Levites",5,11
+num,8,4,"The Setting Apart of the Levites",12,14
+num,8,5,"The Setting Apart of the Levites",15,19
+num,8,6,"The Setting Apart of the Levites",20,22
+num,8,7,"The Setting Apart of the Levites",23,26
+num,9,1,"The Passover",1,3
+num,9,2,"The Passover",4,5
+num,9,3,"The Passover",6,7
+num,9,4,"The Passover",8,8
+num,9,5,"The Passover",9,13
+num,9,6,"The Passover",14,14
+num,9,7,"The Cloud Above the Tabernacle",15,23
+num,10,1,"The Silver Trumpets",1,7
+num,10,2,"The Silver Trumpets",8,10
+num,10,3,"The Israelites Leave Sinai",11,13
+num,10,4,"The Israelites Leave Sinai",14,17
+num,10,5,"The Israelites Leave Sinai",18,21
+num,10,6,"The Israelites Leave Sinai",22,24
+num,10,7,"The Israelites Leave Sinai",25,28
+num,10,8,"The Israelites Leave Sinai",29,29
+num,10,9,"The Israelites Leave Sinai",30,30
+num,10,10,"The Israelites Leave Sinai",31,32
+num,10,11,"The Israelites Leave Sinai",33,34
+num,10,12,"The Israelites Leave Sinai",35,35
+num,10,13,"The Israelites Leave Sinai",35,35
+num,10,14,"The Israelites Leave Sinai",36,36
+num,10,15,"The Israelites Leave Sinai",36,36
+num,11,1,"Fire From the Lord",1,3
+num,11,2,"Quail From the Lord",4,6
+num,11,3,"Quail From the Lord",7,9
+num,11,4,"Quail From the Lord",10,15
+num,11,5,"Quail From the Lord",16,17
+num,11,6,"Quail From the Lord",18,20
+num,11,7,"Quail From the Lord",21,22
+num,11,8,"Quail From the Lord",23,23
+num,11,9,"Quail From the Lord",24,25
+num,11,10,"Quail From the Lord",26,27
+num,11,11,"Quail From the Lord",28,28
+num,11,12,"Quail From the Lord",29,30
+num,11,13,"Quail From the Lord",31,34
+num,11,14,"Quail From the Lord",35,35
+num,12,1,"Miriam and Aaron Oppose Moses",1,2
+num,12,2,"Miriam and Aaron Oppose Moses",3,3
+num,12,3,"Miriam and Aaron Oppose Moses",4,6
+num,12,4,"Miriam and Aaron Oppose Moses",6,8
+num,12,5,"Miriam and Aaron Oppose Moses",9,9
+num,12,6,"Miriam and Aaron Oppose Moses",10,12
+num,12,7,"Miriam and Aaron Oppose Moses",13,13
+num,12,8,"Miriam and Aaron Oppose Moses",14,15
+num,12,9,"Miriam and Aaron Oppose Moses",16,16
+num,13,1,"Exploring Canaan",1,2
+num,13,2,"Exploring Canaan",3,4
+num,13,3,"Exploring Canaan",16,16
+num,13,4,"Exploring Canaan",17,20
+num,13,5,"Exploring Canaan",21,25
+num,13,6,"Report on the Exploration",26,29
+num,13,7,"Report on the Exploration",30,30
+num,13,8,"Report on the Exploration",31,33
+num,14,1,"The People Rebel",1,4
+num,14,2,"The People Rebel",5,9
+num,14,3,"The People Rebel",10,12
+num,14,4,"The People Rebel",13,16
+num,14,5,"The People Rebel",17,19
+num,14,6,"The People Rebel",20,25
+num,14,7,"The People Rebel",26,35
+num,14,8,"The People Rebel",36,38
+num,14,9,"The People Rebel",39,40
+num,14,10,"The People Rebel",41,43
+num,14,11,"The People Rebel",44,45
+num,15,1,"Supplementary Offerings",1,5
+num,15,2,"Supplementary Offerings",6,7
+num,15,3,"Supplementary Offerings",8,12
+num,15,4,"Supplementary Offerings",13,16
+num,15,5,"Supplementary Offerings",17,21
+num,15,6,"Offerings for Unintentional Sins",22,26
+num,15,7,"Offerings for Unintentional Sins",27,29
+num,15,8,"Offerings for Unintentional Sins",30,31
+num,15,9,"The Sabbath-Breaker Put to Death",32,36
+num,15,10,"Tassels on Garments",37,41
+num,16,1,"Korah, Dathan and Abiram",1,3
+num,16,2,"Korah, Dathan and Abiram",4,7
+num,16,3,"Korah, Dathan and Abiram",8,11
+num,16,4,"Korah, Dathan and Abiram",12,14
+num,16,5,"Korah, Dathan and Abiram",15,15
+num,16,6,"Korah, Dathan and Abiram",16,21
+num,16,7,"Korah, Dathan and Abiram",22,22
+num,16,8,"Korah, Dathan and Abiram",23,24
+num,16,9,"Korah, Dathan and Abiram",25,27
+num,16,10,"Korah, Dathan and Abiram",28,30
+num,16,11,"Korah, Dathan and Abiram",31,34
+num,16,12,"Korah, Dathan and Abiram",35,35
+num,16,13,"Korah, Dathan and Abiram",36,38
+num,16,14,"Korah, Dathan and Abiram",39,40
+num,16,15,"Korah, Dathan and Abiram",41,41
+num,16,16,"Korah, Dathan and Abiram",42,45
+num,16,17,"Korah, Dathan and Abiram",46,50
+num,17,1,"The Budding of Aaron’s Staff",1,5
+num,17,2,"The Budding of Aaron’s Staff",6,7
+num,17,3,"The Budding of Aaron’s Staff",8,9
+num,17,4,"The Budding of Aaron’s Staff",10,11
+num,17,5,"The Budding of Aaron’s Staff",12,13
+num,18,1,"Duties of Priests and Levites",1,4
+num,18,2,"Duties of Priests and Levites",5,7
+num,18,3,"Offerings for Priests and Levites",8,10
+num,18,4,"Offerings for Priests and Levites",11,11
+num,18,5,"Offerings for Priests and Levites",12,13
+num,18,6,"Offerings for Priests and Levites",14,16
+num,18,7,"Offerings for Priests and Levites",17,19
+num,18,8,"Offerings for Priests and Levites",20,20
+num,18,9,"Offerings for Priests and Levites",21,24
+num,18,10,"Offerings for Priests and Levites",25,29
+num,18,11,"Offerings for Priests and Levites",30,32
+num,19,1,"The Water of Cleansing",1,8
+num,19,2,"The Water of Cleansing",9,10
+num,19,3,"The Water of Cleansing",11,13
+num,19,4,"The Water of Cleansing",14,15
+num,19,5,"The Water of Cleansing",16,16
+num,19,6,"The Water of Cleansing",17,21
+num,19,7,"The Water of Cleansing",21,22
+num,20,1,"Water From the Rock",1,1
+num,20,2,"Water From the Rock",2,5
+num,20,3,"Water From the Rock",6,8
+num,20,4,"Water From the Rock",9,11
+num,20,5,"Water From the Rock",12,12
+num,20,6,"Water From the Rock",13,13
+num,20,7,"Edom Denies Israel Passage",14,14
+num,20,8,"Edom Denies Israel Passage",18,18
+num,20,9,"Edom Denies Israel Passage",19,19
+num,20,10,"Edom Denies Israel Passage",20,20
+num,20,11,"Edom Denies Israel Passage",20,21
+num,20,12,"The Death of Aaron",22,26
+num,20,13,"The Death of Aaron",27,29
+num,21,1,"Arad Destroyed",1,3
+num,21,2,"The Bronze Snake",4,5
+num,21,3,"The Bronze Snake",6,7
+num,21,4,"The Bronze Snake",8,9
+num,21,5,"The Journey to Moab",10,14
+num,21,6,"The Journey to Moab",14,15
+num,21,7,"The Journey to Moab",16,16
+num,21,8,"The Journey to Moab",17,17
+num,21,9,"The Journey to Moab",17,18
+num,21,10,"The Journey to Moab",18,20
+num,21,11,"Defeat of Sihon and Og",21,21
+num,21,12,"Defeat of Sihon and Og",23,26
+num,21,13,"Defeat of Sihon and Og",27,27
+num,21,14,"Defeat of Sihon and Og",27,27
+num,21,15,"Defeat of Sihon and Og",28,29
+num,21,16,"Defeat of Sihon and Og",30,30
+num,21,17,"Defeat of Sihon and Og",31,31
+num,21,18,"Defeat of Sihon and Og",32,33
+num,21,19,"Defeat of Sihon and Og",34,34
+num,21,20,"Defeat of Sihon and Og",35,35
+num,22,1,"Balak Summons Balaam",1,1
+num,22,2,"Balak Summons Balaam",2,3
+num,22,3,"Balak Summons Balaam",4,4
+num,22,4,"Balak Summons Balaam",4,5
+num,22,5,"Balak Summons Balaam",7,7
+num,22,6,"Balak Summons Balaam",8,8
+num,22,7,"Balak Summons Balaam",9,9
+num,22,8,"Balak Summons Balaam",10,11
+num,22,9,"Balak Summons Balaam",12,12
+num,22,10,"Balak Summons Balaam",13,13
+num,22,11,"Balak Summons Balaam",14,14
+num,22,12,"Balak Summons Balaam",15,16
+num,22,13,"Balak Summons Balaam",18,19
+num,22,14,"Balak Summons Balaam",20,20
+num,22,15,"Balaam’s Donkey",21,23
+num,22,16,"Balaam’s Donkey",24,25
+num,22,17,"Balaam’s Donkey",26,28
+num,22,18,"Balaam’s Donkey",29,29
+num,22,19,"Balaam’s Donkey",30,30
+num,22,20,"Balaam’s Donkey",30,30
+num,22,21,"Balaam’s Donkey",31,31
+num,22,22,"Balaam’s Donkey",32,33
+num,22,23,"Balaam’s Donkey",34,34
+num,22,24,"Balaam’s Donkey",35,35
+num,22,25,"Balaam’s Donkey",36,37
+num,22,26,"Balaam’s Donkey",38,38
+num,22,27,"Balaam’s Donkey",39,41
+num,23,1,"Balaam’s First Message",1,2
+num,23,2,"Balaam’s First Message",3,3
+num,23,3,"Balaam’s First Message",4,4
+num,23,4,"Balaam’s First Message",5,5
+num,23,5,"Balaam’s First Message",6,7
+num,23,6,"Balaam’s First Message",7,10
+num,23,7,"Balaam’s First Message",11,11
+num,23,8,"Balaam’s First Message",12,12
+num,23,9,"Balaam’s Second Message",13,14
+num,23,10,"Balaam’s Second Message",15,15
+num,23,11,"Balaam’s Second Message",16,16
+num,23,12,"Balaam’s Second Message",17,17
+num,23,13,"Balaam’s Second Message",18,18
+num,23,14,"Balaam’s Second Message",18,20
+num,23,15,"Balaam’s Second Message",21,24
+num,23,16,"Balaam’s Second Message",25,25
+num,23,17,"Balaam’s Second Message",26,26
+num,23,18,"Balaam’s Third Message",27,28
+num,23,19,"Balaam’s Third Message",29,30
+num,24,1,"(无小标题)",1,3
+num,24,2,"(无小标题)",3,4
+num,24,3,"(无小标题)",5,5
+num,24,4,"(无小标题)",6,7
+num,24,5,"(无小标题)",7,7
+num,24,6,"(无小标题)",8,9
+num,24,7,"(无小标题)",9,9
+num,24,8,"(无小标题)",10,11
+num,24,9,"(无小标题)",12,14
+num,24,10,"Balaam’s Fourth Message",15,15
+num,24,11,"Balaam’s Fourth Message",15,16
+num,24,12,"Balaam’s Fourth Message",17,19
+num,24,13,"Balaam’s Fifth Message",20,20
+num,24,14,"Balaam’s Fifth Message",20,20
+num,24,15,"Balaam’s Sixth Message",21,21
+num,24,16,"Balaam’s Sixth Message",21,22
+num,24,17,"Balaam’s Seventh Message",23,23
+num,24,18,"Balaam’s Seventh Message",23,24
+num,24,19,"Balaam’s Seventh Message",25,25
+num,25,1,"Moab Seduces Israel",1,3
+num,25,2,"Moab Seduces Israel",4,4
+num,25,3,"Moab Seduces Israel",5,5
+num,25,4,"Moab Seduces Israel",6,9
+num,25,5,"Moab Seduces Israel",10,13
+num,25,6,"Moab Seduces Israel",14,15
+num,25,7,"Moab Seduces Israel",16,18
+num,26,1,"The Second Census",1,4
+num,26,2,"The Second Census",4,4
+num,26,3,"The Second Census",5,5
+num,26,4,"The Second Census",7,7
+num,26,5,"The Second Census",8,11
+num,26,6,"The Second Census",12,12
+num,26,7,"The Second Census",14,14
+num,26,8,"The Second Census",15,15
+num,26,9,"The Second Census",18,18
+num,26,10,"The Second Census",19,19
+num,26,11,"The Second Census",20,20
+num,26,12,"The Second Census",22,22
+num,26,13,"The Second Census",23,23
+num,26,14,"The Second Census",25,25
+num,26,15,"The Second Census",26,26
+num,26,16,"The Second Census",27,27
+num,26,17,"The Second Census",28,28
+num,26,18,"The Second Census",29,29
+num,26,19,"The Second Census",34,34
+num,26,20,"The Second Census",35,35
+num,26,21,"The Second Census",37,37
+num,26,22,"The Second Census",37,37
+num,26,23,"The Second Census",38,38
+num,26,24,"The Second Census",41,41
+num,26,25,"The Second Census",42,42
+num,26,26,"The Second Census",42,43
+num,26,27,"The Second Census",44,44
+num,26,28,"The Second Census",47,47
+num,26,29,"The Second Census",48,48
+num,26,30,"The Second Census",50,50
+num,26,31,"The Second Census",51,51
+num,26,32,"The Second Census",52,56
+num,26,33,"The Second Census",57,57
+num,26,34,"The Second Census",62,62
+num,26,35,"The Second Census",63,65
+num,27,1,"Zelophehad’s Daughters(A)",1,4
+num,27,2,"Zelophehad’s Daughters(A)",5,7
+num,27,3,"Zelophehad’s Daughters(A)",8,11
+num,27,4,"Joshua to Succeed Moses",12,14
+num,27,5,"Joshua to Succeed Moses",15,17
+num,27,6,"Joshua to Succeed Moses",18,21
+num,27,7,"Joshua to Succeed Moses",22,23
+num,28,1,"Daily Offerings",1,8
+num,28,2,"Sabbath Offerings",9,10
+num,28,3,"Monthly Offerings",11,15
+num,28,4,"The Passover(AO)",16,25
+num,28,5,"The Festival of Weeks(BB)",26,31
+num,29,1,"The Festival of Trumpets(A)",1,6
+num,29,2,"The Day of Atonement(O)",7,11
+num,29,3,"The Festival of Tabernacles(Y)",12,16
+num,29,4,"The Festival of Tabernacles(Y)",17,19
+num,29,5,"The Festival of Tabernacles(Y)",20,22
+num,29,6,"The Festival of Tabernacles(Y)",23,25
+num,29,7,"The Festival of Tabernacles(Y)",26,28
+num,29,8,"The Festival of Tabernacles(Y)",29,31
+num,29,9,"The Festival of Tabernacles(Y)",32,34
+num,29,10,"The Festival of Tabernacles(Y)",35,38
+num,29,11,"The Festival of Tabernacles(Y)",39,39
+num,29,12,"The Festival of Tabernacles(Y)",40,40
+num,30,1,"Vows",1,2
+num,30,2,"Vows",3,5
+num,30,3,"Vows",6,8
+num,30,4,"Vows",9,9
+num,30,5,"Vows",10,15
+num,30,6,"Vows",16,16
+num,31,1,"Vengeance on the Midianites",1,2
+num,31,2,"Vengeance on the Midianites",3,6
+num,31,3,"Vengeance on the Midianites",7,12
+num,31,4,"Vengeance on the Midianites",13,14
+num,31,5,"Vengeance on the Midianites",15,18
+num,31,6,"Vengeance on the Midianites",19,20
+num,31,7,"Vengeance on the Midianites",21,24
+num,31,8,"Dividing the Spoils",25,31
+num,31,9,"Dividing the Spoils",32,35
+num,31,10,"Dividing the Spoils",36,36
+num,31,11,"Dividing the Spoils",41,41
+num,31,12,"Dividing the Spoils",42,47
+num,31,13,"Dividing the Spoils",48,50
+num,31,14,"Dividing the Spoils",51,54
+num,32,1,"The Transjordan Tribes",1,5
+num,32,2,"The Transjordan Tribes",6,13
+num,32,3,"The Transjordan Tribes",14,15
+num,32,4,"The Transjordan Tribes",16,19
+num,32,5,"The Transjordan Tribes",20,22
+num,32,6,"The Transjordan Tribes",23,24
+num,32,7,"The Transjordan Tribes",25,27
+num,32,8,"The Transjordan Tribes",28,30
+num,32,9,"The Transjordan Tribes",31,32
+num,32,10,"The Transjordan Tribes",33,33
+num,32,11,"The Transjordan Tribes",34,38
+num,32,12,"The Transjordan Tribes",39,42
+num,33,1,"Stages in Israel’s Journey",1,2
+num,33,2,"Stages in Israel’s Journey",50,54
+num,33,3,"Stages in Israel’s Journey",55,56
+num,34,1,"Boundaries of Canaan",1,2
+num,34,2,"Boundaries of Canaan",3,5
+num,34,3,"Boundaries of Canaan",6,6
+num,34,4,"Boundaries of Canaan",7,9
+num,34,5,"Boundaries of Canaan",10,12
+num,34,6,"Boundaries of Canaan",12,12
+num,34,7,"Boundaries of Canaan",13,15
+num,34,8,"Boundaries of Canaan",16,19
+num,34,9,"Boundaries of Canaan",29,29
+num,35,1,"Towns for the Levites",1,3
+num,35,2,"Towns for the Levites",4,5
+num,35,3,"Cities of Refuge(G)",6,8
+num,35,4,"Cities of Refuge(G)",9,15
+num,35,5,"Cities of Refuge(G)",16,21
+num,35,6,"Cities of Refuge(G)",22,25
+num,35,7,"Cities of Refuge(G)",26,28
+num,35,8,"Cities of Refuge(G)",29,29
+num,35,9,"Cities of Refuge(G)",30,30
+num,35,10,"Cities of Refuge(G)",31,31
+num,35,11,"Cities of Refuge(G)",32,32
+num,35,12,"Cities of Refuge(G)",33,34
+num,36,1,"Inheritance of Zelophehad’s Daughters(A)",1,4
+num,36,2,"Inheritance of Zelophehad’s Daughters(A)",5,9
+num,36,3,"Inheritance of Zelophehad’s Daughters(A)",10,12
+num,36,4,"Inheritance of Zelophehad’s Daughters(A)",13,13

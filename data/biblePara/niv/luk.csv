@@ -1,0 +1,526 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+luk,1,1,"Introduction(A)",1,4
+luk,1,2,"The Birth of John the Baptist Foretold",5,7
+luk,1,3,"The Birth of John the Baptist Foretold",8,10
+luk,1,4,"The Birth of John the Baptist Foretold",11,17
+luk,1,5,"The Birth of John the Baptist Foretold",18,18
+luk,1,6,"The Birth of John the Baptist Foretold",19,20
+luk,1,7,"The Birth of John the Baptist Foretold",21,22
+luk,1,8,"The Birth of John the Baptist Foretold",23,25
+luk,1,9,"The Birth of Jesus Foretold",26,28
+luk,1,10,"The Birth of Jesus Foretold",29,33
+luk,1,11,"The Birth of Jesus Foretold",34,34
+luk,1,12,"The Birth of Jesus Foretold",35,37
+luk,1,13,"The Birth of Jesus Foretold",38,38
+luk,1,14,"Mary Visits Elizabeth",39,45
+luk,1,15,"Mary’s Song(BC)",46,46
+luk,1,16,"Mary’s Song(BC)",46,55
+luk,1,17,"Mary’s Song(BC)",56,56
+luk,1,18,"The Birth of John the Baptist",57,58
+luk,1,19,"The Birth of John the Baptist",59,60
+luk,1,20,"The Birth of John the Baptist",61,61
+luk,1,21,"The Birth of John the Baptist",62,66
+luk,1,22,"Zechariah’s Song",67,67
+luk,1,23,"Zechariah’s Song",68,75
+luk,1,24,"Zechariah’s Song",76,79
+luk,1,25,"Zechariah’s Song",80,80
+luk,2,1,"The Birth of Jesus",1,3
+luk,2,2,"The Birth of Jesus",4,7
+luk,2,3,"The Birth of Jesus",8,12
+luk,2,4,"The Birth of Jesus",13,13
+luk,2,5,"The Birth of Jesus",14,14
+luk,2,6,"The Birth of Jesus",15,15
+luk,2,7,"The Birth of Jesus",16,20
+luk,2,8,"The Birth of Jesus",21,21
+luk,2,9,"Jesus Presented in the Temple",22,24
+luk,2,10,"Jesus Presented in the Temple",25,28
+luk,2,11,"Jesus Presented in the Temple",29,32
+luk,2,12,"Jesus Presented in the Temple",33,35
+luk,2,13,"Jesus Presented in the Temple",36,38
+luk,2,14,"Jesus Presented in the Temple",39,40
+luk,2,15,"The Boy Jesus at the Temple",41,48
+luk,2,16,"The Boy Jesus at the Temple",49,50
+luk,2,17,"The Boy Jesus at the Temple",51,52
+luk,3,1,"John the Baptist Prepares the Way(A)(B)",1,4
+luk,3,2,"John the Baptist Prepares the Way(A)(B)",4,6
+luk,3,3,"John the Baptist Prepares the Way(A)(B)",7,9
+luk,3,4,"John the Baptist Prepares the Way(A)(B)",10,10
+luk,3,5,"John the Baptist Prepares the Way(A)(B)",11,11
+luk,3,6,"John the Baptist Prepares the Way(A)(B)",12,12
+luk,3,7,"John the Baptist Prepares the Way(A)(B)",13,13
+luk,3,8,"John the Baptist Prepares the Way(A)(B)",14,14
+luk,3,9,"John the Baptist Prepares the Way(A)(B)",14,14
+luk,3,10,"John the Baptist Prepares the Way(A)(B)",15,18
+luk,3,11,"John the Baptist Prepares the Way(A)(B)",19,20
+luk,3,12,"The Baptism and Genealogy of Jesus(AA)(AB)",21,22
+luk,3,13,"The Baptism and Genealogy of Jesus(AA)(AB)",23,23
+luk,4,1,"Jesus Is Tested in the Wilderness(A)",1,2
+luk,4,2,"Jesus Is Tested in the Wilderness(A)",3,3
+luk,4,3,"Jesus Is Tested in the Wilderness(A)",4,4
+luk,4,4,"Jesus Is Tested in the Wilderness(A)",5,7
+luk,4,5,"Jesus Is Tested in the Wilderness(A)",8,8
+luk,4,6,"Jesus Is Tested in the Wilderness(A)",9,10
+luk,4,7,"Jesus Is Tested in the Wilderness(A)",10,11
+luk,4,8,"Jesus Is Tested in the Wilderness(A)",12,12
+luk,4,9,"Jesus Is Tested in the Wilderness(A)",13,13
+luk,4,10,"Jesus Rejected at Nazareth",14,15
+luk,4,11,"Jesus Rejected at Nazareth",16,17
+luk,4,12,"Jesus Rejected at Nazareth",18,19
+luk,4,13,"Jesus Rejected at Nazareth",20,21
+luk,4,14,"Jesus Rejected at Nazareth",22,22
+luk,4,15,"Jesus Rejected at Nazareth",23,23
+luk,4,16,"Jesus Rejected at Nazareth",24,27
+luk,4,17,"Jesus Rejected at Nazareth",28,30
+luk,4,18,"Jesus Drives Out an Impure Spirit(AJ)",31,32
+luk,4,19,"Jesus Drives Out an Impure Spirit(AJ)",33,34
+luk,4,20,"Jesus Drives Out an Impure Spirit(AJ)",35,35
+luk,4,21,"Jesus Drives Out an Impure Spirit(AJ)",36,37
+luk,4,22,"Jesus Heals Many(AV)(AW)",38,39
+luk,4,23,"Jesus Heals Many(AV)(AW)",40,41
+luk,4,24,"Jesus Heals Many(AV)(AW)",42,44
+luk,5,1,"Jesus Calls His First Disciples(A)",1,3
+luk,5,2,"Jesus Calls His First Disciples(A)",4,4
+luk,5,3,"Jesus Calls His First Disciples(A)",5,5
+luk,5,4,"Jesus Calls His First Disciples(A)",6,7
+luk,5,5,"Jesus Calls His First Disciples(A)",8,10
+luk,5,6,"Jesus Calls His First Disciples(A)",10,11
+luk,5,7,"Jesus Heals a Man With Leprosy(K)",12,12
+luk,5,8,"Jesus Heals a Man With Leprosy(K)",13,13
+luk,5,9,"Jesus Heals a Man With Leprosy(K)",14,14
+luk,5,10,"Jesus Heals a Man With Leprosy(K)",15,16
+luk,5,11,"Jesus Forgives and Heals a Paralyzed Man(Q)",17,19
+luk,5,12,"Jesus Forgives and Heals a Paralyzed Man(Q)",20,20
+luk,5,13,"Jesus Forgives and Heals a Paralyzed Man(Q)",21,21
+luk,5,14,"Jesus Forgives and Heals a Paralyzed Man(Q)",22,26
+luk,5,15,"Jesus Calls Levi and Eats With Sinners(X)",27,28
+luk,5,16,"Jesus Calls Levi and Eats With Sinners(X)",29,30
+luk,5,17,"Jesus Calls Levi and Eats With Sinners(X)",31,32
+luk,5,18,"Jesus Questioned About Fasting(AE)",33,33
+luk,5,19,"Jesus Questioned About Fasting(AE)",34,35
+luk,5,20,"Jesus Questioned About Fasting(AE)",36,39
+luk,6,1,"Jesus Is Lord of the Sabbath(A)",1,2
+luk,6,2,"Jesus Is Lord of the Sabbath(A)",3,5
+luk,6,3,"Jesus Is Lord of the Sabbath(A)",6,8
+luk,6,4,"Jesus Is Lord of the Sabbath(A)",9,9
+luk,6,5,"Jesus Is Lord of the Sabbath(A)",10,11
+luk,6,6,"The Twelve Apostles(L)",12,16
+luk,6,7,"Blessings and Woes(P)",17,19
+luk,6,8,"Blessings and Woes(P)",20,20
+luk,6,9,"Blessings and Woes(P)",20,22
+luk,6,10,"Blessings and Woes(P)",23,23
+luk,6,11,"Blessings and Woes(P)",24,26
+luk,6,12,"Love for Enemies(AG)",27,31
+luk,6,13,"Love for Enemies(AG)",32,36
+luk,6,14,"Judging Others(AS)",37,38
+luk,6,15,"Judging Others(AS)",39,40
+luk,6,16,"Judging Others(AS)",41,42
+luk,6,17,"A Tree and Its Fruit(AZ)",43,45
+luk,6,18,"The Wise and Foolish Builders(BC)",46,49
+luk,7,1,"The Faith of the Centurion(A)",1,6
+luk,7,2,"The Faith of the Centurion(A)",6,8
+luk,7,3,"The Faith of the Centurion(A)",9,10
+luk,7,4,"Jesus Raises a Widow’s Son(D)",11,13
+luk,7,5,"Jesus Raises a Widow’s Son(D)",14,15
+luk,7,6,"Jesus Raises a Widow’s Son(D)",16,17
+luk,7,7,"Jesus and John the Baptist(L)",18,19
+luk,7,8,"Jesus and John the Baptist(L)",20,20
+luk,7,9,"Jesus and John the Baptist(L)",21,23
+luk,7,10,"Jesus and John the Baptist(L)",24,27
+luk,7,11,"Jesus and John the Baptist(L)",27,27
+luk,7,12,"Jesus and John the Baptist(L)",28,28
+luk,7,13,"Jesus and John the Baptist(L)",29,30
+luk,7,14,"Jesus and John the Baptist(L)",31,32
+luk,7,15,"Jesus and John the Baptist(L)",32,32
+luk,7,16,"Jesus and John the Baptist(L)",33,35
+luk,7,17,"Jesus Anointed by a Sinful Woman(X)(Y)",36,38
+luk,7,18,"Jesus Anointed by a Sinful Woman(X)(Y)",39,39
+luk,7,19,"Jesus Anointed by a Sinful Woman(X)(Y)",40,40
+luk,7,20,"Jesus Anointed by a Sinful Woman(X)(Y)",40,40
+luk,7,21,"Jesus Anointed by a Sinful Woman(X)(Y)",41,42
+luk,7,22,"Jesus Anointed by a Sinful Woman(X)(Y)",43,43
+luk,7,23,"Jesus Anointed by a Sinful Woman(X)(Y)",43,43
+luk,7,24,"Jesus Anointed by a Sinful Woman(X)(Y)",44,47
+luk,7,25,"Jesus Anointed by a Sinful Woman(X)(Y)",48,48
+luk,7,26,"Jesus Anointed by a Sinful Woman(X)(Y)",49,49
+luk,7,27,"Jesus Anointed by a Sinful Woman(X)(Y)",50,50
+luk,8,1,"The Parable of the Sower(A)",1,3
+luk,8,2,"The Parable of the Sower(A)",4,8
+luk,8,3,"The Parable of the Sower(A)",8,8
+luk,8,4,"The Parable of the Sower(A)",9,10
+luk,8,5,"The Parable of the Sower(A)",10,10
+luk,8,6,"The Parable of the Sower(A)",11,15
+luk,8,7,"A Lamp on a Stand",16,18
+luk,8,8,"Jesus’ Mother and Brothers(N)",19,20
+luk,8,9,"Jesus’ Mother and Brothers(N)",21,21
+luk,8,10,"Jesus Calms the Storm(Q)(R)",22,23
+luk,8,11,"Jesus Calms the Storm(Q)(R)",24,24
+luk,8,12,"Jesus Calms the Storm(Q)(R)",24,25
+luk,8,13,"Jesus Calms the Storm(Q)(R)",25,25
+luk,8,14,"Jesus Restores a Demon-Possessed Man(V)(W)",26,29
+luk,8,15,"Jesus Restores a Demon-Possessed Man(V)(W)",30,30
+luk,8,16,"Jesus Restores a Demon-Possessed Man(V)(W)",30,31
+luk,8,17,"Jesus Restores a Demon-Possessed Man(V)(W)",32,33
+luk,8,18,"Jesus Restores a Demon-Possessed Man(V)(W)",34,37
+luk,8,19,"Jesus Restores a Demon-Possessed Man(V)(W)",38,39
+luk,8,20,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",40,42
+luk,8,21,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",42,44
+luk,8,22,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",45,45
+luk,8,23,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",45,45
+luk,8,24,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",46,46
+luk,8,25,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",47,48
+luk,8,26,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",49,49
+luk,8,27,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",50,50
+luk,8,28,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",51,52
+luk,8,29,"Jesus Raises a Dead Girl and Heals a Sick Woman(AE)",53,56
+luk,9,1,"Jesus Sends Out the Twelve(A)(B)",1,6
+luk,9,2,"Jesus Sends Out the Twelve(A)(B)",7,9
+luk,9,3,"Jesus Feeds the Five Thousand(N)(O)",10,11
+luk,9,4,"Jesus Feeds the Five Thousand(N)(O)",12,12
+luk,9,5,"Jesus Feeds the Five Thousand(N)(O)",13,13
+luk,9,6,"Jesus Feeds the Five Thousand(N)(O)",13,14
+luk,9,7,"Jesus Feeds the Five Thousand(N)(O)",14,17
+luk,9,8,"Peter Declares That Jesus Is the Messiah(T)(U)",18,18
+luk,9,9,"Peter Declares That Jesus Is the Messiah(T)(U)",19,19
+luk,9,10,"Peter Declares That Jesus Is the Messiah(T)(U)",20,20
+luk,9,11,"Peter Declares That Jesus Is the Messiah(T)(U)",20,20
+luk,9,12,"Jesus Predicts His Death",21,22
+luk,9,13,"Jesus Predicts His Death",23,26
+luk,9,14,"Jesus Predicts His Death",27,27
+luk,9,15,"The Transfiguration(AK)",28,33
+luk,9,16,"The Transfiguration(AK)",34,36
+luk,9,17,"Jesus Heals a Demon-Possessed Boy(AT)",37,40
+luk,9,18,"Jesus Heals a Demon-Possessed Boy(AT)",41,41
+luk,9,19,"Jesus Heals a Demon-Possessed Boy(AT)",42,43
+luk,9,20,"Jesus Predicts His Death a Second Time",43,45
+luk,9,21,"Jesus Predicts His Death a Second Time",46,48
+luk,9,22,"Jesus Predicts His Death a Second Time",49,49
+luk,9,23,"Jesus Predicts His Death a Second Time",50,50
+luk,9,24,"Samaritan Opposition",51,56
+luk,9,25,"The Cost of Following Jesus(BI)",57,57
+luk,9,26,"The Cost of Following Jesus(BI)",58,58
+luk,9,27,"The Cost of Following Jesus(BI)",59,59
+luk,9,28,"The Cost of Following Jesus(BI)",59,59
+luk,9,29,"The Cost of Following Jesus(BI)",60,60
+luk,9,30,"The Cost of Following Jesus(BI)",61,61
+luk,9,31,"The Cost of Following Jesus(BI)",62,62
+luk,10,1,"Jesus Sends Out the Seventy-Two(A)(B)(C)",1,4
+luk,10,2,"Jesus Sends Out the Seventy-Two(A)(B)(C)",5,7
+luk,10,3,"Jesus Sends Out the Seventy-Two(A)(B)(C)",8,12
+luk,10,4,"Jesus Sends Out the Seventy-Two(A)(B)(C)",13,15
+luk,10,5,"Jesus Sends Out the Seventy-Two(A)(B)(C)",16,16
+luk,10,6,"Jesus Sends Out the Seventy-Two(A)(B)(C)",17,17
+luk,10,7,"Jesus Sends Out the Seventy-Two(A)(B)(C)",18,20
+luk,10,8,"Jesus Sends Out the Seventy-Two(A)(B)(C)",21,21
+luk,10,9,"Jesus Sends Out the Seventy-Two(A)(B)(C)",22,22
+luk,10,10,"Jesus Sends Out the Seventy-Two(A)(B)(C)",23,24
+luk,10,11,"The Parable of the Good Samaritan(AE)",25,25
+luk,10,12,"The Parable of the Good Samaritan(AE)",26,26
+luk,10,13,"The Parable of the Good Samaritan(AE)",27,27
+luk,10,14,"The Parable of the Good Samaritan(AE)",28,28
+luk,10,15,"The Parable of the Good Samaritan(AE)",29,29
+luk,10,16,"The Parable of the Good Samaritan(AE)",30,35
+luk,10,17,"The Parable of the Good Samaritan(AE)",36,36
+luk,10,18,"The Parable of the Good Samaritan(AE)",37,37
+luk,10,19,"The Parable of the Good Samaritan(AE)",37,37
+luk,10,20,"At the Home of Martha and Mary",38,40
+luk,10,21,"At the Home of Martha and Mary",41,42
+luk,11,1,"Jesus’ Teaching on Prayer(A)(B)",1,1
+luk,11,2,"Jesus’ Teaching on Prayer(A)(B)",2,2
+luk,11,3,"Jesus’ Teaching on Prayer(A)(B)",2,4
+luk,11,4,"Jesus’ Teaching on Prayer(A)(B)",5,8
+luk,11,5,"Jesus’ Teaching on Prayer(A)(B)",9,10
+luk,11,6,"Jesus’ Teaching on Prayer(A)(B)",11,13
+luk,11,7,"Jesus and Beelzebul(J)(K)",14,16
+luk,11,8,"Jesus and Beelzebul(J)(K)",17,20
+luk,11,9,"Jesus and Beelzebul(J)(K)",21,22
+luk,11,10,"Jesus and Beelzebul(J)(K)",23,23
+luk,11,11,"Jesus and Beelzebul(J)(K)",24,26
+luk,11,12,"Jesus and Beelzebul(J)(K)",27,27
+luk,11,13,"Jesus and Beelzebul(J)(K)",28,28
+luk,11,14,"The Sign of Jonah(Y)",29,32
+luk,11,15,"The Lamp of the Body(AD)",33,36
+luk,11,16,"Woes on the Pharisees and the Experts in the Law",37,38
+luk,11,17,"Woes on the Pharisees and the Experts in the Law",39,41
+luk,11,18,"Woes on the Pharisees and the Experts in the Law",42,42
+luk,11,19,"Woes on the Pharisees and the Experts in the Law",43,43
+luk,11,20,"Woes on the Pharisees and the Experts in the Law",44,44
+luk,11,21,"Woes on the Pharisees and the Experts in the Law",45,45
+luk,11,22,"Woes on the Pharisees and the Experts in the Law",46,46
+luk,11,23,"Woes on the Pharisees and the Experts in the Law",47,51
+luk,11,24,"Woes on the Pharisees and the Experts in the Law",52,52
+luk,11,25,"Woes on the Pharisees and the Experts in the Law",53,54
+luk,12,1,"Warnings and Encouragements(A)",1,3
+luk,12,2,"Warnings and Encouragements(A)",4,7
+luk,12,3,"Warnings and Encouragements(A)",8,10
+luk,12,4,"Warnings and Encouragements(A)",11,12
+luk,12,5,"The Parable of the Rich Fool",13,13
+luk,12,6,"The Parable of the Rich Fool",14,15
+luk,12,7,"The Parable of the Rich Fool",16,17
+luk,12,8,"The Parable of the Rich Fool",18,19
+luk,12,9,"The Parable of the Rich Fool",20,20
+luk,12,10,"The Parable of the Rich Fool",21,21
+luk,12,11,"Do Not Worry(S)",22,26
+luk,12,12,"Do Not Worry(S)",27,31
+luk,12,13,"Do Not Worry(S)",32,34
+luk,12,14,"Watchfulness(AG)(AH)",35,40
+luk,12,15,"Watchfulness(AG)(AH)",41,41
+luk,12,16,"Watchfulness(AG)(AH)",42,46
+luk,12,17,"Watchfulness(AG)(AH)",47,48
+luk,12,18,"Not Peace but Division(AQ)",49,53
+luk,12,19,"Interpreting the Times",54,56
+luk,12,20,"Interpreting the Times",57,59
+luk,13,1,"Repent or Perish",1,5
+luk,13,2,"Repent or Perish",6,7
+luk,13,3,"Repent or Perish",8,9
+luk,13,4,"Jesus Heals a Crippled Woman on the Sabbath",10,13
+luk,13,5,"Jesus Heals a Crippled Woman on the Sabbath",14,14
+luk,13,6,"Jesus Heals a Crippled Woman on the Sabbath",15,16
+luk,13,7,"Jesus Heals a Crippled Woman on the Sabbath",17,17
+luk,13,8,"The Parables of the Mustard Seed and the Yeast(Q)(R)",18,19
+luk,13,9,"The Parables of the Mustard Seed and the Yeast(Q)(R)",20,21
+luk,13,10,"The Narrow Door",22,23
+luk,13,11,"The Narrow Door",23,25
+luk,13,12,"The Narrow Door",25,25
+luk,13,13,"The Narrow Door",26,26
+luk,13,14,"The Narrow Door",27,27
+luk,13,15,"The Narrow Door",28,30
+luk,13,16,"Jesus’ Sorrow for Jerusalem(AE)(AF)",31,31
+luk,13,17,"Jesus’ Sorrow for Jerusalem(AE)(AF)",32,33
+luk,13,18,"Jesus’ Sorrow for Jerusalem(AE)(AF)",34,35
+luk,14,1,"Jesus at a Pharisee’s House(A)",1,4
+luk,14,2,"Jesus at a Pharisee’s House(A)",5,6
+luk,14,3,"Jesus at a Pharisee’s House(A)",7,11
+luk,14,4,"Jesus at a Pharisee’s House(A)",12,14
+luk,14,5,"The Parable of the Great Banquet(K)",15,15
+luk,14,6,"The Parable of the Great Banquet(K)",16,17
+luk,14,7,"The Parable of the Great Banquet(K)",18,18
+luk,14,8,"The Parable of the Great Banquet(K)",19,19
+luk,14,9,"The Parable of the Great Banquet(K)",20,20
+luk,14,10,"The Parable of the Great Banquet(K)",21,21
+luk,14,11,"The Parable of the Great Banquet(K)",22,22
+luk,14,12,"The Parable of the Great Banquet(K)",23,24
+luk,14,13,"The Cost of Being a Disciple",25,27
+luk,14,14,"The Cost of Being a Disciple",28,30
+luk,14,15,"The Cost of Being a Disciple",31,33
+luk,14,16,"The Cost of Being a Disciple",34,35
+luk,14,17,"The Cost of Being a Disciple",35,35
+luk,15,1,"The Parable of the Lost Sheep(A)",1,2
+luk,15,2,"The Parable of the Lost Sheep(A)",3,7
+luk,15,3,"The Parable of the Lost Coin",8,10
+luk,15,4,"The Parable of the Lost Son",11,12
+luk,15,5,"The Parable of the Lost Son",13,16
+luk,15,6,"The Parable of the Lost Son",17,20
+luk,15,7,"The Parable of the Lost Son",20,20
+luk,15,8,"The Parable of the Lost Son",21,21
+luk,15,9,"The Parable of the Lost Son",22,24
+luk,15,10,"The Parable of the Lost Son",25,27
+luk,15,11,"The Parable of the Lost Son",28,30
+luk,15,12,"The Parable of the Lost Son",31,32
+luk,16,1,"The Parable of the Shrewd Manager",1,2
+luk,16,2,"The Parable of the Shrewd Manager",3,4
+luk,16,3,"The Parable of the Shrewd Manager",5,5
+luk,16,4,"The Parable of the Shrewd Manager",6,6
+luk,16,5,"The Parable of the Shrewd Manager",6,6
+luk,16,6,"The Parable of the Shrewd Manager",7,7
+luk,16,7,"The Parable of the Shrewd Manager",7,7
+luk,16,8,"The Parable of the Shrewd Manager",7,7
+luk,16,9,"The Parable of the Shrewd Manager",8,9
+luk,16,10,"The Parable of the Shrewd Manager",10,12
+luk,16,11,"The Parable of the Shrewd Manager",13,13
+luk,16,12,"The Parable of the Shrewd Manager",14,15
+luk,16,13,"Additional Teachings",16,17
+luk,16,14,"Additional Teachings",18,18
+luk,16,15,"The Rich Man and Lazarus",19,21
+luk,16,16,"The Rich Man and Lazarus",22,24
+luk,16,17,"The Rich Man and Lazarus",25,26
+luk,16,18,"The Rich Man and Lazarus",27,28
+luk,16,19,"The Rich Man and Lazarus",29,29
+luk,16,20,"The Rich Man and Lazarus",30,30
+luk,16,21,"The Rich Man and Lazarus",31,31
+luk,17,1,"Sin, Faith, Duty",1,3
+luk,17,2,"Sin, Faith, Duty",3,4
+luk,17,3,"Sin, Faith, Duty",5,5
+luk,17,4,"Sin, Faith, Duty",6,6
+luk,17,5,"Sin, Faith, Duty",7,10
+luk,17,6,"Jesus Heals Ten Men With Leprosy",11,13
+luk,17,7,"Jesus Heals Ten Men With Leprosy",14,14
+luk,17,8,"Jesus Heals Ten Men With Leprosy",15,16
+luk,17,9,"Jesus Heals Ten Men With Leprosy",17,19
+luk,17,10,"The Coming of the Kingdom of God(W)",20,21
+luk,17,11,"The Coming of the Kingdom of God(W)",22,25
+luk,17,12,"The Coming of the Kingdom of God(W)",26,27
+luk,17,13,"The Coming of the Kingdom of God(W)",28,29
+luk,17,14,"The Coming of the Kingdom of God(W)",30,36
+luk,17,15,"The Coming of the Kingdom of God(W)",37,37
+luk,17,16,"The Coming of the Kingdom of God(W)",37,37
+luk,18,1,"The Parable of the Persistent Widow",1,3
+luk,18,2,"The Parable of the Persistent Widow",4,5
+luk,18,3,"The Parable of the Persistent Widow",6,8
+luk,18,4,"The Parable of the Pharisee and the Tax Collector",9,12
+luk,18,5,"The Parable of the Pharisee and the Tax Collector",13,13
+luk,18,6,"The Parable of the Pharisee and the Tax Collector",14,14
+luk,18,7,"The Little Children and Jesus(Q)",15,17
+luk,18,8,"The Rich and the Kingdom of God(S)",18,18
+luk,18,9,"The Rich and the Kingdom of God(S)",19,20
+luk,18,10,"The Rich and the Kingdom of God(S)",21,21
+luk,18,11,"The Rich and the Kingdom of God(S)",22,22
+luk,18,12,"The Rich and the Kingdom of God(S)",23,25
+luk,18,13,"The Rich and the Kingdom of God(S)",26,26
+luk,18,14,"The Rich and the Kingdom of God(S)",27,27
+luk,18,15,"The Rich and the Kingdom of God(S)",28,28
+luk,18,16,"The Rich and the Kingdom of God(S)",29,30
+luk,18,17,"Jesus Predicts His Death a Third Time(AC)",31,33
+luk,18,18,"Jesus Predicts His Death a Third Time(AC)",34,34
+luk,18,19,"A Blind Beggar Receives His Sight(AM)",35,37
+luk,18,20,"A Blind Beggar Receives His Sight(AM)",38,38
+luk,18,21,"A Blind Beggar Receives His Sight(AM)",39,39
+luk,18,22,"A Blind Beggar Receives His Sight(AM)",40,41
+luk,18,23,"A Blind Beggar Receives His Sight(AM)",41,41
+luk,18,24,"A Blind Beggar Receives His Sight(AM)",42,43
+luk,19,1,"Zacchaeus the Tax Collector",1,4
+luk,19,2,"Zacchaeus the Tax Collector",5,6
+luk,19,3,"Zacchaeus the Tax Collector",7,7
+luk,19,4,"Zacchaeus the Tax Collector",8,8
+luk,19,5,"Zacchaeus the Tax Collector",9,10
+luk,19,6,"The Parable of the Ten Minas(J)",11,13
+luk,19,7,"The Parable of the Ten Minas(J)",14,14
+luk,19,8,"The Parable of the Ten Minas(J)",15,15
+luk,19,9,"The Parable of the Ten Minas(J)",16,16
+luk,19,10,"The Parable of the Ten Minas(J)",17,17
+luk,19,11,"The Parable of the Ten Minas(J)",18,18
+luk,19,12,"The Parable of the Ten Minas(J)",19,19
+luk,19,13,"The Parable of the Ten Minas(J)",20,21
+luk,19,14,"The Parable of the Ten Minas(J)",22,23
+luk,19,15,"The Parable of the Ten Minas(J)",24,24
+luk,19,16,"The Parable of the Ten Minas(J)",25,25
+luk,19,17,"The Parable of the Ten Minas(J)",26,27
+luk,19,18,"Jesus Comes to Jerusalem as King(T)(U)",28,31
+luk,19,19,"Jesus Comes to Jerusalem as King(T)(U)",32,33
+luk,19,20,"Jesus Comes to Jerusalem as King(T)(U)",34,34
+luk,19,21,"Jesus Comes to Jerusalem as King(T)(U)",35,36
+luk,19,22,"Jesus Comes to Jerusalem as King(T)(U)",37,37
+luk,19,23,"Jesus Comes to Jerusalem as King(T)(U)",38,38
+luk,19,24,"Jesus Comes to Jerusalem as King(T)(U)",38,38
+luk,19,25,"Jesus Comes to Jerusalem as King(T)(U)",39,39
+luk,19,26,"Jesus Comes to Jerusalem as King(T)(U)",40,40
+luk,19,27,"Jesus Comes to Jerusalem as King(T)(U)",41,44
+luk,19,28,"Jesus at the Temple(AK)",45,46
+luk,19,29,"Jesus at the Temple(AK)",47,48
+luk,20,1,"The Authority of Jesus Questioned(A)",1,2
+luk,20,2,"The Authority of Jesus Questioned(A)",3,4
+luk,20,3,"The Authority of Jesus Questioned(A)",5,6
+luk,20,4,"The Authority of Jesus Questioned(A)",7,7
+luk,20,5,"The Authority of Jesus Questioned(A)",8,8
+luk,20,6,"The Parable of the Tenants(H)",9,12
+luk,20,7,"The Parable of the Tenants(H)",13,13
+luk,20,8,"The Parable of the Tenants(H)",14,15
+luk,20,9,"The Parable of the Tenants(H)",15,16
+luk,20,10,"The Parable of the Tenants(H)",16,16
+luk,20,11,"The Parable of the Tenants(H)",17,17
+luk,20,12,"The Parable of the Tenants(H)",17,17
+luk,20,13,"The Parable of the Tenants(H)",18,18
+luk,20,14,"The Parable of the Tenants(H)",19,19
+luk,20,15,"Paying Taxes to Caesar(Q)",20,22
+luk,20,16,"Paying Taxes to Caesar(Q)",23,24
+luk,20,17,"Paying Taxes to Caesar(Q)",24,24
+luk,20,18,"Paying Taxes to Caesar(Q)",25,25
+luk,20,19,"Paying Taxes to Caesar(Q)",26,26
+luk,20,20,"The Resurrection and Marriage(V)",27,33
+luk,20,21,"The Resurrection and Marriage(V)",34,38
+luk,20,22,"The Resurrection and Marriage(V)",39,40
+luk,20,23,"Whose Son Is the Messiah?(AD)",41,42
+luk,20,24,"Whose Son Is the Messiah?(AD)",42,43
+luk,20,25,"Whose Son Is the Messiah?(AD)",44,44
+luk,20,26,"Warning Against the Teachers of the Law",45,47
+luk,21,1,"The Widow’s Offering(A)",1,4
+luk,21,2,"The Destruction of the Temple and Signs of the End Times(D)(E)",5,6
+luk,21,3,"The Destruction of the Temple and Signs of the End Times(D)(E)",7,7
+luk,21,4,"The Destruction of the Temple and Signs of the End Times(D)(E)",8,9
+luk,21,5,"The Destruction of the Temple and Signs of the End Times(D)(E)",10,11
+luk,21,6,"The Destruction of the Temple and Signs of the End Times(D)(E)",12,19
+luk,21,7,"The Destruction of the Temple and Signs of the End Times(D)(E)",20,24
+luk,21,8,"The Destruction of the Temple and Signs of the End Times(D)(E)",25,28
+luk,21,9,"The Destruction of the Temple and Signs of the End Times(D)(E)",29,31
+luk,21,10,"The Destruction of the Temple and Signs of the End Times(D)(E)",32,33
+luk,21,11,"The Destruction of the Temple and Signs of the End Times(D)(E)",34,36
+luk,21,12,"The Destruction of the Temple and Signs of the End Times(D)(E)",37,38
+luk,22,1,"Judas Agrees to Betray Jesus(A)",1,6
+luk,22,2,"The Last Supper(H)(I)(J)(K)(L)",7,8
+luk,22,3,"The Last Supper(H)(I)(J)(K)(L)",9,9
+luk,22,4,"The Last Supper(H)(I)(J)(K)(L)",10,12
+luk,22,5,"The Last Supper(H)(I)(J)(K)(L)",13,13
+luk,22,6,"The Last Supper(H)(I)(J)(K)(L)",14,16
+luk,22,7,"The Last Supper(H)(I)(J)(K)(L)",17,18
+luk,22,8,"The Last Supper(H)(I)(J)(K)(L)",19,19
+luk,22,9,"The Last Supper(H)(I)(J)(K)(L)",20,23
+luk,22,10,"The Last Supper(H)(I)(J)(K)(L)",24,30
+luk,22,11,"The Last Supper(H)(I)(J)(K)(L)",31,32
+luk,22,12,"The Last Supper(H)(I)(J)(K)(L)",33,33
+luk,22,13,"The Last Supper(H)(I)(J)(K)(L)",34,34
+luk,22,14,"The Last Supper(H)(I)(J)(K)(L)",35,35
+luk,22,15,"The Last Supper(H)(I)(J)(K)(L)",35,35
+luk,22,16,"The Last Supper(H)(I)(J)(K)(L)",36,37
+luk,22,17,"The Last Supper(H)(I)(J)(K)(L)",38,38
+luk,22,18,"The Last Supper(H)(I)(J)(K)(L)",38,38
+luk,22,19,"Jesus Prays on the Mount of Olives(AM)",39,44
+luk,22,20,"Jesus Prays on the Mount of Olives(AM)",45,46
+luk,22,21,"Jesus Arrested(AV)",47,48
+luk,22,22,"Jesus Arrested(AV)",49,50
+luk,22,23,"Jesus Arrested(AV)",51,51
+luk,22,24,"Jesus Arrested(AV)",52,53
+luk,22,25,"Peter Disowns Jesus(BB)",54,56
+luk,22,26,"Peter Disowns Jesus(BB)",57,57
+luk,22,27,"Peter Disowns Jesus(BB)",58,58
+luk,22,28,"Peter Disowns Jesus(BB)",58,58
+luk,22,29,"Peter Disowns Jesus(BB)",59,59
+luk,22,30,"Peter Disowns Jesus(BB)",60,62
+luk,22,31,"The Guards Mock Jesus(BH)",63,65
+luk,22,32,"Jesus Before Pilate and Herod(BJ)(BK)(BL)",66,67
+luk,22,33,"Jesus Before Pilate and Herod(BJ)(BK)(BL)",67,69
+luk,22,34,"Jesus Before Pilate and Herod(BJ)(BK)(BL)",70,70
+luk,22,35,"Jesus Before Pilate and Herod(BJ)(BK)(BL)",70,70
+luk,22,36,"Jesus Before Pilate and Herod(BJ)(BK)(BL)",71,71
+luk,23,1,"(无小标题)",1,2
+luk,23,2,"(无小标题)",3,3
+luk,23,3,"(无小标题)",3,3
+luk,23,4,"(无小标题)",4,4
+luk,23,5,"(无小标题)",5,5
+luk,23,6,"(无小标题)",6,7
+luk,23,7,"(无小标题)",8,12
+luk,23,8,"(无小标题)",13,17
+luk,23,9,"(无小标题)",18,19
+luk,23,10,"(无小标题)",20,21
+luk,23,11,"(无小标题)",22,22
+luk,23,12,"(无小标题)",23,25
+luk,23,13,"The Crucifixion of Jesus(Q)",26,30
+luk,23,14,"The Crucifixion of Jesus(Q)",30,30
+luk,23,15,"The Crucifixion of Jesus(Q)",31,31
+luk,23,16,"The Crucifixion of Jesus(Q)",32,34
+luk,23,17,"The Crucifixion of Jesus(Q)",35,35
+luk,23,18,"The Crucifixion of Jesus(Q)",36,37
+luk,23,19,"The Crucifixion of Jesus(Q)",38,38
+luk,23,20,"The Crucifixion of Jesus(Q)",39,39
+luk,23,21,"The Crucifixion of Jesus(Q)",40,41
+luk,23,22,"The Crucifixion of Jesus(Q)",42,42
+luk,23,23,"The Crucifixion of Jesus(Q)",43,43
+luk,23,24,"The Death of Jesus(AM)",44,46
+luk,23,25,"The Death of Jesus(AM)",47,49
+luk,23,26,"The Burial of Jesus(AX)",50,54
+luk,23,27,"The Burial of Jesus(AX)",55,56
+luk,24,1,"Jesus Has Risen(A)",1,8
+luk,24,2,"Jesus Has Risen(A)",9,12
+luk,24,3,"On the Road to Emmaus",13,16
+luk,24,4,"On the Road to Emmaus",17,17
+luk,24,5,"On the Road to Emmaus",17,18
+luk,24,6,"On the Road to Emmaus",19,19
+luk,24,7,"On the Road to Emmaus",19,24
+luk,24,8,"On the Road to Emmaus",25,27
+luk,24,9,"On the Road to Emmaus",28,29
+luk,24,10,"On the Road to Emmaus",30,32
+luk,24,11,"On the Road to Emmaus",33,35
+luk,24,12,"Jesus Appears to the Disciples",36,36
+luk,24,13,"Jesus Appears to the Disciples",37,39
+luk,24,14,"Jesus Appears to the Disciples",40,43
+luk,24,15,"Jesus Appears to the Disciples",44,44
+luk,24,16,"Jesus Appears to the Disciples",45,49
+luk,24,17,"The Ascension of Jesus",50,53

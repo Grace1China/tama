@@ -1,0 +1,22 @@
+[
+  {
+    "book": "那鴻書",
+    "chapter": 1,
+    "error": "找不到 .text-html 元素"
+  },
+  {
+    "book": "那鴻書",
+    "chapter": 2,
+    "error": "找不到 .text-html 元素"
+  },
+  {
+    "book": "那鴻書",
+    "chapter": 3,
+    "error": "找不到 .text-html 元素"
+  },
+  {
+    "book": "西番雅書",
+    "chapter": 1,
+    "error": "fetch failed"
+  }
+]

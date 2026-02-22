@@ -1,0 +1,518 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+mat,1,1,"The Genealogy of Jesus the Messiah(A)(B)(C)",1,1
+mat,1,2,"The Genealogy of Jesus the Messiah(A)(B)(C)",17,17
+mat,1,3,"Joseph Accepts Jesus as His Son",18,19
+mat,1,4,"Joseph Accepts Jesus as His Son",20,21
+mat,1,5,"Joseph Accepts Jesus as His Son",22,23
+mat,1,6,"Joseph Accepts Jesus as His Son",24,25
+mat,2,1,"The Magi Visit the Messiah",1,2
+mat,2,2,"The Magi Visit the Messiah",3,5
+mat,2,3,"The Magi Visit the Messiah",6,6
+mat,2,4,"The Magi Visit the Messiah",7,8
+mat,2,5,"The Magi Visit the Messiah",9,12
+mat,2,6,"The Escape to Egypt",13,13
+mat,2,7,"The Escape to Egypt",14,15
+mat,2,8,"The Escape to Egypt",16,17
+mat,2,9,"The Escape to Egypt",18,18
+mat,2,10,"The Return to Nazareth",19,20
+mat,2,11,"The Return to Nazareth",21,23
+mat,3,1,"John the Baptist Prepares the Way(A)",1,3
+mat,3,2,"John the Baptist Prepares the Way(A)",3,3
+mat,3,3,"John the Baptist Prepares the Way(A)",4,6
+mat,3,4,"John the Baptist Prepares the Way(A)",7,10
+mat,3,5,"John the Baptist Prepares the Way(A)",11,12
+mat,3,6,"The Baptism of Jesus(R)",13,14
+mat,3,7,"The Baptism of Jesus(R)",15,15
+mat,3,8,"The Baptism of Jesus(R)",16,17
+mat,4,1,"Jesus Is Tested in the Wilderness(A)",1,3
+mat,4,2,"Jesus Is Tested in the Wilderness(A)",4,4
+mat,4,3,"Jesus Is Tested in the Wilderness(A)",5,6
+mat,4,4,"Jesus Is Tested in the Wilderness(A)",6,6
+mat,4,5,"Jesus Is Tested in the Wilderness(A)",7,7
+mat,4,6,"Jesus Is Tested in the Wilderness(A)",8,9
+mat,4,7,"Jesus Is Tested in the Wilderness(A)",10,10
+mat,4,8,"Jesus Is Tested in the Wilderness(A)",11,11
+mat,4,9,"Jesus Begins to Preach",12,14
+mat,4,10,"Jesus Begins to Preach",15,16
+mat,4,11,"Jesus Begins to Preach",17,17
+mat,4,12,"Jesus Calls His First Disciples(V)",18,20
+mat,4,13,"Jesus Calls His First Disciples(V)",21,22
+mat,4,14,"Jesus Heals the Sick",23,25
+mat,5,1,"Introduction to the Sermon on the Mount",1,2
+mat,5,2,"The Beatitudes(A)",2,2
+mat,5,3,"The Beatitudes(A)",3,10
+mat,5,4,"The Beatitudes(A)",11,12
+mat,5,5,"Salt and Light",13,13
+mat,5,6,"Salt and Light",14,16
+mat,5,7,"The Fulfillment of the Law",17,20
+mat,5,8,"Murder(AA)",21,22
+mat,5,9,"Murder(AA)",23,24
+mat,5,10,"Murder(AA)",25,26
+mat,5,11,"Adultery",27,30
+mat,5,12,"Divorce",31,32
+mat,5,13,"Oaths",33,37
+mat,5,14,"Eye for Eye",38,42
+mat,5,15,"Love for Enemies",43,48
+mat,6,1,"Giving to the Needy",1,1
+mat,6,2,"Giving to the Needy",2,4
+mat,6,3,"Prayer(C)",5,8
+mat,6,4,"Prayer(C)",9,9
+mat,6,5,"Prayer(C)",9,13
+mat,6,6,"Prayer(C)",14,15
+mat,6,7,"Fasting",16,18
+mat,6,8,"Treasures in Heaven(U)",19,21
+mat,6,9,"Treasures in Heaven(U)",22,23
+mat,6,10,"Treasures in Heaven(U)",24,24
+mat,6,11,"Do Not Worry(AB)",25,27
+mat,6,12,"Do Not Worry(AB)",28,34
+mat,7,1,"Judging Others(A)",1,2
+mat,7,2,"Judging Others(A)",3,5
+mat,7,3,"Judging Others(A)",6,6
+mat,7,4,"Ask, Seek, Knock(D)",7,8
+mat,7,5,"Ask, Seek, Knock(D)",9,12
+mat,7,6,"The Narrow and Wide Gates",13,14
+mat,7,7,"True and False Prophets",15,20
+mat,7,8,"True and False Disciples",21,23
+mat,7,9,"The Wise and Foolish Builders(W)",24,27
+mat,7,10,"The Wise and Foolish Builders(W)",28,29
+mat,8,1,"Jesus Heals a Man With Leprosy(A)",1,2
+mat,8,2,"Jesus Heals a Man With Leprosy(A)",3,4
+mat,8,3,"The Faith of the Centurion(G)",5,6
+mat,8,4,"The Faith of the Centurion(G)",7,7
+mat,8,5,"The Faith of the Centurion(G)",8,9
+mat,8,6,"The Faith of the Centurion(G)",10,12
+mat,8,7,"The Faith of the Centurion(G)",13,13
+mat,8,8,"Jesus Heals Many(P)",14,15
+mat,8,9,"Jesus Heals Many(P)",16,17
+mat,8,10,"Jesus Heals Many(P)",17,17
+mat,8,11,"The Cost of Following Jesus(T)",18,19
+mat,8,12,"The Cost of Following Jesus(T)",20,20
+mat,8,13,"The Cost of Following Jesus(T)",21,21
+mat,8,14,"The Cost of Following Jesus(T)",22,22
+mat,8,15,"Jesus Calms the Storm(X)(Y)",23,25
+mat,8,16,"Jesus Calms the Storm(X)(Y)",26,26
+mat,8,17,"Jesus Calms the Storm(X)(Y)",27,27
+mat,8,18,"Jesus Restores Two Demon-Possessed Men(AB)",28,29
+mat,8,19,"Jesus Restores Two Demon-Possessed Men(AB)",30,31
+mat,8,20,"Jesus Restores Two Demon-Possessed Men(AB)",32,34
+mat,9,1,"Jesus Forgives and Heals a Paralyzed Man(A)",1,2
+mat,9,2,"Jesus Forgives and Heals a Paralyzed Man(A)",3,3
+mat,9,3,"Jesus Forgives and Heals a Paralyzed Man(A)",4,8
+mat,9,4,"The Calling of Matthew(K)",9,9
+mat,9,5,"The Calling of Matthew(K)",10,11
+mat,9,6,"The Calling of Matthew(K)",12,13
+mat,9,7,"Jesus Questioned About Fasting(P)",14,14
+mat,9,8,"Jesus Questioned About Fasting(P)",15,15
+mat,9,9,"Jesus Questioned About Fasting(P)",16,17
+mat,9,10,"Jesus Raises a Dead Girl and Heals a Sick Woman(U)",18,19
+mat,9,11,"Jesus Raises a Dead Girl and Heals a Sick Woman(U)",20,21
+mat,9,12,"Jesus Raises a Dead Girl and Heals a Sick Woman(U)",22,22
+mat,9,13,"Jesus Raises a Dead Girl and Heals a Sick Woman(U)",23,26
+mat,9,14,"Jesus Heals the Blind and the Mute",27,27
+mat,9,15,"Jesus Heals the Blind and the Mute",28,28
+mat,9,16,"Jesus Heals the Blind and the Mute",28,28
+mat,9,17,"Jesus Heals the Blind and the Mute",29,31
+mat,9,18,"Jesus Heals the Blind and the Mute",32,33
+mat,9,19,"Jesus Heals the Blind and the Mute",34,34
+mat,9,20,"The Workers Are Few",35,38
+mat,10,1,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",1,1
+mat,10,2,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",2,4
+mat,10,3,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",5,8
+mat,10,4,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",9,15
+mat,10,5,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",16,20
+mat,10,6,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",21,23
+mat,10,7,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",24,25
+mat,10,8,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",26,31
+mat,10,9,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",32,33
+mat,10,10,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",34,35
+mat,10,11,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",35,36
+mat,10,12,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",37,39
+mat,10,13,"Jesus Sends Out the Twelve(A)(B)(C)(D)(E)",40,42
+mat,11,1,"Jesus and John the Baptist(A)",1,1
+mat,11,2,"Jesus and John the Baptist(A)",2,3
+mat,11,3,"Jesus and John the Baptist(A)",4,6
+mat,11,4,"Jesus and John the Baptist(A)",7,10
+mat,11,5,"Jesus and John the Baptist(A)",10,10
+mat,11,6,"Jesus and John the Baptist(A)",11,15
+mat,11,7,"Jesus and John the Baptist(A)",16,16
+mat,11,8,"Jesus and John the Baptist(A)",17,17
+mat,11,9,"Jesus and John the Baptist(A)",18,19
+mat,11,10,"Woe on Unrepentant Towns(S)",20,24
+mat,11,11,"The Father Revealed in the Son(AA)",25,26
+mat,11,12,"The Father Revealed in the Son(AA)",27,27
+mat,11,13,"The Father Revealed in the Son(AA)",28,30
+mat,12,1,"Jesus Is Lord of the Sabbath(A)(B)",1,2
+mat,12,2,"Jesus Is Lord of the Sabbath(A)(B)",3,8
+mat,12,3,"Jesus Is Lord of the Sabbath(A)(B)",9,10
+mat,12,4,"Jesus Is Lord of the Sabbath(A)(B)",11,12
+mat,12,5,"Jesus Is Lord of the Sabbath(A)(B)",13,14
+mat,12,6,"God’s Chosen Servant",15,17
+mat,12,7,"God’s Chosen Servant",18,21
+mat,12,8,"Jesus and Beelzebul(V)",22,23
+mat,12,9,"Jesus and Beelzebul(V)",24,24
+mat,12,10,"Jesus and Beelzebul(V)",25,28
+mat,12,11,"Jesus and Beelzebul(V)",29,29
+mat,12,12,"Jesus and Beelzebul(V)",30,32
+mat,12,13,"Jesus and Beelzebul(V)",33,37
+mat,12,14,"The Sign of Jonah(AN)(AO)",38,38
+mat,12,15,"The Sign of Jonah(AN)(AO)",39,42
+mat,12,16,"The Sign of Jonah(AN)(AO)",43,45
+mat,12,17,"Jesus’ Mother and Brothers(AZ)",46,47
+mat,12,18,"Jesus’ Mother and Brothers(AZ)",48,50
+mat,13,1,"The Parable of the Sower(A)(B)(C)",1,9
+mat,13,2,"The Parable of the Sower(A)(B)(C)",10,10
+mat,13,3,"The Parable of the Sower(A)(B)(C)",11,13
+mat,13,4,"The Parable of the Sower(A)(B)(C)",13,13
+mat,13,5,"The Parable of the Sower(A)(B)(C)",14,14
+mat,13,6,"The Parable of the Sower(A)(B)(C)",14,15
+mat,13,7,"The Parable of the Sower(A)(B)(C)",16,17
+mat,13,8,"The Parable of the Sower(A)(B)(C)",18,23
+mat,13,9,"The Parable of the Weeds",24,26
+mat,13,10,"The Parable of the Weeds",27,27
+mat,13,11,"The Parable of the Weeds",28,28
+mat,13,12,"The Parable of the Weeds",28,28
+mat,13,13,"The Parable of the Weeds",29,30
+mat,13,14,"The Parables of the Mustard Seed and the Yeast(W)(X)",31,32
+mat,13,15,"The Parables of the Mustard Seed and the Yeast(W)(X)",33,33
+mat,13,16,"The Parables of the Mustard Seed and the Yeast(W)(X)",34,35
+mat,13,17,"The Parables of the Mustard Seed and the Yeast(W)(X)",35,35
+mat,13,18,"The Parable of the Weeds Explained",36,36
+mat,13,19,"The Parable of the Weeds Explained",37,39
+mat,13,20,"The Parable of the Weeds Explained",40,43
+mat,13,21,"The Parables of the Hidden Treasure and the Pearl",44,44
+mat,13,22,"The Parables of the Hidden Treasure and the Pearl",45,46
+mat,13,23,"The Parable of the Net",47,50
+mat,13,24,"The Parable of the Net",51,51
+mat,13,25,"The Parable of the Net",51,51
+mat,13,26,"The Parable of the Net",52,52
+mat,13,27,"A Prophet Without Honor(AZ)",53,57
+mat,13,28,"A Prophet Without Honor(AZ)",57,57
+mat,13,29,"A Prophet Without Honor(AZ)",58,58
+mat,14,1,"John the Baptist Beheaded(A)",1,2
+mat,14,2,"John the Baptist Beheaded(A)",3,5
+mat,14,3,"John the Baptist Beheaded(A)",6,12
+mat,14,4,"Jesus Feeds the Five Thousand(K)(L)",13,14
+mat,14,5,"Jesus Feeds the Five Thousand(K)(L)",15,15
+mat,14,6,"Jesus Feeds the Five Thousand(K)(L)",16,16
+mat,14,7,"Jesus Feeds the Five Thousand(K)(L)",17,17
+mat,14,8,"Jesus Feeds the Five Thousand(K)(L)",18,21
+mat,14,9,"Jesus Walks on the Water(Q)(R)",22,24
+mat,14,10,"Jesus Walks on the Water(Q)(R)",25,26
+mat,14,11,"Jesus Walks on the Water(Q)(R)",27,27
+mat,14,12,"Jesus Walks on the Water(Q)(R)",28,28
+mat,14,13,"Jesus Walks on the Water(Q)(R)",29,29
+mat,14,14,"Jesus Walks on the Water(Q)(R)",29,30
+mat,14,15,"Jesus Walks on the Water(Q)(R)",31,31
+mat,14,16,"Jesus Walks on the Water(Q)(R)",32,33
+mat,14,17,"Jesus Walks on the Water(Q)(R)",34,36
+mat,15,1,"That Which Defiles(A)",1,2
+mat,15,2,"That Which Defiles(A)",3,7
+mat,15,3,"That Which Defiles(A)",8,9
+mat,15,4,"That Which Defiles(A)",10,11
+mat,15,5,"That Which Defiles(A)",12,12
+mat,15,6,"That Which Defiles(A)",13,14
+mat,15,7,"That Which Defiles(A)",15,15
+mat,15,8,"That Which Defiles(A)",16,20
+mat,15,9,"The Faith of a Canaanite Woman(Q)",21,22
+mat,15,10,"The Faith of a Canaanite Woman(Q)",23,23
+mat,15,11,"The Faith of a Canaanite Woman(Q)",24,24
+mat,15,12,"The Faith of a Canaanite Woman(Q)",25,25
+mat,15,13,"The Faith of a Canaanite Woman(Q)",26,26
+mat,15,14,"The Faith of a Canaanite Woman(Q)",27,27
+mat,15,15,"The Faith of a Canaanite Woman(Q)",28,28
+mat,15,16,"Jesus Feeds the Four Thousand(X)(Y)(Z)",29,31
+mat,15,17,"Jesus Feeds the Four Thousand(X)(Y)(Z)",32,32
+mat,15,18,"Jesus Feeds the Four Thousand(X)(Y)(Z)",33,33
+mat,15,19,"Jesus Feeds the Four Thousand(X)(Y)(Z)",34,34
+mat,15,20,"Jesus Feeds the Four Thousand(X)(Y)(Z)",34,34
+mat,15,21,"Jesus Feeds the Four Thousand(X)(Y)(Z)",35,39
+mat,16,1,"The Demand for a Sign(A)",1,1
+mat,16,2,"The Demand for a Sign(A)",2,4
+mat,16,3,"The Yeast of the Pharisees and Sadducees",5,6
+mat,16,4,"The Yeast of the Pharisees and Sadducees",7,7
+mat,16,5,"The Yeast of the Pharisees and Sadducees",8,12
+mat,16,6,"Peter Declares That Jesus Is the Messiah(K)",13,13
+mat,16,7,"Peter Declares That Jesus Is the Messiah(K)",14,14
+mat,16,8,"Peter Declares That Jesus Is the Messiah(K)",15,15
+mat,16,9,"Peter Declares That Jesus Is the Messiah(K)",16,16
+mat,16,10,"Peter Declares That Jesus Is the Messiah(K)",17,20
+mat,16,11,"Jesus Predicts His Death(V)",21,21
+mat,16,12,"Jesus Predicts His Death(V)",22,22
+mat,16,13,"Jesus Predicts His Death(V)",23,23
+mat,16,14,"Jesus Predicts His Death(V)",24,27
+mat,16,15,"Jesus Predicts His Death(V)",28,28
+mat,17,1,"The Transfiguration(A)(B)",1,3
+mat,17,2,"The Transfiguration(A)(B)",4,4
+mat,17,3,"The Transfiguration(A)(B)",5,5
+mat,17,4,"The Transfiguration(A)(B)",6,8
+mat,17,5,"The Transfiguration(A)(B)",9,9
+mat,17,6,"The Transfiguration(A)(B)",10,10
+mat,17,7,"The Transfiguration(A)(B)",11,13
+mat,17,8,"Jesus Heals a Demon-Possessed Boy(O)",14,16
+mat,17,9,"Jesus Heals a Demon-Possessed Boy(O)",17,18
+mat,17,10,"Jesus Heals a Demon-Possessed Boy(O)",19,19
+mat,17,11,"Jesus Heals a Demon-Possessed Boy(O)",20,21
+mat,17,12,"Jesus Predicts His Death a Second Time",22,23
+mat,17,13,"The Temple Tax",24,24
+mat,17,14,"The Temple Tax",25,25
+mat,17,15,"The Temple Tax",25,25
+mat,17,16,"The Temple Tax",26,26
+mat,17,17,"The Temple Tax",26,27
+mat,18,1,"The Greatest in the Kingdom of Heaven(A)",1,1
+mat,18,2,"The Greatest in the Kingdom of Heaven(A)",2,5
+mat,18,3,"Causing to Stumble",6,9
+mat,18,4,"The Parable of the Wandering Sheep(K)",10,11
+mat,18,5,"The Parable of the Wandering Sheep(K)",12,14
+mat,18,6,"Dealing With Sin in the Church",15,17
+mat,18,7,"Dealing With Sin in the Church",18,18
+mat,18,8,"Dealing With Sin in the Church",19,20
+mat,18,9,"The Parable of the Unmerciful Servant",21,21
+mat,18,10,"The Parable of the Unmerciful Servant",22,22
+mat,18,11,"The Parable of the Unmerciful Servant",23,25
+mat,18,12,"The Parable of the Unmerciful Servant",26,27
+mat,18,13,"The Parable of the Unmerciful Servant",28,28
+mat,18,14,"The Parable of the Unmerciful Servant",29,29
+mat,18,15,"The Parable of the Unmerciful Servant",30,31
+mat,18,16,"The Parable of the Unmerciful Servant",32,34
+mat,18,17,"The Parable of the Unmerciful Servant",35,35
+mat,19,1,"Divorce(A)",1,2
+mat,19,2,"Divorce(A)",3,3
+mat,19,3,"Divorce(A)",4,6
+mat,19,4,"Divorce(A)",7,7
+mat,19,5,"Divorce(A)",8,9
+mat,19,6,"Divorce(A)",10,10
+mat,19,7,"Divorce(A)",11,12
+mat,19,8,"The Little Children and Jesus(J)",13,13
+mat,19,9,"The Little Children and Jesus(J)",14,15
+mat,19,10,"The Rich and the Kingdom of God(N)",16,16
+mat,19,11,"The Rich and the Kingdom of God(N)",17,17
+mat,19,12,"The Rich and the Kingdom of God(N)",18,18
+mat,19,13,"The Rich and the Kingdom of God(N)",18,19
+mat,19,14,"The Rich and the Kingdom of God(N)",20,20
+mat,19,15,"The Rich and the Kingdom of God(N)",21,21
+mat,19,16,"The Rich and the Kingdom of God(N)",22,22
+mat,19,17,"The Rich and the Kingdom of God(N)",23,24
+mat,19,18,"The Rich and the Kingdom of God(N)",25,25
+mat,19,19,"The Rich and the Kingdom of God(N)",26,26
+mat,19,20,"The Rich and the Kingdom of God(N)",27,27
+mat,19,21,"The Rich and the Kingdom of God(N)",28,30
+mat,20,1,"The Parable of the Workers in the Vineyard",1,2
+mat,20,2,"The Parable of the Workers in the Vineyard",3,5
+mat,20,3,"The Parable of the Workers in the Vineyard",5,6
+mat,20,4,"The Parable of the Workers in the Vineyard",7,7
+mat,20,5,"The Parable of the Workers in the Vineyard",7,7
+mat,20,6,"The Parable of the Workers in the Vineyard",8,8
+mat,20,7,"The Parable of the Workers in the Vineyard",9,12
+mat,20,8,"The Parable of the Workers in the Vineyard",13,15
+mat,20,9,"The Parable of the Workers in the Vineyard",16,16
+mat,20,10,"Jesus Predicts His Death a Third Time(I)",17,19
+mat,20,11,"A Mother’s Request(Q)",20,20
+mat,20,12,"A Mother’s Request(Q)",21,21
+mat,20,13,"A Mother’s Request(Q)",21,21
+mat,20,14,"A Mother’s Request(Q)",22,22
+mat,20,15,"A Mother’s Request(Q)",22,22
+mat,20,16,"A Mother’s Request(Q)",23,23
+mat,20,17,"A Mother’s Request(Q)",24,28
+mat,20,18,"Two Blind Men Receive Sight(AB)",29,30
+mat,20,19,"Two Blind Men Receive Sight(AB)",31,31
+mat,20,20,"Two Blind Men Receive Sight(AB)",32,32
+mat,20,21,"Two Blind Men Receive Sight(AB)",33,33
+mat,20,22,"Two Blind Men Receive Sight(AB)",34,34
+mat,21,1,"Jesus Comes to Jerusalem as King(A)(B)",1,3
+mat,21,2,"Jesus Comes to Jerusalem as King(A)(B)",4,4
+mat,21,3,"Jesus Comes to Jerusalem as King(A)(B)",5,5
+mat,21,4,"Jesus Comes to Jerusalem as King(A)(B)",6,9
+mat,21,5,"Jesus Comes to Jerusalem as King(A)(B)",9,9
+mat,21,6,"Jesus Comes to Jerusalem as King(A)(B)",9,9
+mat,21,7,"Jesus Comes to Jerusalem as King(A)(B)",9,9
+mat,21,8,"Jesus Comes to Jerusalem as King(A)(B)",10,10
+mat,21,9,"Jesus Comes to Jerusalem as King(A)(B)",11,11
+mat,21,10,"Jesus at the Temple(K)",12,13
+mat,21,11,"Jesus at the Temple(K)",14,15
+mat,21,12,"Jesus at the Temple(K)",16,16
+mat,21,13,"Jesus at the Temple(K)",16,16
+mat,21,14,"Jesus at the Temple(K)",16,16
+mat,21,15,"Jesus at the Temple(K)",17,17
+mat,21,16,"Jesus Curses a Fig Tree(V)",18,19
+mat,21,17,"Jesus Curses a Fig Tree(V)",20,20
+mat,21,18,"Jesus Curses a Fig Tree(V)",21,22
+mat,21,19,"The Authority of Jesus Questioned(Z)",23,23
+mat,21,20,"The Authority of Jesus Questioned(Z)",24,25
+mat,21,21,"The Authority of Jesus Questioned(Z)",25,26
+mat,21,22,"The Authority of Jesus Questioned(Z)",27,27
+mat,21,23,"The Authority of Jesus Questioned(Z)",27,27
+mat,21,24,"The Parable of the Two Sons",28,28
+mat,21,25,"The Parable of the Two Sons",29,29
+mat,21,26,"The Parable of the Two Sons",30,30
+mat,21,27,"The Parable of the Two Sons",31,31
+mat,21,28,"The Parable of the Two Sons",31,31
+mat,21,29,"The Parable of the Two Sons",31,32
+mat,21,30,"The Parable of the Tenants(AJ)",33,34
+mat,21,31,"The Parable of the Tenants(AJ)",35,37
+mat,21,32,"The Parable of the Tenants(AJ)",38,39
+mat,21,33,"The Parable of the Tenants(AJ)",40,40
+mat,21,34,"The Parable of the Tenants(AJ)",41,41
+mat,21,35,"The Parable of the Tenants(AJ)",42,42
+mat,21,36,"The Parable of the Tenants(AJ)",42,42
+mat,21,37,"The Parable of the Tenants(AJ)",43,44
+mat,21,38,"The Parable of the Tenants(AJ)",45,46
+mat,22,1,"The Parable of the Wedding Banquet(A)",1,3
+mat,22,2,"The Parable of the Wedding Banquet(A)",4,4
+mat,22,3,"The Parable of the Wedding Banquet(A)",5,7
+mat,22,4,"The Parable of the Wedding Banquet(A)",8,10
+mat,22,5,"The Parable of the Wedding Banquet(A)",11,12
+mat,22,6,"The Parable of the Wedding Banquet(A)",13,13
+mat,22,7,"The Parable of the Wedding Banquet(A)",14,14
+mat,22,8,"Paying the Imperial Tax to Caesar(K)",15,17
+mat,22,9,"Paying the Imperial Tax to Caesar(K)",18,20
+mat,22,10,"Paying the Imperial Tax to Caesar(K)",21,21
+mat,22,11,"Paying the Imperial Tax to Caesar(K)",21,21
+mat,22,12,"Paying the Imperial Tax to Caesar(K)",22,22
+mat,22,13,"Marriage at the Resurrection(P)",23,28
+mat,22,14,"Marriage at the Resurrection(P)",29,32
+mat,22,15,"Marriage at the Resurrection(P)",33,33
+mat,22,16,"The Greatest Commandment(X)",34,36
+mat,22,17,"The Greatest Commandment(X)",37,40
+mat,22,18,"Whose Son Is the Messiah?(AD)",41,42
+mat,22,19,"Whose Son Is the Messiah?(AD)",42,42
+mat,22,20,"Whose Son Is the Messiah?(AD)",43,43
+mat,22,21,"Whose Son Is the Messiah?(AD)",44,44
+mat,22,22,"Whose Son Is the Messiah?(AD)",45,46
+mat,23,1,"A Warning Against Hypocrisy(A)(B)",1,4
+mat,23,2,"A Warning Against Hypocrisy(A)(B)",5,7
+mat,23,3,"A Warning Against Hypocrisy(A)(B)",8,12
+mat,23,4,"Seven Woes on the Teachers of the Law and the Pharisees",13,14
+mat,23,5,"Seven Woes on the Teachers of the Law and the Pharisees",15,15
+mat,23,6,"Seven Woes on the Teachers of the Law and the Pharisees",16,22
+mat,23,7,"Seven Woes on the Teachers of the Law and the Pharisees",23,24
+mat,23,8,"Seven Woes on the Teachers of the Law and the Pharisees",25,26
+mat,23,9,"Seven Woes on the Teachers of the Law and the Pharisees",27,28
+mat,23,10,"Seven Woes on the Teachers of the Law and the Pharisees",29,32
+mat,23,11,"Seven Woes on the Teachers of the Law and the Pharisees",33,36
+mat,23,12,"Seven Woes on the Teachers of the Law and the Pharisees",37,39
+mat,24,1,"The Destruction of the Temple and Signs of the End Times(A)",1,2
+mat,24,2,"The Destruction of the Temple and Signs of the End Times(A)",3,3
+mat,24,3,"The Destruction of the Temple and Signs of the End Times(A)",4,8
+mat,24,4,"The Destruction of the Temple and Signs of the End Times(A)",9,14
+mat,24,5,"The Destruction of the Temple and Signs of the End Times(A)",15,21
+mat,24,6,"The Destruction of the Temple and Signs of the End Times(A)",22,25
+mat,24,7,"The Destruction of the Temple and Signs of the End Times(A)",26,28
+mat,24,8,"The Destruction of the Temple and Signs of the End Times(A)",29,29
+mat,24,9,"The Destruction of the Temple and Signs of the End Times(A)",29,29
+mat,24,10,"The Destruction of the Temple and Signs of the End Times(A)",30,31
+mat,24,11,"The Destruction of the Temple and Signs of the End Times(A)",32,35
+mat,24,12,"The Day and Hour Unknown(AL)(AM)",36,41
+mat,24,13,"The Day and Hour Unknown(AL)(AM)",42,44
+mat,24,14,"The Day and Hour Unknown(AL)(AM)",45,51
+mat,25,1,"The Parable of the Ten Virgins",1,5
+mat,25,2,"The Parable of the Ten Virgins",6,6
+mat,25,3,"The Parable of the Ten Virgins",7,8
+mat,25,4,"The Parable of the Ten Virgins",9,9
+mat,25,5,"The Parable of the Ten Virgins",10,10
+mat,25,6,"The Parable of the Ten Virgins",11,11
+mat,25,7,"The Parable of the Ten Virgins",12,12
+mat,25,8,"The Parable of the Ten Virgins",13,13
+mat,25,9,"The Parable of the Bags of Gold(J)",14,18
+mat,25,10,"The Parable of the Bags of Gold(J)",19,20
+mat,25,11,"The Parable of the Bags of Gold(J)",21,21
+mat,25,12,"The Parable of the Bags of Gold(J)",22,22
+mat,25,13,"The Parable of the Bags of Gold(J)",23,23
+mat,25,14,"The Parable of the Bags of Gold(J)",24,25
+mat,25,15,"The Parable of the Bags of Gold(J)",26,27
+mat,25,16,"The Parable of the Bags of Gold(J)",28,30
+mat,25,17,"The Sheep and the Goats",31,33
+mat,25,18,"The Sheep and the Goats",34,36
+mat,25,19,"The Sheep and the Goats",37,39
+mat,25,20,"The Sheep and the Goats",40,40
+mat,25,21,"The Sheep and the Goats",41,43
+mat,25,22,"The Sheep and the Goats",44,44
+mat,25,23,"The Sheep and the Goats",45,45
+mat,25,24,"The Sheep and the Goats",46,46
+mat,26,1,"The Plot Against Jesus(A)",1,2
+mat,26,2,"The Plot Against Jesus(A)",3,5
+mat,26,3,"Jesus Anointed at Bethany(H)(I)",6,7
+mat,26,4,"Jesus Anointed at Bethany(H)(I)",8,9
+mat,26,5,"Jesus Anointed at Bethany(H)(I)",10,13
+mat,26,6,"Judas Agrees to Betray Jesus(M)",14,16
+mat,26,7,"The Last Supper(P)(Q)(R)",17,17
+mat,26,8,"The Last Supper(P)(Q)(R)",18,19
+mat,26,9,"The Last Supper(P)(Q)(R)",20,21
+mat,26,10,"The Last Supper(P)(Q)(R)",22,22
+mat,26,11,"The Last Supper(P)(Q)(R)",23,24
+mat,26,12,"The Last Supper(P)(Q)(R)",25,25
+mat,26,13,"The Last Supper(P)(Q)(R)",25,25
+mat,26,14,"The Last Supper(P)(Q)(R)",26,26
+mat,26,15,"The Last Supper(P)(Q)(R)",27,29
+mat,26,16,"The Last Supper(P)(Q)(R)",30,30
+mat,26,17,"Jesus Predicts Peter’s Denial(AG)",31,31
+mat,26,18,"Jesus Predicts Peter’s Denial(AG)",31,31
+mat,26,19,"Jesus Predicts Peter’s Denial(AG)",32,32
+mat,26,20,"Jesus Predicts Peter’s Denial(AG)",33,33
+mat,26,21,"Jesus Predicts Peter’s Denial(AG)",34,34
+mat,26,22,"Jesus Predicts Peter’s Denial(AG)",35,35
+mat,26,23,"Gethsemane(AM)",36,38
+mat,26,24,"Gethsemane(AM)",39,39
+mat,26,25,"Gethsemane(AM)",40,41
+mat,26,26,"Gethsemane(AM)",42,42
+mat,26,27,"Gethsemane(AM)",43,44
+mat,26,28,"Gethsemane(AM)",45,46
+mat,26,29,"Jesus Arrested(AW)",47,49
+mat,26,30,"Jesus Arrested(AW)",50,50
+mat,26,31,"Jesus Arrested(AW)",50,51
+mat,26,32,"Jesus Arrested(AW)",52,54
+mat,26,33,"Jesus Arrested(AW)",55,56
+mat,26,34,"Jesus Before the Sanhedrin(BH)",57,58
+mat,26,35,"Jesus Before the Sanhedrin(BH)",59,60
+mat,26,36,"Jesus Before the Sanhedrin(BH)",60,61
+mat,26,37,"Jesus Before the Sanhedrin(BH)",62,63
+mat,26,38,"Jesus Before the Sanhedrin(BH)",63,63
+mat,26,39,"Jesus Before the Sanhedrin(BH)",64,64
+mat,26,40,"Jesus Before the Sanhedrin(BH)",65,66
+mat,26,41,"Jesus Before the Sanhedrin(BH)",66,66
+mat,26,42,"Jesus Before the Sanhedrin(BH)",67,68
+mat,26,43,"Peter Disowns Jesus(CB)",69,69
+mat,26,44,"Peter Disowns Jesus(CB)",70,70
+mat,26,45,"Peter Disowns Jesus(CB)",71,71
+mat,26,46,"Peter Disowns Jesus(CB)",72,72
+mat,26,47,"Peter Disowns Jesus(CB)",73,73
+mat,26,48,"Peter Disowns Jesus(CB)",74,74
+mat,26,49,"Peter Disowns Jesus(CB)",74,75
+mat,27,1,"Judas Hangs Himself",1,2
+mat,27,2,"Judas Hangs Himself",3,4
+mat,27,3,"Judas Hangs Himself",4,4
+mat,27,4,"Judas Hangs Himself",5,5
+mat,27,5,"Judas Hangs Himself",6,10
+mat,27,6,"Jesus Before Pilate(L)",11,11
+mat,27,7,"Jesus Before Pilate(L)",11,11
+mat,27,8,"Jesus Before Pilate(L)",12,14
+mat,27,9,"Jesus Before Pilate(L)",15,18
+mat,27,10,"Jesus Before Pilate(L)",19,19
+mat,27,11,"Jesus Before Pilate(L)",20,20
+mat,27,12,"Jesus Before Pilate(L)",21,21
+mat,27,13,"Jesus Before Pilate(L)",21,21
+mat,27,14,"Jesus Before Pilate(L)",22,22
+mat,27,15,"Jesus Before Pilate(L)",22,22
+mat,27,16,"Jesus Before Pilate(L)",23,23
+mat,27,17,"Jesus Before Pilate(L)",23,23
+mat,27,18,"Jesus Before Pilate(L)",24,24
+mat,27,19,"Jesus Before Pilate(L)",25,25
+mat,27,20,"Jesus Before Pilate(L)",26,26
+mat,27,21,"The Soldiers Mock Jesus(AD)",27,31
+mat,27,22,"The Crucifixion of Jesus(AJ)",32,37
+mat,27,23,"The Crucifixion of Jesus(AJ)",38,44
+mat,27,24,"The Death of Jesus(AZ)",45,46
+mat,27,25,"The Death of Jesus(AZ)",47,47
+mat,27,26,"The Death of Jesus(AZ)",48,49
+mat,27,27,"The Death of Jesus(AZ)",50,50
+mat,27,28,"The Death of Jesus(AZ)",51,53
+mat,27,29,"The Death of Jesus(AZ)",54,54
+mat,27,30,"The Death of Jesus(AZ)",55,56
+mat,27,31,"The Burial of Jesus(BL)",57,61
+mat,27,32,"The Guard at the Tomb",62,64
+mat,27,33,"The Guard at the Tomb",65,66
+mat,28,1,"Jesus Has Risen(A)",1,1
+mat,28,2,"Jesus Has Risen(A)",2,4
+mat,28,3,"Jesus Has Risen(A)",5,7
+mat,28,4,"Jesus Has Risen(A)",8,10
+mat,28,5,"The Guards’ Report",11,15
+mat,28,6,"The Great Commission",16,20

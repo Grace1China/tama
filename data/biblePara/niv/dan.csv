@@ -1,0 +1,141 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+dan,1,1,"Daniel’s Training in Babylon",1,2
+dan,1,2,"Daniel’s Training in Babylon",3,5
+dan,1,3,"Daniel’s Training in Babylon",6,7
+dan,1,4,"Daniel’s Training in Babylon",8,10
+dan,1,5,"Daniel’s Training in Babylon",11,14
+dan,1,6,"Daniel’s Training in Babylon",15,16
+dan,1,7,"Daniel’s Training in Babylon",17,17
+dan,1,8,"Daniel’s Training in Babylon",18,20
+dan,1,9,"Daniel’s Training in Babylon",21,21
+dan,2,1,"Nebuchadnezzar’s Dream",1,3
+dan,2,2,"Nebuchadnezzar’s Dream",4,4
+dan,2,3,"Nebuchadnezzar’s Dream",5,6
+dan,2,4,"Nebuchadnezzar’s Dream",7,7
+dan,2,5,"Nebuchadnezzar’s Dream",8,9
+dan,2,6,"Nebuchadnezzar’s Dream",10,11
+dan,2,7,"Nebuchadnezzar’s Dream",12,13
+dan,2,8,"Nebuchadnezzar’s Dream",14,16
+dan,2,9,"Nebuchadnezzar’s Dream",17,20
+dan,2,10,"Nebuchadnezzar’s Dream",20,23
+dan,2,11,"Daniel Interprets the Dream",24,24
+dan,2,12,"Daniel Interprets the Dream",25,25
+dan,2,13,"Daniel Interprets the Dream",26,26
+dan,2,14,"Daniel Interprets the Dream",27,28
+dan,2,15,"Daniel Interprets the Dream",29,30
+dan,2,16,"Daniel Interprets the Dream",31,35
+dan,2,17,"Daniel Interprets the Dream",36,38
+dan,2,18,"Daniel Interprets the Dream",39,43
+dan,2,19,"Daniel Interprets the Dream",44,45
+dan,2,20,"Daniel Interprets the Dream",45,45
+dan,2,21,"Daniel Interprets the Dream",46,47
+dan,2,22,"Daniel Interprets the Dream",48,49
+dan,3,1,"The Image of Gold and the Blazing Furnace",1,3
+dan,3,2,"The Image of Gold and the Blazing Furnace",4,6
+dan,3,3,"The Image of Gold and the Blazing Furnace",7,7
+dan,3,4,"The Image of Gold and the Blazing Furnace",8,12
+dan,3,5,"The Image of Gold and the Blazing Furnace",13,15
+dan,3,6,"The Image of Gold and the Blazing Furnace",16,18
+dan,3,7,"The Image of Gold and the Blazing Furnace",19,23
+dan,3,8,"The Image of Gold and the Blazing Furnace",24,24
+dan,3,9,"The Image of Gold and the Blazing Furnace",24,24
+dan,3,10,"The Image of Gold and the Blazing Furnace",25,25
+dan,3,11,"The Image of Gold and the Blazing Furnace",26,26
+dan,3,12,"The Image of Gold and the Blazing Furnace",26,27
+dan,3,13,"The Image of Gold and the Blazing Furnace",28,29
+dan,3,14,"The Image of Gold and the Blazing Furnace",30,30
+dan,4,1,"Nebuchadnezzar’s Dream of a Tree",3,3
+dan,4,2,"Nebuchadnezzar’s Dream of a Tree",34,35
+dan,5,1,"The Writing on the Wall",1,4
+dan,5,2,"The Writing on the Wall",5,6
+dan,5,3,"The Writing on the Wall",7,7
+dan,5,4,"The Writing on the Wall",8,9
+dan,5,5,"The Writing on the Wall",10,12
+dan,5,6,"The Writing on the Wall",13,16
+dan,5,7,"The Writing on the Wall",17,17
+dan,5,8,"The Writing on the Wall",18,21
+dan,5,9,"The Writing on the Wall",22,24
+dan,5,10,"The Writing on the Wall",25,25
+dan,5,11,"The Writing on the Wall",26,26
+dan,5,12,"The Writing on the Wall",29,29
+dan,5,13,"The Writing on the Wall",30,31
+dan,6,1,"Daniel in the Den of Lions",1,5
+dan,6,2,"Daniel in the Den of Lions",6,9
+dan,6,3,"Daniel in the Den of Lions",10,12
+dan,6,4,"Daniel in the Den of Lions",12,12
+dan,6,5,"Daniel in the Den of Lions",13,14
+dan,6,6,"Daniel in the Den of Lions",15,15
+dan,6,7,"Daniel in the Den of Lions",16,16
+dan,6,8,"Daniel in the Den of Lions",17,18
+dan,6,9,"Daniel in the Den of Lions",19,20
+dan,6,10,"Daniel in the Den of Lions",21,22
+dan,6,11,"Daniel in the Den of Lions",23,23
+dan,6,12,"Daniel in the Den of Lions",24,24
+dan,6,13,"Daniel in the Den of Lions",25,25
+dan,6,14,"Daniel in the Den of Lions",26,27
+dan,6,15,"Daniel in the Den of Lions",28,28
+dan,7,1,"Daniel’s Dream of Four Beasts",1,1
+dan,7,2,"Daniel’s Dream of Four Beasts",2,3
+dan,7,3,"Daniel’s Dream of Four Beasts",4,4
+dan,7,4,"Daniel’s Dream of Four Beasts",5,5
+dan,7,5,"Daniel’s Dream of Four Beasts",6,6
+dan,7,6,"Daniel’s Dream of Four Beasts",7,7
+dan,7,7,"Daniel’s Dream of Four Beasts",8,8
+dan,7,8,"Daniel’s Dream of Four Beasts",9,9
+dan,7,9,"Daniel’s Dream of Four Beasts",9,10
+dan,7,10,"Daniel’s Dream of Four Beasts",11,12
+dan,7,11,"Daniel’s Dream of Four Beasts",13,14
+dan,7,12,"The Interpretation of the Dream",15,16
+dan,7,13,"The Interpretation of the Dream",16,18
+dan,7,14,"The Interpretation of the Dream",19,22
+dan,7,15,"The Interpretation of the Dream",23,25
+dan,7,16,"The Interpretation of the Dream",26,27
+dan,7,17,"The Interpretation of the Dream",28,28
+dan,8,1,"Daniel’s Vision of a Ram and a Goat",1,4
+dan,8,2,"Daniel’s Vision of a Ram and a Goat",5,8
+dan,8,3,"Daniel’s Vision of a Ram and a Goat",9,12
+dan,8,4,"Daniel’s Vision of a Ram and a Goat",13,13
+dan,8,5,"Daniel’s Vision of a Ram and a Goat",14,14
+dan,8,6,"The Interpretation of the Vision",15,16
+dan,8,7,"The Interpretation of the Vision",17,17
+dan,8,8,"The Interpretation of the Vision",18,18
+dan,8,9,"The Interpretation of the Vision",19,22
+dan,8,10,"The Interpretation of the Vision",23,25
+dan,8,11,"The Interpretation of the Vision",26,26
+dan,8,12,"The Interpretation of the Vision",27,27
+dan,9,1,"Daniel’s Prayer",1,3
+dan,9,2,"Daniel’s Prayer",4,4
+dan,9,3,"The Seventy “Sevens”",20,23
+dan,9,4,"The Seventy “Sevens”",24,24
+dan,9,5,"The Seventy “Sevens”",25,27
+dan,10,1,"Daniel’s Vision of a Man",1,1
+dan,10,2,"Daniel’s Vision of a Man",2,3
+dan,10,3,"Daniel’s Vision of a Man",4,6
+dan,10,4,"Daniel’s Vision of a Man",7,9
+dan,10,5,"Daniel’s Vision of a Man",10,11
+dan,10,6,"Daniel’s Vision of a Man",12,14
+dan,10,7,"Daniel’s Vision of a Man",15,17
+dan,10,8,"Daniel’s Vision of a Man",18,19
+dan,10,9,"Daniel’s Vision of a Man",19,19
+dan,10,10,"Daniel’s Vision of a Man",20,21
+dan,11,1,"(无小标题)",1,1
+dan,11,2,"The Kings of the South and the North",2,4
+dan,11,3,"The Kings of the South and the North",5,6
+dan,11,4,"The Kings of the South and the North",7,10
+dan,11,5,"The Kings of the South and the North",11,13
+dan,11,6,"The Kings of the South and the North",14,19
+dan,11,7,"The Kings of the South and the North",20,20
+dan,11,8,"The Kings of the South and the North",21,24
+dan,11,9,"The Kings of the South and the North",25,28
+dan,11,10,"The Kings of the South and the North",29,30
+dan,11,11,"The Kings of the South and the North",31,32
+dan,11,12,"The Kings of the South and the North",33,35
+dan,11,13,"The King Who Exalts Himself",36,39
+dan,11,14,"The King Who Exalts Himself",40,45
+dan,12,1,"The End Times",1,4
+dan,12,2,"The End Times",5,6
+dan,12,3,"The End Times",7,7
+dan,12,4,"The End Times",8,8
+dan,12,5,"The End Times",9,10
+dan,12,6,"The End Times",11,12
+dan,12,7,"The End Times",13,13
