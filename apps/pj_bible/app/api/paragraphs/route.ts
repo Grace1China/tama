@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   if (version == 'cuvs' || version == 'cuvt' ) {
     version = 'cuv';
   }
-  const filePath = path.join(process.cwd(), 'data/biblePara', version, csvFile);
+  const filePath = path.join(process.cwd(), 'data/biblePara', version, csvFile.toLowerCase());
   console.log('filePath:',filePath);
   const sqlPath = filePath.replace(/\\/g, '/').replace(/'/g, "''");
 
