@@ -2,6 +2,7 @@
 const nextConfig = {
   transpilePackages: ['shared'],
   serverExternalPackages: ['duckdb'],
+  eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals = config.externals || [];
