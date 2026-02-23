@@ -1,0 +1,369 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+act,1,1,"Jesus Taken Up Into Heaven",1,5
+act,1,2,"Jesus Taken Up Into Heaven",6,6
+act,1,3,"Jesus Taken Up Into Heaven",7,8
+act,1,4,"Jesus Taken Up Into Heaven",9,9
+act,1,5,"Jesus Taken Up Into Heaven",10,11
+act,1,6,"Matthias Chosen to Replace Judas",12,14
+act,1,7,"Matthias Chosen to Replace Judas",15,17
+act,1,8,"Matthias Chosen to Replace Judas",18,19
+act,1,9,"Matthias Chosen to Replace Judas",20,20
+act,1,10,"Matthias Chosen to Replace Judas",20,20
+act,1,11,"Matthias Chosen to Replace Judas",20,20
+act,1,12,"Matthias Chosen to Replace Judas",20,20
+act,1,13,"Matthias Chosen to Replace Judas",21,22
+act,1,14,"Matthias Chosen to Replace Judas",23,26
+act,2,1,"The Holy Spirit Comes at Pentecost",1,4
+act,2,2,"The Holy Spirit Comes at Pentecost",5,12
+act,2,3,"The Holy Spirit Comes at Pentecost",13,13
+act,2,4,"Peter Addresses the Crowd",14,16
+act,2,5,"Peter Addresses the Crowd",17,21
+act,2,6,"Peter Addresses the Crowd",22,25
+act,2,7,"Peter Addresses the Crowd",25,28
+act,2,8,"Peter Addresses the Crowd",29,34
+act,2,9,"Peter Addresses the Crowd",34,35
+act,2,10,"Peter Addresses the Crowd",36,36
+act,2,11,"Peter Addresses the Crowd",37,37
+act,2,12,"Peter Addresses the Crowd",38,39
+act,2,13,"Peter Addresses the Crowd",40,41
+act,2,14,"The Fellowship of the Believers",42,47
+act,3,1,"Peter Heals a Lame Beggar",1,5
+act,3,2,"Peter Heals a Lame Beggar",6,10
+act,3,3,"Peter Speaks to the Onlookers",11,16
+act,3,4,"Peter Speaks to the Onlookers",17,23
+act,3,5,"Peter Speaks to the Onlookers",24,26
+act,4,1,"Peter and John Before the Sanhedrin",1,4
+act,4,2,"Peter and John Before the Sanhedrin",5,7
+act,4,3,"Peter and John Before the Sanhedrin",8,11
+act,4,4,"Peter and John Before the Sanhedrin",11,11
+act,4,5,"Peter and John Before the Sanhedrin",12,12
+act,4,6,"Peter and John Before the Sanhedrin",13,17
+act,4,7,"Peter and John Before the Sanhedrin",18,20
+act,4,8,"Peter and John Before the Sanhedrin",21,22
+act,4,9,"The Believers Pray",23,25
+act,4,10,"The Believers Pray",25,26
+act,4,11,"The Believers Pray",27,30
+act,4,12,"The Believers Pray",31,31
+act,4,13,"The Believers Share Their Possessions",32,35
+act,4,14,"The Believers Share Their Possessions",36,37
+act,5,1,"Ananias and Sapphira",1,2
+act,5,2,"Ananias and Sapphira",3,4
+act,5,3,"Ananias and Sapphira",5,6
+act,5,4,"Ananias and Sapphira",7,8
+act,5,5,"Ananias and Sapphira",8,8
+act,5,6,"Ananias and Sapphira",9,9
+act,5,7,"Ananias and Sapphira",10,11
+act,5,8,"The Apostles Heal Many",12,16
+act,5,9,"The Apostles Persecuted",17,20
+act,5,10,"The Apostles Persecuted",21,21
+act,5,11,"The Apostles Persecuted",21,24
+act,5,12,"The Apostles Persecuted",25,26
+act,5,13,"The Apostles Persecuted",27,28
+act,5,14,"The Apostles Persecuted",29,32
+act,5,15,"The Apostles Persecuted",33,39
+act,5,16,"The Apostles Persecuted",40,40
+act,5,17,"The Apostles Persecuted",41,42
+act,6,1,"The Choosing of the Seven",1,4
+act,6,2,"The Choosing of the Seven",5,6
+act,6,3,"The Choosing of the Seven",7,7
+act,6,4,"Stephen Seized",8,10
+act,6,5,"Stephen Seized",11,11
+act,6,6,"Stephen Seized",12,14
+act,6,7,"Stephen Seized",15,15
+act,7,1,"Stephen’s Speech to the Sanhedrin",1,1
+act,7,2,"Stephen’s Speech to the Sanhedrin",2,3
+act,7,3,"Stephen’s Speech to the Sanhedrin",4,8
+act,7,4,"Stephen’s Speech to the Sanhedrin",9,10
+act,7,5,"Stephen’s Speech to the Sanhedrin",11,16
+act,7,6,"Stephen’s Speech to the Sanhedrin",17,19
+act,7,7,"Stephen’s Speech to the Sanhedrin",20,22
+act,7,8,"Stephen’s Speech to the Sanhedrin",23,26
+act,7,9,"Stephen’s Speech to the Sanhedrin",27,29
+act,7,10,"Stephen’s Speech to the Sanhedrin",30,32
+act,7,11,"Stephen’s Speech to the Sanhedrin",33,34
+act,7,12,"Stephen’s Speech to the Sanhedrin",35,36
+act,7,13,"Stephen’s Speech to the Sanhedrin",37,38
+act,7,14,"Stephen’s Speech to the Sanhedrin",39,42
+act,7,15,"Stephen’s Speech to the Sanhedrin",42,43
+act,7,16,"Stephen’s Speech to the Sanhedrin",44,47
+act,7,17,"Stephen’s Speech to the Sanhedrin",48,48
+act,7,18,"Stephen’s Speech to the Sanhedrin",49,50
+act,7,19,"Stephen’s Speech to the Sanhedrin",51,53
+act,7,20,"The Stoning of Stephen",54,56
+act,7,21,"The Stoning of Stephen",57,58
+act,7,22,"The Stoning of Stephen",59,60
+act,8,1,"(无小标题)",1,1
+act,8,2,"The Church Persecuted and Scattered",1,3
+act,8,3,"Philip in Samaria",4,8
+act,8,4,"Simon the Sorcerer",9,13
+act,8,5,"Simon the Sorcerer",14,17
+act,8,6,"Simon the Sorcerer",18,19
+act,8,7,"Simon the Sorcerer",20,23
+act,8,8,"Simon the Sorcerer",24,24
+act,8,9,"Simon the Sorcerer",25,25
+act,8,10,"Philip and the Ethiopian",26,29
+act,8,11,"Philip and the Ethiopian",30,30
+act,8,12,"Philip and the Ethiopian",31,31
+act,8,13,"Philip and the Ethiopian",32,32
+act,8,14,"Philip and the Ethiopian",32,33
+act,8,15,"Philip and the Ethiopian",34,35
+act,8,16,"Philip and the Ethiopian",36,40
+act,9,1,"Saul’s Conversion(A)",1,4
+act,9,2,"Saul’s Conversion(A)",5,5
+act,9,3,"Saul’s Conversion(A)",5,6
+act,9,4,"Saul’s Conversion(A)",7,9
+act,9,5,"Saul’s Conversion(A)",10,10
+act,9,6,"Saul’s Conversion(A)",10,10
+act,9,7,"Saul’s Conversion(A)",11,12
+act,9,8,"Saul’s Conversion(A)",13,14
+act,9,9,"Saul’s Conversion(A)",15,16
+act,9,10,"Saul’s Conversion(A)",17,19
+act,9,11,"Saul in Damascus and Jerusalem",19,22
+act,9,12,"Saul in Damascus and Jerusalem",23,25
+act,9,13,"Saul in Damascus and Jerusalem",26,30
+act,9,14,"Saul in Damascus and Jerusalem",31,31
+act,9,15,"Aeneas and Dorcas",32,35
+act,9,16,"Aeneas and Dorcas",36,38
+act,9,17,"Aeneas and Dorcas",39,39
+act,9,18,"Aeneas and Dorcas",40,43
+act,10,1,"Cornelius Calls for Peter",1,3
+act,10,2,"Cornelius Calls for Peter",4,4
+act,10,3,"Cornelius Calls for Peter",4,6
+act,10,4,"Cornelius Calls for Peter",7,8
+act,10,5,"Peter’s Vision(K)",9,13
+act,10,6,"Peter’s Vision(K)",14,14
+act,10,7,"Peter’s Vision(K)",15,15
+act,10,8,"Peter’s Vision(K)",16,16
+act,10,9,"Peter’s Vision(K)",17,18
+act,10,10,"Peter’s Vision(K)",19,20
+act,10,11,"Peter’s Vision(K)",21,21
+act,10,12,"Peter’s Vision(K)",22,23
+act,10,13,"Peter at Cornelius’s House",23,26
+act,10,14,"Peter at Cornelius’s House",27,29
+act,10,15,"Peter at Cornelius’s House",30,33
+act,10,16,"Peter at Cornelius’s House",34,38
+act,10,17,"Peter at Cornelius’s House",39,43
+act,10,18,"Peter at Cornelius’s House",44,46
+act,10,19,"Peter at Cornelius’s House",46,48
+act,11,1,"Peter Explains His Actions",1,3
+act,11,2,"Peter Explains His Actions",4,7
+act,11,3,"Peter Explains His Actions",8,8
+act,11,4,"Peter Explains His Actions",9,10
+act,11,5,"Peter Explains His Actions",11,14
+act,11,6,"Peter Explains His Actions",15,17
+act,11,7,"Peter Explains His Actions",18,18
+act,11,8,"The Church in Antioch",19,21
+act,11,9,"The Church in Antioch",22,24
+act,11,10,"The Church in Antioch",25,26
+act,11,11,"The Church in Antioch",27,30
+act,12,1,"Peter’s Miraculous Escape From Prison",1,4
+act,12,2,"Peter’s Miraculous Escape From Prison",5,5
+act,12,3,"Peter’s Miraculous Escape From Prison",6,7
+act,12,4,"Peter’s Miraculous Escape From Prison",8,10
+act,12,5,"Peter’s Miraculous Escape From Prison",11,11
+act,12,6,"Peter’s Miraculous Escape From Prison",12,14
+act,12,7,"Peter’s Miraculous Escape From Prison",15,15
+act,12,8,"Peter’s Miraculous Escape From Prison",16,17
+act,12,9,"Peter’s Miraculous Escape From Prison",18,19
+act,12,10,"Herod’s Death",19,20
+act,12,11,"Herod’s Death",21,23
+act,12,12,"Herod’s Death",24,24
+act,12,13,"Barnabas and Saul Sent Off",25,25
+act,13,1,"(无小标题)",1,3
+act,13,2,"On Cyprus",4,5
+act,13,3,"On Cyprus",6,11
+act,13,4,"On Cyprus",11,12
+act,13,5,"In Pisidian Antioch",13,15
+act,13,6,"In Pisidian Antioch",16,20
+act,13,7,"In Pisidian Antioch",20,22
+act,13,8,"In Pisidian Antioch",23,25
+act,13,9,"In Pisidian Antioch",26,31
+act,13,10,"In Pisidian Antioch",32,33
+act,13,11,"In Pisidian Antioch",33,33
+act,13,12,"In Pisidian Antioch",34,34
+act,13,13,"In Pisidian Antioch",34,34
+act,13,14,"In Pisidian Antioch",35,35
+act,13,15,"In Pisidian Antioch",35,35
+act,13,16,"In Pisidian Antioch",36,37
+act,13,17,"In Pisidian Antioch",38,40
+act,13,18,"In Pisidian Antioch",41,41
+act,13,19,"In Pisidian Antioch",42,43
+act,13,20,"In Pisidian Antioch",44,45
+act,13,21,"In Pisidian Antioch",46,47
+act,13,22,"In Pisidian Antioch",47,47
+act,13,23,"In Pisidian Antioch",48,48
+act,13,24,"In Pisidian Antioch",49,52
+act,14,1,"In Iconium",1,7
+act,14,2,"In Lystra and Derbe",8,10
+act,14,3,"In Lystra and Derbe",11,13
+act,14,4,"In Lystra and Derbe",14,18
+act,14,5,"In Lystra and Derbe",19,20
+act,14,6,"The Return to Antioch in Syria",21,25
+act,14,7,"The Return to Antioch in Syria",26,28
+act,15,1,"The Council at Jerusalem",1,4
+act,15,2,"The Council at Jerusalem",5,5
+act,15,3,"The Council at Jerusalem",6,11
+act,15,4,"The Council at Jerusalem",12,15
+act,15,5,"The Council at Jerusalem",16,18
+act,15,6,"The Council at Jerusalem",19,21
+act,15,7,"The Council’s Letter to Gentile Believers",22,23
+act,15,8,"The Council’s Letter to Gentile Believers",30,35
+act,15,9,"Disagreement Between Paul and Barnabas",36,41
+act,16,1,"Timothy Joins Paul and Silas",1,5
+act,16,2,"Paul’s Vision of the Man of Macedonia",6,10
+act,16,3,"Lydia’s Conversion in Philippi",11,12
+act,16,4,"Lydia’s Conversion in Philippi",13,15
+act,16,5,"Paul and Silas in Prison",16,18
+act,16,6,"Paul and Silas in Prison",19,21
+act,16,7,"Paul and Silas in Prison",22,24
+act,16,8,"Paul and Silas in Prison",25,28
+act,16,9,"Paul and Silas in Prison",29,30
+act,16,10,"Paul and Silas in Prison",31,34
+act,16,11,"Paul and Silas in Prison",35,36
+act,16,12,"Paul and Silas in Prison",37,37
+act,16,13,"Paul and Silas in Prison",38,40
+act,17,1,"In Thessalonica",1,4
+act,17,2,"In Thessalonica",5,9
+act,17,3,"In Berea",10,12
+act,17,4,"In Berea",13,15
+act,17,5,"In Athens",16,21
+act,17,6,"In Athens",22,23
+act,17,7,"In Athens",24,28
+act,17,8,"In Athens",29,31
+act,17,9,"In Athens",32,34
+act,18,1,"In Corinth",1,4
+act,18,2,"In Corinth",5,6
+act,18,3,"In Corinth",7,8
+act,18,4,"In Corinth",9,11
+act,18,5,"In Corinth",12,13
+act,18,6,"In Corinth",14,17
+act,18,7,"Priscilla, Aquila and Apollos",18,22
+act,18,8,"Priscilla, Aquila and Apollos",23,23
+act,18,9,"Priscilla, Aquila and Apollos",24,26
+act,18,10,"Priscilla, Aquila and Apollos",27,28
+act,19,1,"Paul in Ephesus",1,2
+act,19,2,"Paul in Ephesus",2,2
+act,19,3,"Paul in Ephesus",3,3
+act,19,4,"Paul in Ephesus",3,3
+act,19,5,"Paul in Ephesus",4,7
+act,19,6,"Paul in Ephesus",8,10
+act,19,7,"Paul in Ephesus",11,12
+act,19,8,"Paul in Ephesus",13,16
+act,19,9,"Paul in Ephesus",17,20
+act,19,10,"Paul in Ephesus",21,22
+act,19,11,"The Riot in Ephesus",23,27
+act,19,12,"The Riot in Ephesus",28,31
+act,19,13,"The Riot in Ephesus",32,34
+act,19,14,"The Riot in Ephesus",35,41
+act,20,1,"Through Macedonia and Greece",1,6
+act,20,2,"Eutychus Raised From the Dead at Troas",7,12
+act,20,3,"Paul’s Farewell to the Ephesian Elders",13,16
+act,20,4,"Paul’s Farewell to the Ephesian Elders",17,21
+act,20,5,"Paul’s Farewell to the Ephesian Elders",22,24
+act,20,6,"Paul’s Farewell to the Ephesian Elders",25,31
+act,20,7,"Paul’s Farewell to the Ephesian Elders",32,35
+act,20,8,"Paul’s Farewell to the Ephesian Elders",36,38
+act,21,1,"On to Jerusalem",1,6
+act,21,2,"On to Jerusalem",7,9
+act,21,3,"On to Jerusalem",10,11
+act,21,4,"On to Jerusalem",12,14
+act,21,5,"On to Jerusalem",15,16
+act,21,6,"Paul’s Arrival at Jerusalem",17,19
+act,21,7,"Paul’s Arrival at Jerusalem",20,25
+act,21,8,"Paul’s Arrival at Jerusalem",26,26
+act,21,9,"Paul Arrested",27,29
+act,21,10,"Paul Arrested",30,32
+act,21,11,"Paul Arrested",33,36
+act,21,12,"Paul Speaks to the Crowd(BB)",37,37
+act,21,13,"Paul Speaks to the Crowd(BB)",37,38
+act,21,14,"Paul Speaks to the Crowd(BB)",39,39
+act,21,15,"Paul Speaks to the Crowd(BB)",40,40
+act,22,1,"(无小标题)",1,1
+act,22,2,"(无小标题)",2,2
+act,22,3,"(无小标题)",2,5
+act,22,4,"(无小标题)",6,7
+act,22,5,"(无小标题)",8,8
+act,22,6,"(无小标题)",8,9
+act,22,7,"(无小标题)",10,10
+act,22,8,"(无小标题)",10,11
+act,22,9,"(无小标题)",12,13
+act,22,10,"(无小标题)",14,16
+act,22,11,"(无小标题)",17,18
+act,22,12,"(无小标题)",19,20
+act,22,13,"(无小标题)",21,21
+act,22,14,"Paul the Roman Citizen",22,22
+act,22,15,"Paul the Roman Citizen",23,25
+act,22,16,"Paul the Roman Citizen",26,26
+act,22,17,"Paul the Roman Citizen",27,27
+act,22,18,"Paul the Roman Citizen",27,27
+act,22,19,"Paul the Roman Citizen",28,28
+act,22,20,"Paul the Roman Citizen",28,28
+act,22,21,"Paul the Roman Citizen",29,29
+act,22,22,"Paul Before the Sanhedrin",30,30
+act,23,1,"(无小标题)",1,3
+act,23,2,"(无小标题)",4,4
+act,23,3,"(无小标题)",5,5
+act,23,4,"(无小标题)",6,8
+act,23,5,"(无小标题)",9,10
+act,23,6,"(无小标题)",11,11
+act,23,7,"The Plot to Kill Paul",12,15
+act,23,8,"The Plot to Kill Paul",16,16
+act,23,9,"The Plot to Kill Paul",17,18
+act,23,10,"The Plot to Kill Paul",18,18
+act,23,11,"The Plot to Kill Paul",19,19
+act,23,12,"The Plot to Kill Paul",20,21
+act,23,13,"The Plot to Kill Paul",22,22
+act,23,14,"Paul Transferred to Caesarea",23,24
+act,23,15,"Paul Transferred to Caesarea",25,25
+act,23,16,"Paul Transferred to Caesarea",31,35
+act,24,1,"Paul’s Trial Before Felix",1,4
+act,24,2,"Paul’s Trial Before Felix",5,8
+act,24,3,"Paul’s Trial Before Felix",9,9
+act,24,4,"Paul’s Trial Before Felix",10,16
+act,24,5,"Paul’s Trial Before Felix",17,21
+act,24,6,"Paul’s Trial Before Felix",22,23
+act,24,7,"Paul’s Trial Before Felix",24,26
+act,24,8,"Paul’s Trial Before Felix",27,27
+act,25,1,"Paul’s Trial Before Festus",1,5
+act,25,2,"Paul’s Trial Before Festus",6,7
+act,25,3,"Paul’s Trial Before Festus",8,8
+act,25,4,"Paul’s Trial Before Festus",9,9
+act,25,5,"Paul’s Trial Before Festus",10,11
+act,25,6,"Paul’s Trial Before Festus",12,12
+act,25,7,"Festus Consults King Agrippa",13,15
+act,25,8,"Festus Consults King Agrippa",16,21
+act,25,9,"Festus Consults King Agrippa",22,22
+act,25,10,"Festus Consults King Agrippa",22,22
+act,25,11,"Paul Before Agrippa(Z)",23,27
+act,26,1,"(无小标题)",1,1
+act,26,2,"(无小标题)",1,3
+act,26,3,"(无小标题)",4,8
+act,26,4,"(无小标题)",9,11
+act,26,5,"(无小标题)",12,14
+act,26,6,"(无小标题)",15,15
+act,26,7,"(无小标题)",15,18
+act,26,8,"(无小标题)",19,23
+act,26,9,"(无小标题)",24,24
+act,26,10,"(无小标题)",25,27
+act,26,11,"(无小标题)",28,28
+act,26,12,"(无小标题)",29,29
+act,26,13,"(无小标题)",30,31
+act,26,14,"(无小标题)",32,32
+act,27,1,"Paul Sails for Rome",1,2
+act,27,2,"Paul Sails for Rome",3,8
+act,27,3,"Paul Sails for Rome",9,12
+act,27,4,"The Storm",13,20
+act,27,5,"The Storm",21,26
+act,27,6,"The Shipwreck",27,32
+act,27,7,"The Shipwreck",33,38
+act,27,8,"The Shipwreck",39,41
+act,27,9,"The Shipwreck",42,44
+act,28,1,"Paul Ashore on Malta",1,6
+act,28,2,"Paul Ashore on Malta",7,10
+act,28,3,"Paul’s Arrival at Rome",11,16
+act,28,4,"Paul Preaches at Rome Under Guard",17,20
+act,28,5,"Paul Preaches at Rome Under Guard",21,22
+act,28,6,"Paul Preaches at Rome Under Guard",23,25
+act,28,7,"Paul Preaches at Rome Under Guard",26,27
+act,28,8,"Paul Preaches at Rome Under Guard",28,29
+act,28,9,"Paul Preaches at Rome Under Guard",30,31

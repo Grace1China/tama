@@ -1,0 +1,112 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+ecc,1,1,"Everything Is Meaningless",1,1
+ecc,1,2,"Everything Is Meaningless",2,2
+ecc,1,3,"Everything Is Meaningless",3,11
+ecc,1,4,"Wisdom Is Meaningless",12,14
+ecc,1,5,"Wisdom Is Meaningless",15,15
+ecc,1,6,"Wisdom Is Meaningless",16,17
+ecc,1,7,"Wisdom Is Meaningless",18,18
+ecc,2,1,"Pleasures Are Meaningless",1,3
+ecc,2,2,"Pleasures Are Meaningless",4,9
+ecc,2,3,"Pleasures Are Meaningless",10,11
+ecc,2,4,"Wisdom and Folly Are Meaningless",12,14
+ecc,2,5,"Wisdom and Folly Are Meaningless",15,15
+ecc,2,6,"Wisdom and Folly Are Meaningless",15,16
+ecc,2,7,"Toil Is Meaningless",17,23
+ecc,2,8,"Toil Is Meaningless",24,26
+ecc,3,1,"A Time for Everything",1,1
+ecc,3,2,"A Time for Everything",2,8
+ecc,3,3,"A Time for Everything",9,14
+ecc,3,4,"A Time for Everything",15,15
+ecc,3,5,"A Time for Everything",16,16
+ecc,3,6,"A Time for Everything",16,16
+ecc,3,7,"A Time for Everything",17,17
+ecc,3,8,"A Time for Everything",17,17
+ecc,3,9,"A Time for Everything",18,21
+ecc,3,10,"A Time for Everything",22,22
+ecc,4,1,"Oppression, Toil, Friendlessness",1,1
+ecc,4,2,"Oppression, Toil, Friendlessness",1,3
+ecc,4,3,"Oppression, Toil, Friendlessness",4,4
+ecc,4,4,"Oppression, Toil, Friendlessness",5,6
+ecc,4,5,"Oppression, Toil, Friendlessness",7,7
+ecc,4,6,"Oppression, Toil, Friendlessness",8,8
+ecc,4,7,"Oppression, Toil, Friendlessness",9,12
+ecc,4,8,"Advancement Is Meaningless",13,16
+ecc,5,1,"Fulfill Your Vow to God",1,1
+ecc,5,2,"Fulfill Your Vow to God",2,3
+ecc,5,3,"Fulfill Your Vow to God",4,7
+ecc,5,4,"Riches Are Meaningless",8,9
+ecc,5,5,"Riches Are Meaningless",10,10
+ecc,5,6,"Riches Are Meaningless",11,11
+ecc,5,7,"Riches Are Meaningless",12,12
+ecc,5,8,"Riches Are Meaningless",13,13
+ecc,5,9,"Riches Are Meaningless",13,15
+ecc,5,10,"Riches Are Meaningless",16,16
+ecc,5,11,"Riches Are Meaningless",16,17
+ecc,5,12,"Riches Are Meaningless",18,20
+ecc,6,1,"(无小标题)",1,2
+ecc,6,2,"(无小标题)",3,6
+ecc,6,3,"(无小标题)",7,9
+ecc,6,4,"(无小标题)",10,11
+ecc,6,5,"(无小标题)",12,12
+ecc,7,1,"Wisdom",1,6
+ecc,7,2,"Wisdom",7,7
+ecc,7,3,"Wisdom",8,9
+ecc,7,4,"Wisdom",10,10
+ecc,7,5,"Wisdom",11,12
+ecc,7,6,"Wisdom",13,13
+ecc,7,7,"Wisdom",13,14
+ecc,7,8,"Wisdom",15,15
+ecc,7,9,"Wisdom",15,18
+ecc,7,10,"Wisdom",19,19
+ecc,7,11,"Wisdom",20,20
+ecc,7,12,"Wisdom",21,22
+ecc,7,13,"Wisdom",23,23
+ecc,7,14,"Wisdom",23,25
+ecc,7,15,"Wisdom",26,26
+ecc,7,16,"Wisdom",27,27
+ecc,7,17,"Wisdom",27,29
+ecc,8,1,"(无小标题)",1,1
+ecc,8,2,"Obey the King",2,4
+ecc,8,3,"Obey the King",5,6
+ecc,8,4,"Obey the King",7,8
+ecc,8,5,"Obey the King",9,10
+ecc,8,6,"Obey the King",11,13
+ecc,8,7,"Obey the King",14,15
+ecc,8,8,"Obey the King",16,17
+ecc,9,1,"A Common Destiny for All",1,2
+ecc,9,2,"A Common Destiny for All",2,2
+ecc,9,3,"A Common Destiny for All",3,4
+ecc,9,4,"A Common Destiny for All",5,6
+ecc,9,5,"A Common Destiny for All",7,10
+ecc,9,6,"A Common Destiny for All",11,11
+ecc,9,7,"A Common Destiny for All",11,11
+ecc,9,8,"A Common Destiny for All",12,12
+ecc,9,9,"A Common Destiny for All",12,12
+ecc,9,10,"Wisdom Better Than Folly",13,16
+ecc,9,11,"Wisdom Better Than Folly",17,18
+ecc,10,1,"(无小标题)",1,4
+ecc,10,2,"(无小标题)",5,7
+ecc,10,3,"(无小标题)",8,9
+ecc,10,4,"(无小标题)",10,10
+ecc,10,5,"(无小标题)",11,11
+ecc,10,6,"(无小标题)",12,14
+ecc,10,7,"(无小标题)",14,14
+ecc,10,8,"(无小标题)",15,15
+ecc,10,9,"(无小标题)",16,17
+ecc,10,10,"(无小标题)",18,18
+ecc,10,11,"(无小标题)",19,19
+ecc,10,12,"(无小标题)",20,20
+ecc,11,1,"Invest in Many Ventures",1,2
+ecc,11,2,"Invest in Many Ventures",3,4
+ecc,11,3,"Invest in Many Ventures",5,5
+ecc,11,4,"Invest in Many Ventures",6,6
+ecc,11,5,"Remember Your Creator While Young",7,8
+ecc,11,6,"Remember Your Creator While Young",9,10
+ecc,12,1,"(无小标题)",1,5
+ecc,12,2,"(无小标题)",6,7
+ecc,12,3,"(无小标题)",8,8
+ecc,12,4,"The Conclusion of the Matter",9,10
+ecc,12,5,"The Conclusion of the Matter",11,12
+ecc,12,6,"The Conclusion of the Matter",12,12
+ecc,12,7,"The Conclusion of the Matter",13,14

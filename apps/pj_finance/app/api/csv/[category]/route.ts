@@ -1,0 +1,828 @@
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+import Papa from 'papaparse';
+import zlib from 'zlib';
+import { promisify } from 'util';
+import { processIndicatorFiles, processIndicatorFilesDuckDb } from '../indicator';
+import { readCSV } from '../fileFunc';
+
+export const dynamic = 'force-dynamic';
+
+const gzip = promisify(zlib.gzip);
+
+// 股票列表字段映射（英文 -> 中文）
+const stockListFieldMap: Record<string, string> = {
+  'ts_code': 'TS代码',
+  'symbol': '股票代码',
+  'name': '股票名称',
+  'area': '地域',
+  'industry': '所属行业',
+  'fullname': '股票全称',
+  'enname': '英文全称',
+  'cnspell': '拼音缩写',
+  'market': '市场类型',
+  'exchange': '交易所代码',
+  'curr_type': '交易货币',
+  'list_status': '上市状态',
+  'list_date': '上市日期',
+  'delist_date': '退市日期',
+  'is_hs': '是否沪深港通标的',
+  'act_name': '实控人名称',
+  'act_ent_type': '实控人企业性质',
+};
+
+// 交易指标字段映射（英文 -> 中文）
+const indicatorFieldMap: Record<string, string> = {
+  'ts_code': 'TS股票代码',
+  'trade_date': '交易日期',
+  'close': '当日收盘价',
+  'turnover_rate': '换手率（%）',
+  'turnover_rate_f': '换手率（自由流通股）',
+  'volume_ratio': '量比',
+  'pe': '市盈率（总市值/净利润，亏损的PE为空）',
+  'pe_ttm': '市盈率（TTM，亏损的PE为空）',
+  'pb': '市净率（总市值/净资产）',
+  'ps': '市销率',
+  'ps_ttm': '市销率（TTM）',
+  'dv_ratio': '股息率（%）',
+  'dv_ttm': '股息率（TTM）（%）',
+  'total_share': '总股本（万股）',
+  'float_share': '流通股本（万股）',
+  'free_share': '自由流通股本（万）',
+  'total_mv': '总市值（万元）',
+  'circ_mv': '流通市值（万元）',
+};
+
+const fiIndicatorFieldMap: Record<string, string> = {
+    "ts_code": "TS代码",
+    "ann_date": "公告日期",
+    "end_date": "报告期",
+    "eps": "基本每股收益",
+    "dt_eps": "稀释每股收益",
+    "total_revenue_ps": "每股营业总收入",
+    "revenue_ps": "每股营业收入",
+    "capital_rese_ps": "每股资本公积",
+    "surplus_rese_ps": "每股盈余公积",
+    "undist_profit_ps": "每股未分配利润",
+    "extra_item": "非经常性损益",
+    "profit_dedt": "扣除非经常性损益后的净利润（扣非净利润）",
+    "gross_margin": "毛利",
+    "current_ratio": "流动比率",
+    "quick_ratio": "速动比率",
+    "cash_ratio": "保守速动比率",
+    "invturn_days": "存货周转天数",
+    "arturn_days": "应收账款周转天数",
+    "inv_turn": "存货周转率",
+    "ar_turn": "应收账款周转率",
+    "ca_turn": "流动资产周转率",
+    "fa_turn": "固定资产周转率",
+    "assets_turn": "总资产周转率",
+    "op_income": "经营活动净收益",
+    "valuechange_income": "价值变动净收益",
+    "interst_income": "利息费用",
+    "daa": "折旧与摊销",
+    "ebit": "息税前利润",
+    "ebitda": "息税折旧摊销前利润",
+    "fcff": "企业自由现金流量",
+    "fcfe": "股权自由现金流量",
+    "current_exint": "无息流动负债",
+    "noncurrent_exint": "无息非流动负债",
+    "interestdebt": "带息债务",
+    "netdebt": "净债务",
+    "tangible_asset": "有形资产",
+    "working_capital": "营运资金",
+    "networking_capital": "营运流动资本",
+    "invest_capital": "全部投入资本",
+    "retained_earnings": "留存收益",
+    "diluted2_eps": "期末摊薄每股收益",
+    "bps": "每股净资产",
+    "ocfps": "每股经营活动产生的现金流量净额",
+    "retainedps": "每股留存收益",
+    "cfps": "每股现金流量净额",
+    "ebit_ps": "每股息税前利润",
+    "fcff_ps": "每股企业自由现金流量",
+    "fcfe_ps": "每股股东自由现金流量",
+    "netprofit_margin": "销售净利率",
+    "grossprofit_margin": "销售毛利率",
+    "cogs_of_sales": "销售成本率",
+    "expense_of_sales": "销售期间费用率",
+    "profit_to_gr": "净利润/营业总收入",
+    "saleexp_to_gr": "销售费用/营业总收入",
+    "adminexp_of_gr": "管理费用/营业总收入",
+    "finaexp_of_gr": "财务费用/营业总收入",
+    "impai_ttm": "资产减值损失/营业总收入",
+    "gc_of_gr": "营业总成本/营业总收入",
+    "op_of_gr": "营业利润/营业总收入",
+    "ebit_of_gr": "息税前利润/营业总收入",
+    "roe": "净资产收益率",
+    "roe_waa": "加权平均净资产收益率",
+    "roe_dt": "净资产收益率(扣除非经常损益)",
+    "roa": "总资产报酬率",
+    "npta": "总资产净利润",
+    "roic": "投入资本回报率",
+    "roe_yearly": "年化净资产收益率",
+    "roa2_yearly": "年化总资产报酬率",
+    "roe_avg": "平均净资产收益率(增发条件)",
+    "opincome_of_ebt": "经营活动净收益/利润总额",
+    "investincome_of_ebt": "价值变动净收益/利润总额",
+    "n_op_profit_of_ebt": "营业外收支净额/利润总额",
+    "tax_to_ebt": "所得税/利润总额",
+    "dtprofit_to_profit": "扣除非经常损益后的净利润/净利润",
+    "salescash_to_or": "销售商品提供劳务收到的现金/营业收入",
+    "ocf_to_or": "经营活动产生的现金流量净额/营业收入",
+    "ocf_to_opincome": "经营活动产生的现金流量净额/经营活动净收益",
+    "capitalized_to_da": "资本支出/折旧和摊销",
+    "debt_to_assets": "资产负债率",
+    "assets_to_eqt": "权益乘数",
+    "dp_assets_to_eqt": "权益乘数(杜邦分析)",
+    "ca_to_assets": "流动资产/总资产",
+    "nca_to_assets": "非流动资产/总资产",
+    "tbassets_to_totalassets": "有形资产/总资产",
+    "int_to_talcap": "带息债务/全部投入资本",
+    "eqt_to_talcapital": "归属于母公司的股东权益/全部投入资本",
+    "currentdebt_to_debt": "流动负债/负债合计",
+    "longdeb_to_debt": "非流动负债/负债合计",
+    "ocf_to_shortdebt": "经营活动产生的现金流量净额/流动负债",
+    "debt_to_eqt": "产权比率",
+    "eqt_to_debt": "归属于母公司的股东权益/负债合计",
+    "eqt_to_interestdebt": "归属于母公司的股东权益/带息债务",
+    "tangibleasset_to_debt": "有形资产/负债合计",
+    "tangasset_to_intdebt": "有形资产/带息债务",
+    "tangibleasset_to_netdebt": "有形资产/净债务",
+    "ocf_to_debt": "经营活动产生的现金流量净额/负债合计",
+    "ocf_to_interestdebt": "经营活动产生的现金流量净额/带息债务",
+    "ocf_to_netdebt": "经营活动产生的现金流量净额/净债务",
+    "ebit_to_interest": "已获利息倍数(EBIT/利息费用)",
+    "longdebt_to_workingcapital": "长期债务与营运资金比率",
+    "ebitda_to_debt": "息税折旧摊销前利润/负债合计",
+    "turn_days": "营业周期",
+    "roa_yearly": "年化总资产净利率",
+    "roa_dp": "总资产净利率(杜邦分析)",
+    "fixed_assets": "固定资产合计",
+    "profit_prefin_exp": "扣除财务费用前营业利润",
+    "non_op_profit": "非营业利润",
+    "op_to_ebt": "营业利润／利润总额",
+    "nop_to_ebt": "非营业利润／利润总额",
+    "ocf_to_profit": "经营活动产生的现金流量净额／营业利润",
+    "cash_to_liqdebt": "货币资金／流动负债",
+    "cash_to_liqdebt_withinterest": "货币资金／带息流动负债",
+    "op_to_liqdebt": "营业利润／流动负债",
+    "op_to_debt": "营业利润／负债合计",
+    "roic_yearly": "年化投入资本回报率",
+    "total_fa_trun": "固定资产合计周转率",
+    "profit_to_op": "利润总额／营业收入",
+    "q_opincome": "经营活动单季度净收益",
+    "q_investincome": "价值变动单季度净收益",
+    "q_dtprofit": "扣除非经常损益后的单季度净利润",
+    "q_eps": "每股收益(单季度)",
+    "q_netprofit_margin": "销售净利率(单季度)",
+    "q_gsprofit_margin": "销售毛利率(单季度)",
+    "q_exp_to_sales": "销售期间费用率(单季度)",
+    "q_profit_to_gr": "净利润／营业总收入(单季度)",
+    "q_saleexp_to_gr": "销售费用／营业总收入 (单季度)",
+    "q_adminexp_to_gr": "管理费用／营业总收入 (单季度)",
+    "q_finaexp_to_gr": "财务费用／营业总收入 (单季度)",
+    "q_impair_to_gr_ttm": "资产减值损失／营业总收入(单季度)",
+    "q_gc_to_gr": "营业总成本／营业总收入 (单季度)",
+    "q_op_to_gr": "营业利润／营业总收入(单季度)",
+    "q_roe": "净资产收益率(单季度)",
+    "q_dt_roe": "净资产单季度收益率(扣除非经常损益)",
+    "q_npta": "总资产净利润(单季度)",
+    "q_opincome_to_ebt": "经营活动净收益／利润总额(单季度)",
+    "q_investincome_to_ebt": "价值变动净收益／利润总额(单季度)",
+    "q_dtprofit_to_profit": "扣除非经常损益后的净利润／净利润(单季度)",
+    "q_salescash_to_or": "销售商品提供劳务收到的现金／营业收入(单季度)",
+    "q_ocf_to_sales": "经营活动产生的现金流量净额／营业收入(单季度)",
+    "q_ocf_to_or": "经营活动产生的现金流量净额／经营活动净收益(单季度)",
+    "basic_eps_yoy": "基本每股收益同比增长率(%)",
+    "dt_eps_yoy": "稀释每股收益同比增长率(%)",
+    "cfps_yoy": "每股经营活动产生的现金流量净额同比增长率(%)",
+    "op_yoy": "营业利润同比增长率(%)",
+    "ebt_yoy": "利润总额同比增长率(%)",
+    "netprofit_yoy": "归属母公司股东的净利润同比增长率(%)",
+    "dt_netprofit_yoy": "归属母公司股东的净利润-扣除非经常损益同比增长率(%)",
+    "ocf_yoy": "经营活动产生的现金流量净额同比增长率(%)",
+    "roe_yoy": "净资产收益率(摊薄)同比增长率(%)",
+    "bps_yoy": "每股净资产相对年初增长率(%)",
+    "assets_yoy": "资产总计相对年初增长率(%)",
+    "eqt_yoy": "归属母公司的股东权益相对年初增长率(%)",
+    "tr_yoy": "营业总收入同比增长率(%)",
+    "or_yoy": "营业收入同比增长率(%)",
+    "q_gr_yoy": "营业总收入同比增长率(%)(单季度)",
+    "q_gr_qoq": "营业总收入环比增长率(%)(单季度)",
+    "q_sales_yoy": "营业收入同比增长率(%)(单季度)",
+    "q_sales_qoq": "营业收入环比增长率(%)(单季度)",
+    "q_op_yoy": "营业利润同比增长率(%)(单季度)",
+    "q_op_qoq": "营业利润环比增长率(%)(单季度)",
+    "q_profit_yoy": "净利润同比增长率(%)(单季度)",
+    "q_profit_qoq": "净利润环比增长率(%)(单季度)",
+    "q_netprofit_yoy": "归属母公司股东的净利润同比增长率(%)(单季度)",
+    "q_netprofit_qoq": "归属母公司股东的净利润环比增长率(%)(单季度)",
+    "equity_yoy": "净资产同比增长率",
+    "rd_exp": "研发费用",
+    "update_flag": "更新标识"
+};
+
+const incomeFieldMap: Record<string, string> = {
+    "ts_code": "TS代码",
+    "ann_date": "公告日期",
+    "f_ann_date": "实际公告日期",
+    "end_date": "报告期",
+    "report_type": "报告类型 见底部表",
+    "comp_type": "公司类型(1一般工商业2银行3保险4证券)",
+    "end_type": "报告期类型",
+    "basic_eps": "基本每股收益",
+    "diluted_eps": "稀释每股收益",
+    "total_revenue": "营业总收入",
+    "revenue": "营业收入",
+    "int_income": "利息收入",
+    "prem_earned": "已赚保费",
+    "comm_income": "手续费及佣金收入",
+    "n_commis_income": "手续费及佣金净收入",
+    "n_oth_income": "其他经营净收益",
+    "n_oth_b_income": "加:其他业务净收益",
+    "prem_income": "保险业务收入",
+    "out_prem": "减:分出保费",
+    "une_prem_reser": "提取未到期责任准备金",
+    "reins_income": "其中:分保费收入",
+    "n_sec_tb_income": "代理买卖证券业务净收入",
+    "n_sec_uw_income": "证券承销业务净收入",
+    "n_asset_mg_income": "受托客户资产管理业务净收入",
+    "oth_b_income": "其他业务收入",
+    "fv_value_chg_gain": "加:公允价值变动净收益",
+    "invest_income": "加:投资净收益",
+    "ass_invest_income": "其中:对联营企业和合营企业的投资收益",
+    "forex_gain": "加:汇兑净收益",
+    "total_cogs": "营业总成本",
+    "oper_cost": "减:营业成本",
+    "int_exp": "减:利息支出",
+    "comm_exp": "减:手续费及佣金支出",
+    "biz_tax_surchg": "减:营业税金及附加",
+    "sell_exp": "减:销售费用",
+    "admin_exp": "减:管理费用",
+    "fin_exp": "减:财务费用",
+    "assets_impair_loss": "减:资产减值损失",
+    "prem_refund": "退保金",
+    "compens_payout": "赔付总支出",
+    "reser_insur_liab": "提取保险责任准备金",
+    "div_payt": "保户红利支出",
+    "reins_exp": "分保费用",
+    "oper_exp": "营业支出",
+    "compens_payout_refu": "减:摊回赔付支出",
+    "insur_reser_refu": "减:摊回保险责任准备金",
+    "reins_cost_refund": "减:摊回分保费用",
+    "other_bus_cost": "其他业务成本",
+    "operate_profit": "营业利润",
+    "non_oper_income": "加:营业外收入",
+    "non_oper_exp": "减:营业外支出",
+    "nca_disploss": "其中:减:非流动资产处置净损失",
+    "total_profit": "利润总额",
+    "income_tax": "所得税费用",
+    "n_income": "净利润(含少数股东损益)",
+    "n_income_attr_p": "净利润(不含少数股东损益)",
+    "minority_gain": "少数股东损益",
+    "oth_compr_income": "其他综合收益",
+    "t_compr_income": "综合收益总额",
+    "compr_inc_attr_p": "归属于母公司(或股东)的综合收益总额",
+    "compr_inc_attr_m_s": "归属于少数股东的综合收益总额",
+    "ebit": "息税前利润",
+    "ebitda": "息税折旧摊销前利润",
+    "insurance_exp": "保险业务支出",
+    "undist_profit": "年初未分配利润",
+    "distable_profit": "可分配利润",
+    "rd_exp": "研发费用",
+    "fin_exp_int_exp": "财务费用:利息费用",
+    "fin_exp_int_inc": "财务费用:利息收入",
+    "transfer_surplus_rese": "盈余公积转入",
+    "transfer_housing_imprest": "住房周转金转入",
+    "transfer_oth": "其他转入",
+    "adj_lossgain": "调整以前年度损益",
+    "withdra_legal_surplus": "提取法定盈余公积",
+    "withdra_legal_pubfund": "提取法定公益金",
+    "withdra_biz_devfund": "提取企业发展基金",
+    "withdra_rese_fund": "提取储备基金",
+    "withdra_oth_ersu": "提取任意盈余公积金",
+    "workers_welfare": "职工奖金福利",
+    "distr_profit_shrhder": "可供股东分配的利润",
+    "prfshare_payable_dvd": "应付优先股股利",
+    "comshare_payable_dvd": "应付普通股股利",
+    "capit_comstock_div": "转作股本的普通股股利",
+    "net_after_nr_lp_correct": "扣除非经常性损益后的净利润（更正前）",
+    "credit_impa_loss": "信用减值损失",
+    "net_expo_hedging_benefits": "净敞口套期收益",
+    "oth_impair_loss_assets": "其他资产减值损失",
+    "total_opcost": "营业总成本（二）",
+    "amodcost_fin_assets": "以摊余成本计量的金融资产终止确认收益",
+    "oth_income": "其他收益",
+    "asset_disp_income": "资产处置收益",
+    "continued_net_profit": "持续经营净利润",
+    "end_net_profit": "终止经营净利润",
+    "update_flag": "更新标识"
+};
+
+const ths_indexFieldMap: Record<string, string> = {
+    "ts_code": "代码",
+    "name": "名称",
+    "count": "成分个数",
+    "exchange": "交易所",
+    "list_date": "上市日期",
+    "type": "N概念指数S特色指数"
+};
+
+const income1FieldMap: Record<string, string> = {
+    "ts_code": "TS代码",
+    "ann_date": "公告日期",
+    "f_ann_date": "实际公告日期",
+    "end_date": "报告期",
+    "report_type": "报告类型 见底部表",
+    "comp_type": "公司类型(1一般工商业2银行3保险4证券)",
+    "end_type": "报告期类型",
+    "basic_eps": "基本每股收益",
+    "diluted_eps": "稀释每股收益",
+    "total_revenue": "营业总收入",
+    "revenue": "营业收入",
+    "int_income": "利息收入",
+    "prem_earned": "已赚保费",
+    "comm_income": "手续费及佣金收入",
+    "n_commis_income": "手续费及佣金净收入",
+    "n_oth_income": "其他经营净收益",
+    "n_oth_b_income": "加:其他业务净收益",
+    "prem_income": "保险业务收入",
+    "out_prem": "减:分出保费",
+    "une_prem_reser": "提取未到期责任准备金",
+    "reins_income": "其中:分保费收入",
+    "n_sec_tb_income": "代理买卖证券业务净收入",
+    "n_sec_uw_income": "证券承销业务净收入",
+    "n_asset_mg_income": "受托客户资产管理业务净收入",
+    "oth_b_income": "其他业务收入",
+    "fv_value_chg_gain": "加:公允价值变动净收益",
+    "invest_income": "加:投资净收益",
+    "ass_invest_income": "其中:对联营企业和合营企业的投资收益",
+    "forex_gain": "加:汇兑净收益",
+    "total_cogs": "营业总成本",
+    "oper_cost": "减:营业成本",
+    "int_exp": "减:利息支出",
+    "comm_exp": "减:手续费及佣金支出",
+    "biz_tax_surchg": "减:营业税金及附加",
+    "sell_exp": "减:销售费用",
+    "admin_exp": "减:管理费用",
+    "fin_exp": "减:财务费用",
+    "assets_impair_loss": "减:资产减值损失",
+    "prem_refund": "退保金",
+    "compens_payout": "赔付总支出",
+    "reser_insur_liab": "提取保险责任准备金",
+    "div_payt": "保户红利支出",
+    "reins_exp": "分保费用",
+    "oper_exp": "营业支出",
+    "compens_payout_refu": "减:摊回赔付支出",
+    "insur_reser_refu": "减:摊回保险责任准备金",
+    "reins_cost_refund": "减:摊回分保费用",
+    "other_bus_cost": "其他业务成本",
+    "operate_profit": "营业利润",
+    "non_oper_income": "加:营业外收入",
+    "non_oper_exp": "减:营业外支出",
+    "nca_disploss": "其中:减:非流动资产处置净损失",
+    "total_profit": "利润总额",
+    "income_tax": "所得税费用",
+    "n_income": "净利润(含少数股东损益)",
+    "n_income_attr_p": "净利润(不含少数股东损益)",
+    "minority_gain": "少数股东损益",
+    "oth_compr_income": "其他综合收益",
+    "t_compr_income": "综合收益总额",
+    "compr_inc_attr_p": "归属于母公司(或股东)的综合收益总额",
+    "compr_inc_attr_m_s": "归属于少数股东的综合收益总额",
+    "ebit": "息税前利润",
+    "ebitda": "息税折旧摊销前利润",
+    "insurance_exp": "保险业务支出",
+    "undist_profit": "年初未分配利润",
+    "distable_profit": "可分配利润",
+    "rd_exp": "研发费用",
+    "fin_exp_int_exp": "财务费用:利息费用",
+    "fin_exp_int_inc": "财务费用:利息收入",
+    "transfer_surplus_rese": "盈余公积转入",
+    "transfer_housing_imprest": "住房周转金转入",
+    "transfer_oth": "其他转入",
+    "adj_lossgain": "调整以前年度损益",
+    "withdra_legal_surplus": "提取法定盈余公积",
+    "withdra_legal_pubfund": "提取法定公益金",
+    "withdra_biz_devfund": "提取企业发展基金",
+    "withdra_rese_fund": "提取储备基金",
+    "withdra_oth_ersu": "提取任意盈余公积金",
+    "workers_welfare": "职工奖金福利",
+    "distr_profit_shrhder": "可供股东分配的利润",
+    "prfshare_payable_dvd": "应付优先股股利",
+    "comshare_payable_dvd": "应付普通股股利",
+    "capit_comstock_div": "转作股本的普通股股利",
+    "net_after_nr_lp_correct": "扣除非经常性损益后的净利润（更正前）",
+    "credit_impa_loss": "信用减值损失",
+    "net_expo_hedging_benefits": "净敞口套期收益",
+    "oth_impair_loss_assets": "其他资产减值损失",
+    "total_opcost": "营业总成本（二）",
+    "amodcost_fin_assets": "以摊余成本计量的金融资产终止确认收益",
+    "oth_income": "其他收益",
+    "asset_disp_income": "资产处置收益",
+    "continued_net_profit": "持续经营净利润",
+    "end_net_profit": "终止经营净利润",
+    "update_flag": "更新标识"
+};
+
+const balanceSheetFieldMap: Record<string, string> = {
+    "ts_code": "TS代码",
+    "ann_date": "公告日期",
+    "f_ann_date": "实际公告日期",
+    "end_date": "报告期",
+    "report_type": "报告类型",
+    "comp_type": "公司类型",
+    "end_type": "报告期类型",
+    "total_share": "期末总股本",
+    "cap_rese": "资本公积金",
+    "undistr_porfit": "未分配利润",
+    "special_rese": "专项储备",
+    "money_cap": "货币资金",
+    "trad_asset": "交易性金融资产",
+    "notes_receiv": "应收票据",
+    "accounts_receiv": "应收账款",
+    "oth_receiv": "其他应收款",
+    "prepayment": "预付款项",
+    "div_receiv": "应收股利",
+    "int_receiv": "应收利息",
+    "inventories": "存货",
+    "amor_exp": "长期待摊费用",
+    "nca_within_1y": "一年内到期的非流动资产",
+    "sett_rsrv": "结算备付金",
+    "loans_to_oth_bank_fi": "拆出资金",
+    "premium_receiv": "应收保费",
+    "reinsur_receiv": "应收分保账款",
+    "reinsur_res_receiv": "应收分保合同准备金",
+    "pur_resale_fa": "买入返售金融资产",
+    "oth_cur_assets": "其他流动资产",
+    "total_cur_assets": "流动资产合计",
+    "fa_avail_for_sale": "可供出售金融资产",
+    "htm_invest": "持有至到期投资",
+    "lt_eqt_invest": "长期股权投资",
+    "invest_real_estate": "投资性房地产",
+    "time_deposits": "定期存款",
+    "oth_assets": "其他资产",
+    "lt_rec": "长期应收款",
+    "fix_assets": "固定资产",
+    "cip": "在建工程",
+    "const_materials": "工程物资",
+    "fixed_assets_disp": "固定资产清理",
+    "produc_bio_assets": "生产性生物资产",
+    "oil_and_gas_assets": "油气资产",
+    "use_right_assets": "使用权资产",
+    "intan_assets": "无形资产",
+    "r_and_d": "研发支出",
+    "goodwill": "商誉",
+    "lt_amor_exp": "长期待摊费用",
+    "defer_tax_assets": "递延所得税资产",
+    "decr_in_disbur": "发放贷款和垫款",
+    "oth_nca": "其他非流动资产",
+    "total_nca": "非流动资产合计",
+    "total_assets": "资产总计",
+    "st_borr": "短期借款",
+    "borr_from_oth_bank_fi": "向其他金融机构拆入资金",
+    "trad_fin_liab": "交易性金融负债",
+    "notes_payable": "应付票据",
+    "acct_payable": "应付账款",
+    "adv_receipts": "预收款项",
+    "sell_repo_fa": "卖出回购金融资产款",
+    "comm_payable": "应付手续费及佣金",
+    "payroll_payable": "应付职工薪酬",
+    "taxes_payable": "应交税费",
+    "int_payable": "应付利息",
+    "div_payable": "应付股利",
+    "oth_payable": "其他应付款",
+    "acc_exp": "预提费用",
+    "deferred_inc": "递延收益",
+    "st_bonds_payable": "应付短期债券",
+    "payable_to_reinsurer": "应付分保账款",
+    "rsrv_insur_liab": "保险合同准备金",
+    "acting_trading_sec": "代理买卖证券款",
+    "acting_uw_sec": "代理承销证券款",
+    "non_cur_liab_due_1y": "一年内到期的非流动负债",
+    "oth_cur_liab": "其他流动负债",
+    "total_cur_liab": "流动负债合计",
+    "bond_payable": "应付债券",
+    "lt_payable": "长期应付款",
+    "specific_payables": "专项应付款",
+    "estimated_liab": "预计负债",
+    "defer_tax_liab": "递延所得税负债",
+    "defer_inc_non_cur_liab": "递延收益-非流动负债",
+    "oth_ncl": "其他非流动负债",
+    "total_ncl": "非流动负债合计",
+    "total_liab": "负债合计",
+    "share_capital": "实收资本(或股本)",
+    "treasury_share": "减:库存股",
+    "spec_rese": "专项储备",
+    "surplus_rese": "盈余公积金",
+    "ordin_risk_rese": "一般风险准备",
+    "retained_profit": "未分配利润",
+    "forex_differ": "外币报表折算差额",
+    "invested_capital": "实收资本(或股本)",
+    "minority_int": "少数股东权益",
+    "total_hldr_eqy_exc_min_int": "股东权益合计(不含少数股东权益)",
+    "total_hldr_eqy_inc_min_int": "股东权益合计(含少数股东权益)",
+    "total_liab_hldr_eqy": "负债和股东权益总计",
+    "update_flag": "更新标识"
+};
+
+// 字段映射函数
+export function mapHeadersToChinese(headers: string[], category: string): string[] {
+  if (category === 'stockList') {
+    return headers.map(header => stockListFieldMap[header] || header);
+  }
+  if (category === 'indicator') {
+    return headers.map(header => indicatorFieldMap[header] || header);
+  }
+  if (category === 'fiIndicator') {
+    return headers.map(header => fiIndicatorFieldMap[header] || header);
+  }
+  if (category === 'profit') {
+    return headers.map(header => incomeFieldMap[header] || header);
+  }
+  if (category === 'balanceSheet') {
+    return headers.map(header => balanceSheetFieldMap[header] || header);
+  }
+  if (category === 'income1') {
+    return headers.map(header => income1FieldMap[header] || header);
+  }
+  if (category === 'ths_index') {
+    return headers.map(header => ths_indexFieldMap[header] || header);
+  }
+  return headers;
+}
+async function query_handler(category: string, supportsGzip: boolean, request: NextRequest) {
+  let validCategories = ['fiIndicator',  'profit'];
+  if(!validCategories.includes(category)) {
+    return NextResponse.json(
+      { error: 'Invalid category' },
+      { status: 400 }
+    );
+  }
+
+  let queryData: {
+    headers: string[];
+    originalHeaders: string[];
+    data: Record<string, any>[];
+    totalRows: number;
+    processedFiles?: any;
+  } = {
+    headers: [],
+    originalHeaders: [],
+    data: [],
+    totalRows: 0
+  };
+
+  const url = new URL(request.url);
+  const page = Number(url.searchParams.get('page') ?? '1');
+  const size = Number(url.searchParams.get('size') ?? '50');
+  const pageCfg = { page, size };
+
+  // 传给 DuckDB 的查询条件（去掉分页参数）
+  const q = new URLSearchParams(url.searchParams);
+  q.delete('page');
+  q.delete('size');
+  const queryString = q.toString() ? `?${q.toString()}` : '';
+
+  if(category === 'fiIndicator') {
+    queryData = await processIndicatorFilesDuckDb(queryString, pageCfg);
+  }
+  if(category === 'profit') {
+    queryData =  await processIndicatorFilesDuckDb(queryString, pageCfg);
+  }
+  if(category === 'indicator') {
+    queryData =  await processIndicatorFilesDuckDb(queryString, pageCfg);
+  }
+  const chineseHeaders = mapHeadersToChinese(queryData.headers, category);
+
+   // 构建响应
+   const response = {
+    category,
+    filename: `${category}`,
+    headers: chineseHeaders, // 显示中文列名
+    originalHeaders: queryData.originalHeaders, // 保留原始列名用于数据访问
+    data: queryData.data,
+    totalRows: queryData.totalRows,
+    processedFiles: queryData.processedFiles,
+  };
+  // 4. 压缩响应（如果客户端支持）
+  const jsonString = JSON.stringify(response);
+  const originalSize = Buffer.byteLength(jsonString, 'utf8');
+  if (supportsGzip && originalSize > 1024) { // 只压缩大于1KB的数据
+    const compressStartTime = performance.now();
+    const compressedData = await gzip(jsonString);
+    const compressedSize = compressedData.length;
+    const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+    const compressEndTime = performance.now();
+    const compressDuration = compressEndTime - compressStartTime;
+    console.log(`[Performance] 压缩耗时: ${compressDuration.toFixed(2)}ms`);
+    console.log(`[Performance] 原始大小: ${(originalSize / 1024).toFixed(2)}KB, 压缩后: ${(compressedSize / 1024).toFixed(2)}KB, 压缩率: ${compressionRatio}%`);
+
+    // 返回压缩后的响应
+    return new NextResponse(compressedData, {
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Encoding': 'gzip',
+            'Content-Length': compressedSize.toString(),
+        },
+    });
+  } else {
+    return NextResponse.json(response);
+  }
+}
+
+async function indicator_handler(category: string, supportsGzip: boolean) {
+  // 使用专门的indicator处理函数
+  const indicatorDir = path.join(process.cwd(), `temp/tuShare/${category}`);
+  const indicatorData = await processIndicatorFiles(indicatorDir);
+
+  // 将headers转换为中文
+  const chineseHeaders = mapHeadersToChinese(indicatorData.headers, category);
+
+  // 构建响应
+  const response = {
+    category,
+    filename: `${category}_latest_${indicatorData.processedFiles}_files`,
+    headers: chineseHeaders, // 显示中文列名
+    originalHeaders: indicatorData.originalHeaders, // 保留原始列名用于数据访问
+    data: indicatorData.data,
+    totalRows: indicatorData.totalRows,
+    processedFiles: indicatorData.processedFiles,
+    failedFiles: indicatorData.failedFiles,
+    fromCache: indicatorData.fromCache,
+    cacheTTL: indicatorData.cacheTTL,
+  };
+
+  // 压缩响应（如果客户端支持）
+  const jsonString = JSON.stringify(response);
+  const originalSize = Buffer.byteLength(jsonString, 'utf8');
+
+  if (supportsGzip && originalSize > 1024) {
+    const compressedData = await gzip(jsonString);
+    const compressedSize = compressedData.length;
+    return new NextResponse(compressedData, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Encoding': 'gzip',
+        'Content-Length': compressedSize.toString(),
+      },
+    });
+  } else {
+    return NextResponse.json(response);
+  }
+}
+
+async function ths_index_handler(category: string, supportsGzip: boolean) {
+  return await wrapResponse(path.join(process.cwd(), `temp/tuShare/${category}/ths_index.csv`), category, supportsGzip);
+}
+
+const wrapResponse = async (filePath: string, category: string, supportsGzip: boolean) => {
+    // 性能测量开始
+    const startTime = performance.now();
+
+    // 1. 读取文件
+    const readStartTime = performance.now();
+    const _fileContent = fs.readFileSync(filePath, 'utf-8');
+    const readEndTime = performance.now();
+    const readDuration = readEndTime - readStartTime;
+    console.log(`[Performance] 读取文件耗时: ${readDuration.toFixed(2)}ms`);
+
+    // 2. 解析CSV
+    const parseStartTime = performance.now();
+    const _parsed = Papa.parse(_fileContent, {
+        header: true,
+        skipEmptyLines: true,
+    });
+
+   
+   
+
+    // 3. 构建响应
+    const buildStartTime = performance.now();
+    const originalHeaders = _parsed.meta.fields || [];
+    const chineseHeaders = mapHeadersToChinese(originalHeaders, category);
+
+    const response = {
+        category,
+        filename: path.basename(filePath),
+        headers: chineseHeaders, // 显示中文列名
+        originalHeaders: originalHeaders, // 保留原始列名用于数据访问
+        data: _parsed.data,
+        totalRows: _parsed.data.length,
+    };
+    const buildEndTime = performance.now();
+    const buildDuration = buildEndTime - buildStartTime;
+    console.log(`[Performance] 构建响应耗时: ${buildDuration.toFixed(2)}ms`);
+
+    // 4. 压缩响应（如果客户端支持）
+    const jsonString = JSON.stringify(response);
+    const originalSize = Buffer.byteLength(jsonString, 'utf8');
+
+    if (supportsGzip && originalSize > 1024) { // 只压缩大于1KB的数据
+        const compressStartTime = performance.now();
+        const compressedData = await gzip(jsonString);
+        const compressedSize = compressedData.length;
+        const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+        const compressEndTime = performance.now();
+        const compressDuration = compressEndTime - compressStartTime;
+        console.log(`[Performance] 压缩耗时: ${compressDuration.toFixed(2)}ms`);
+        console.log(`[Performance] 原始大小: ${(originalSize / 1024).toFixed(2)}KB, 压缩后: ${(compressedSize / 1024).toFixed(2)}KB, 压缩率: ${compressionRatio}%`);
+
+        // 总耗时
+        const totalEndTime = performance.now();
+        const totalDuration = totalEndTime - startTime;
+        console.log(`[Performance] 总耗时: ${totalDuration.toFixed(2)}ms`);
+        console.log(`[Performance] 文件大小: ${(_fileContent.length / 1024).toFixed(2)}KB, 行数: ${_parsed.data.length}`);
+
+        // 返回压缩后的响应
+        return new NextResponse(compressedData, {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Encoding': 'gzip',
+                'Content-Length': compressedSize.toString(),
+            },
+        });
+    } else {
+        // 总耗时
+        const totalEndTime = performance.now();
+        const totalDuration = totalEndTime - startTime;
+        console.log(`[Performance] 总耗时: ${totalDuration.toFixed(2)}ms`);
+        console.log(`[Performance] 文件大小: ${(_fileContent.length / 1024).toFixed(2)}KB, 行数: ${_parsed.data.length}`);
+        console.log(`[Performance] 未压缩（客户端不支持或数据太小），原始大小: ${(originalSize / 1024).toFixed(2)}KB`);
+        // 返回未压缩的响应
+        return NextResponse.json(response);
+    }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ category: string }> }
+) {
+  try {
+    const { category } = await params;
+    // 检查客户端是否支持gzip压缩
+    const acceptEncoding = request.headers.get('accept-encoding') || '';
+    const supportsGzip = acceptEncoding.includes('gzip');
+    const validCategories = ['stockList', 'fiIndicator', 'indicator', 'profit','ths_index'];
+
+    if (!validCategories.includes(category)) {
+      return NextResponse.json(
+        { error: 'Invalid category' },
+        { status: 400 }
+      );
+    }
+
+    let filePath: string;
+
+    // 股票列表是单独的文件
+    if (category === 'stockList') {
+      filePath = path.join(process.cwd(), 'temp', 'ts_a_stock_list.csv');
+    } else if(category === 'fiIndicator') {
+      return await query_handler(category, supportsGzip, request)
+    } else if(category === 'indicator') {
+      return await indicator_handler(category, supportsGzip);
+    } else if(category === 'profit') {
+      return await indicator_handler(category, supportsGzip)
+    } else if(category === 'ths_index') {
+      return await ths_index_handler(category, supportsGzip)
+    } else {
+      // 其他类别在temp目录下的子目录中
+      const categoryPath = path.join(process.cwd(), 'temp', category);
+
+      // 读取目录下的所有CSV文件
+      const files = fs.readdirSync(categoryPath).filter(file => file.endsWith('.csv'));
+
+      if (files.length === 0) {
+        return NextResponse.json(
+          { error: 'No CSV files found' },
+          { status: 404 }
+        );
+      }
+
+      // 读取第一个CSV文件（可以根据需要修改逻辑）
+      filePath = path.join(categoryPath, files[0]);
+    }
+
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      return NextResponse.json(
+        { error: 'File not found' },
+        { status: 404 }
+      );
+    }
+
+    return await wrapResponse(filePath, category, supportsGzip);
+  } catch (error) {
+    console.error('Error reading CSV file:', error);
+    return NextResponse.json(
+      { error: 'Failed to read CSV file' },
+      { status: 500 }
+    );
+  }
+}
+

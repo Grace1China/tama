@@ -1,0 +1,438 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+exo,1,1,"The Israelites Oppressed",1,5
+exo,1,2,"The Israelites Oppressed",6,7
+exo,1,3,"The Israelites Oppressed",8,10
+exo,1,4,"The Israelites Oppressed",11,14
+exo,1,5,"The Israelites Oppressed",15,18
+exo,1,6,"The Israelites Oppressed",19,19
+exo,1,7,"The Israelites Oppressed",20,21
+exo,1,8,"The Israelites Oppressed",22,22
+exo,2,1,"The Birth of Moses",1,4
+exo,2,2,"The Birth of Moses",5,6
+exo,2,3,"The Birth of Moses",7,7
+exo,2,4,"The Birth of Moses",8,10
+exo,2,5,"Moses Flees to Midian",11,13
+exo,2,6,"Moses Flees to Midian",14,14
+exo,2,7,"Moses Flees to Midian",15,17
+exo,2,8,"Moses Flees to Midian",18,18
+exo,2,9,"Moses Flees to Midian",19,19
+exo,2,10,"Moses Flees to Midian",20,20
+exo,2,11,"Moses Flees to Midian",21,22
+exo,2,12,"Moses Flees to Midian",23,25
+exo,3,1,"Moses and the Burning Bush",1,3
+exo,3,2,"Moses and the Burning Bush",4,4
+exo,3,3,"Moses and the Burning Bush",4,4
+exo,3,4,"Moses and the Burning Bush",5,6
+exo,3,5,"Moses and the Burning Bush",7,10
+exo,3,6,"Moses and the Burning Bush",11,11
+exo,3,7,"Moses and the Burning Bush",12,12
+exo,3,8,"Moses and the Burning Bush",13,13
+exo,3,9,"Moses and the Burning Bush",14,14
+exo,3,10,"Moses and the Burning Bush",15,15
+exo,3,11,"Moses and the Burning Bush",15,15
+exo,3,12,"Moses and the Burning Bush",16,17
+exo,3,13,"Moses and the Burning Bush",18,20
+exo,3,14,"Moses and the Burning Bush",21,22
+exo,4,1,"Signs for Moses",1,1
+exo,4,2,"Signs for Moses",2,2
+exo,4,3,"Signs for Moses",2,2
+exo,4,4,"Signs for Moses",3,3
+exo,4,5,"Signs for Moses",3,5
+exo,4,6,"Signs for Moses",6,6
+exo,4,7,"Signs for Moses",7,7
+exo,4,8,"Signs for Moses",8,9
+exo,4,9,"Signs for Moses",10,10
+exo,4,10,"Signs for Moses",11,12
+exo,4,11,"Signs for Moses",13,13
+exo,4,12,"Signs for Moses",14,17
+exo,4,13,"Moses Returns to Egypt",18,18
+exo,4,14,"Moses Returns to Egypt",18,18
+exo,4,15,"Moses Returns to Egypt",19,20
+exo,4,16,"Moses Returns to Egypt",21,23
+exo,4,17,"Moses Returns to Egypt",24,26
+exo,4,18,"Moses Returns to Egypt",27,28
+exo,4,19,"Moses Returns to Egypt",29,31
+exo,5,1,"Bricks Without Straw",1,1
+exo,5,2,"Bricks Without Straw",2,2
+exo,5,3,"Bricks Without Straw",3,3
+exo,5,4,"Bricks Without Straw",4,5
+exo,5,5,"Bricks Without Straw",6,9
+exo,5,6,"Bricks Without Straw",10,14
+exo,5,7,"Bricks Without Straw",15,16
+exo,5,8,"Bricks Without Straw",17,18
+exo,5,9,"Bricks Without Straw",19,21
+exo,5,10,"God Promises Deliverance",22,23
+exo,6,1,"(无小标题)",1,1
+exo,6,2,"(无小标题)",2,5
+exo,6,3,"(无小标题)",6,8
+exo,6,4,"(无小标题)",9,9
+exo,6,5,"(无小标题)",10,11
+exo,6,6,"(无小标题)",12,12
+exo,6,7,"Family Record of Moses and Aaron",13,13
+exo,6,8,"Family Record of Moses and Aaron",26,27
+exo,6,9,"Aaron to Speak for Moses",28,29
+exo,6,10,"Aaron to Speak for Moses",30,30
+exo,7,1,"(无小标题)",1,5
+exo,7,2,"(无小标题)",6,7
+exo,7,3,"Aaron’s Staff Becomes a Snake",8,9
+exo,7,4,"Aaron’s Staff Becomes a Snake",10,13
+exo,7,5,"The Plague of Blood",14,18
+exo,7,6,"The Plague of Blood",19,19
+exo,7,7,"The Plague of Blood",20,21
+exo,7,8,"The Plague of Blood",22,24
+exo,7,9,"The Plague of Frogs",25,25
+exo,8,1,"(无小标题)",1,4
+exo,8,2,"(无小标题)",5,5
+exo,8,3,"(无小标题)",6,7
+exo,8,4,"(无小标题)",8,8
+exo,8,5,"(无小标题)",9,9
+exo,8,6,"(无小标题)",10,10
+exo,8,7,"(无小标题)",10,11
+exo,8,8,"(无小标题)",12,15
+exo,8,9,"The Plague of Gnats",16,18
+exo,8,10,"The Plague of Gnats",18,19
+exo,8,11,"The Plague of Flies",20,21
+exo,8,12,"The Plague of Flies",22,23
+exo,8,13,"The Plague of Flies",24,24
+exo,8,14,"The Plague of Flies",25,25
+exo,8,15,"The Plague of Flies",26,27
+exo,8,16,"The Plague of Flies",28,28
+exo,8,17,"The Plague of Flies",29,29
+exo,8,18,"The Plague of Flies",30,32
+exo,9,1,"The Plague on Livestock",1,4
+exo,9,2,"The Plague on Livestock",5,7
+exo,9,3,"The Plague of Boils",8,9
+exo,9,4,"The Plague of Boils",10,12
+exo,9,5,"The Plague of Hail",13,19
+exo,9,6,"The Plague of Hail",20,21
+exo,9,7,"The Plague of Hail",22,26
+exo,9,8,"The Plague of Hail",27,28
+exo,9,9,"The Plague of Hail",29,30
+exo,9,10,"The Plague of Hail",31,32
+exo,9,11,"The Plague of Hail",33,35
+exo,10,1,"The Plague of Locusts",1,2
+exo,10,2,"The Plague of Locusts",3,6
+exo,10,3,"The Plague of Locusts",7,7
+exo,10,4,"The Plague of Locusts",8,8
+exo,10,5,"The Plague of Locusts",9,9
+exo,10,6,"The Plague of Locusts",10,11
+exo,10,7,"The Plague of Locusts",12,12
+exo,10,8,"The Plague of Locusts",13,15
+exo,10,9,"The Plague of Locusts",16,17
+exo,10,10,"The Plague of Locusts",18,20
+exo,10,11,"The Plague of Darkness",21,23
+exo,10,12,"The Plague of Darkness",24,24
+exo,10,13,"The Plague of Darkness",25,26
+exo,10,14,"The Plague of Darkness",27,28
+exo,10,15,"The Plague of Darkness",29,29
+exo,11,1,"The Plague on the Firstborn",1,3
+exo,11,2,"The Plague on the Firstborn",4,8
+exo,11,3,"The Plague on the Firstborn",9,10
+exo,12,1,"The Passover and the Festival of Unleavened Bread(A)",1,11
+exo,12,2,"The Passover and the Festival of Unleavened Bread(A)",12,13
+exo,12,3,"The Passover and the Festival of Unleavened Bread(A)",14,16
+exo,12,4,"The Passover and the Festival of Unleavened Bread(A)",17,20
+exo,12,5,"The Passover and the Festival of Unleavened Bread(A)",21,23
+exo,12,6,"The Passover and the Festival of Unleavened Bread(A)",24,28
+exo,12,7,"The Passover and the Festival of Unleavened Bread(A)",29,30
+exo,12,8,"The Exodus",31,32
+exo,12,9,"The Exodus",33,36
+exo,12,10,"The Exodus",37,39
+exo,12,11,"The Exodus",40,42
+exo,12,12,"Passover Restrictions",43,43
+exo,12,13,"Passover Restrictions",43,45
+exo,12,14,"Passover Restrictions",46,47
+exo,12,15,"Passover Restrictions",48,49
+exo,12,16,"Passover Restrictions",50,51
+exo,13,1,"Consecration of the Firstborn",1,2
+exo,13,2,"Consecration of the Firstborn",3,10
+exo,13,3,"Consecration of the Firstborn",11,13
+exo,13,4,"Consecration of the Firstborn",14,16
+exo,13,5,"Crossing the Sea",17,18
+exo,13,6,"Crossing the Sea",19,19
+exo,13,7,"Crossing the Sea",20,22
+exo,14,1,"(无小标题)",1,4
+exo,14,2,"(无小标题)",5,9
+exo,14,3,"(无小标题)",10,12
+exo,14,4,"(无小标题)",13,14
+exo,14,5,"(无小标题)",15,18
+exo,14,6,"(无小标题)",19,20
+exo,14,7,"(无小标题)",21,22
+exo,14,8,"(无小标题)",23,25
+exo,14,9,"(无小标题)",26,28
+exo,14,10,"(无小标题)",29,31
+exo,15,1,"The Song of Moses and Miriam",1,1
+exo,15,2,"The Song of Moses and Miriam",1,1
+exo,15,3,"The Song of Moses and Miriam",2,6
+exo,15,4,"The Song of Moses and Miriam",7,11
+exo,15,5,"The Song of Moses and Miriam",12,17
+exo,15,6,"The Song of Moses and Miriam",18,18
+exo,15,7,"The Song of Moses and Miriam",19,21
+exo,15,8,"The Song of Moses and Miriam",21,21
+exo,15,9,"The Waters of Marah and Elim",22,24
+exo,15,10,"The Waters of Marah and Elim",25,25
+exo,15,11,"The Waters of Marah and Elim",25,26
+exo,15,12,"The Waters of Marah and Elim",27,27
+exo,16,1,"Manna and Quail",1,3
+exo,16,2,"Manna and Quail",4,5
+exo,16,3,"Manna and Quail",6,8
+exo,16,4,"Manna and Quail",9,9
+exo,16,5,"Manna and Quail",10,10
+exo,16,6,"Manna and Quail",11,12
+exo,16,7,"Manna and Quail",13,15
+exo,16,8,"Manna and Quail",15,16
+exo,16,9,"Manna and Quail",17,18
+exo,16,10,"Manna and Quail",19,19
+exo,16,11,"Manna and Quail",20,20
+exo,16,12,"Manna and Quail",21,23
+exo,16,13,"Manna and Quail",24,26
+exo,16,14,"Manna and Quail",27,30
+exo,16,15,"Manna and Quail",31,32
+exo,16,16,"Manna and Quail",33,33
+exo,16,17,"Manna and Quail",34,35
+exo,16,18,"Manna and Quail",36,36
+exo,17,1,"Water From the Rock",1,2
+exo,17,2,"Water From the Rock",2,2
+exo,17,3,"Water From the Rock",3,3
+exo,17,4,"Water From the Rock",4,4
+exo,17,5,"Water From the Rock",5,7
+exo,17,6,"The Amalekites Defeated",8,9
+exo,17,7,"The Amalekites Defeated",10,13
+exo,17,8,"The Amalekites Defeated",14,14
+exo,17,9,"The Amalekites Defeated",15,16
+exo,18,1,"Jethro Visits Moses",1,1
+exo,18,2,"Jethro Visits Moses",2,4
+exo,18,3,"Jethro Visits Moses",5,6
+exo,18,4,"Jethro Visits Moses",7,8
+exo,18,5,"Jethro Visits Moses",9,12
+exo,18,6,"Jethro Visits Moses",13,14
+exo,18,7,"Jethro Visits Moses",15,16
+exo,18,8,"Jethro Visits Moses",17,23
+exo,18,9,"Jethro Visits Moses",24,26
+exo,18,10,"Jethro Visits Moses",27,27
+exo,19,1,"At Mount Sinai",1,2
+exo,19,2,"At Mount Sinai",3,6
+exo,19,3,"At Mount Sinai",7,8
+exo,19,4,"At Mount Sinai",9,9
+exo,19,5,"At Mount Sinai",10,13
+exo,19,6,"At Mount Sinai",14,15
+exo,19,7,"At Mount Sinai",16,19
+exo,19,8,"At Mount Sinai",20,22
+exo,19,9,"At Mount Sinai",23,23
+exo,19,10,"At Mount Sinai",24,24
+exo,19,11,"At Mount Sinai",25,25
+exo,20,1,"The Ten Commandments(A)",1,1
+exo,20,2,"The Ten Commandments(A)",18,19
+exo,20,3,"The Ten Commandments(A)",20,20
+exo,20,4,"The Ten Commandments(A)",21,21
+exo,20,5,"Idols and Altars",22,23
+exo,20,6,"Idols and Altars",24,26
+exo,21,1,"(无小标题)",1,1
+exo,21,2,"Hebrew Servants(B)(C)",2,4
+exo,21,3,"Hebrew Servants(B)(C)",5,6
+exo,21,4,"Hebrew Servants(B)(C)",7,11
+exo,21,5,"Personal Injuries",12,14
+exo,21,6,"Personal Injuries",15,15
+exo,21,7,"Personal Injuries",16,16
+exo,21,8,"Personal Injuries",17,17
+exo,21,9,"Personal Injuries",18,19
+exo,21,10,"Personal Injuries",20,21
+exo,21,11,"Personal Injuries",22,25
+exo,21,12,"Personal Injuries",26,27
+exo,21,13,"Personal Injuries",28,32
+exo,21,14,"Personal Injuries",33,34
+exo,21,15,"Personal Injuries",35,36
+exo,22,1,"Protection of Property",1,1
+exo,22,2,"Protection of Property",2,3
+exo,22,3,"Protection of Property",3,4
+exo,22,4,"Protection of Property",5,5
+exo,22,5,"Protection of Property",6,6
+exo,22,6,"Protection of Property",7,9
+exo,22,7,"Protection of Property",10,13
+exo,22,8,"Protection of Property",14,15
+exo,22,9,"Social Responsibility",16,17
+exo,22,10,"Social Responsibility",18,18
+exo,22,11,"Social Responsibility",19,19
+exo,22,12,"Social Responsibility",20,20
+exo,22,13,"Social Responsibility",21,21
+exo,22,14,"Social Responsibility",22,24
+exo,22,15,"Social Responsibility",25,27
+exo,22,16,"Social Responsibility",28,28
+exo,22,17,"Social Responsibility",29,29
+exo,22,18,"Social Responsibility",29,30
+exo,22,19,"Social Responsibility",31,31
+exo,23,1,"Laws of Justice and Mercy",1,1
+exo,23,2,"Laws of Justice and Mercy",2,3
+exo,23,3,"Laws of Justice and Mercy",4,5
+exo,23,4,"Laws of Justice and Mercy",6,7
+exo,23,5,"Laws of Justice and Mercy",8,8
+exo,23,6,"Laws of Justice and Mercy",9,9
+exo,23,7,"Sabbath Laws",10,11
+exo,23,8,"Sabbath Laws",12,12
+exo,23,9,"Sabbath Laws",13,13
+exo,23,10,"The Three Annual Festivals",14,14
+exo,23,11,"The Three Annual Festivals",15,15
+exo,23,12,"The Three Annual Festivals",15,15
+exo,23,13,"The Three Annual Festivals",16,16
+exo,23,14,"The Three Annual Festivals",16,16
+exo,23,15,"The Three Annual Festivals",17,17
+exo,23,16,"The Three Annual Festivals",18,18
+exo,23,17,"The Three Annual Festivals",18,18
+exo,23,18,"The Three Annual Festivals",19,19
+exo,23,19,"The Three Annual Festivals",19,19
+exo,23,20,"God’s Angel to Prepare the Way",20,26
+exo,23,21,"God’s Angel to Prepare the Way",27,30
+exo,23,22,"God’s Angel to Prepare the Way",31,33
+exo,24,1,"The Covenant Confirmed",1,2
+exo,24,2,"The Covenant Confirmed",3,4
+exo,24,3,"The Covenant Confirmed",4,7
+exo,24,4,"The Covenant Confirmed",8,8
+exo,24,5,"The Covenant Confirmed",9,11
+exo,24,6,"The Covenant Confirmed",12,12
+exo,24,7,"The Covenant Confirmed",13,14
+exo,24,8,"The Covenant Confirmed",15,18
+exo,26,1,"The Tabernacle(A)",1,6
+exo,26,2,"The Tabernacle(A)",7,14
+exo,26,3,"The Tabernacle(A)",15,25
+exo,26,4,"The Tabernacle(A)",26,29
+exo,26,5,"The Tabernacle(A)",30,30
+exo,26,6,"The Tabernacle(A)",31,35
+exo,26,7,"The Tabernacle(A)",36,37
+exo,27,1,"The Altar of Burnt Offering(A)",1,8
+exo,27,2,"The Courtyard(I)",9,11
+exo,27,3,"The Courtyard(I)",12,15
+exo,27,4,"The Courtyard(I)",16,19
+exo,27,5,"Oil for the Lampstand(M)",20,21
+exo,28,1,"The Priestly Garments",1,5
+exo,28,2,"The Ephod(O)",6,8
+exo,28,3,"The Ephod(O)",9,14
+exo,28,4,"The Breastpiece(U)",15,21
+exo,28,5,"The Breastpiece(U)",22,28
+exo,28,6,"The Breastpiece(U)",29,30
+exo,28,7,"Other Priestly Garments(AC)",31,35
+exo,28,8,"Other Priestly Garments(AC)",36,38
+exo,28,9,"Other Priestly Garments(AC)",39,41
+exo,28,10,"Other Priestly Garments(AC)",42,43
+exo,28,11,"Other Priestly Garments(AC)",43,43
+exo,29,1,"Consecration of the Priests(A)",1,9
+exo,29,2,"Consecration of the Priests(A)",9,9
+exo,29,3,"Consecration of the Priests(A)",10,14
+exo,29,4,"Consecration of the Priests(A)",15,18
+exo,29,5,"Consecration of the Priests(A)",19,21
+exo,29,6,"Consecration of the Priests(A)",22,26
+exo,29,7,"Consecration of the Priests(A)",27,28
+exo,29,8,"Consecration of the Priests(A)",29,30
+exo,29,9,"Consecration of the Priests(A)",31,34
+exo,29,10,"Consecration of the Priests(A)",35,37
+exo,29,11,"Consecration of the Priests(A)",38,41
+exo,29,12,"Consecration of the Priests(A)",42,43
+exo,29,13,"Consecration of the Priests(A)",44,46
+exo,30,1,"The Altar of Incense(A)",1,6
+exo,30,2,"The Altar of Incense(A)",7,10
+exo,30,3,"Atonement Money",11,16
+exo,30,4,"Basin for Washing",17,21
+exo,30,5,"Anointing Oil",22,29
+exo,30,6,"Anointing Oil",30,33
+exo,30,7,"Incense",34,38
+exo,31,1,"Bezalel and Oholiab(A)",1,11
+exo,31,2,"The Sabbath",12,13
+exo,31,3,"The Sabbath",14,17
+exo,31,4,"The Sabbath",18,18
+exo,32,1,"The Golden Calf",1,1
+exo,32,2,"The Golden Calf",2,4
+exo,32,3,"The Golden Calf",5,6
+exo,32,4,"The Golden Calf",7,8
+exo,32,5,"The Golden Calf",9,10
+exo,32,6,"The Golden Calf",11,14
+exo,32,7,"The Golden Calf",15,16
+exo,32,8,"The Golden Calf",17,17
+exo,32,9,"The Golden Calf",18,18
+exo,32,10,"The Golden Calf",18,18
+exo,32,11,"The Golden Calf",19,20
+exo,32,12,"The Golden Calf",21,21
+exo,32,13,"The Golden Calf",22,24
+exo,32,14,"The Golden Calf",25,26
+exo,32,15,"The Golden Calf",27,29
+exo,32,16,"The Golden Calf",30,30
+exo,32,17,"The Golden Calf",31,32
+exo,32,18,"The Golden Calf",33,34
+exo,32,19,"The Golden Calf",35,35
+exo,33,1,"(无小标题)",1,3
+exo,33,2,"(无小标题)",4,6
+exo,33,3,"The Tent of Meeting",7,11
+exo,33,4,"Moses and the Glory of the Lord",12,13
+exo,33,5,"Moses and the Glory of the Lord",14,14
+exo,33,6,"Moses and the Glory of the Lord",15,16
+exo,33,7,"Moses and the Glory of the Lord",17,17
+exo,33,8,"Moses and the Glory of the Lord",18,18
+exo,33,9,"Moses and the Glory of the Lord",19,20
+exo,33,10,"Moses and the Glory of the Lord",21,23
+exo,34,1,"The New Stone Tablets",1,3
+exo,34,2,"The New Stone Tablets",4,7
+exo,34,3,"The New Stone Tablets",8,9
+exo,34,4,"The New Stone Tablets",10,14
+exo,34,5,"The New Stone Tablets",15,16
+exo,34,6,"The New Stone Tablets",17,17
+exo,34,7,"The New Stone Tablets",18,18
+exo,34,8,"The New Stone Tablets",19,20
+exo,34,9,"The New Stone Tablets",20,20
+exo,34,10,"The New Stone Tablets",21,21
+exo,34,11,"The New Stone Tablets",22,24
+exo,34,12,"The New Stone Tablets",25,25
+exo,34,13,"The New Stone Tablets",26,26
+exo,34,14,"The New Stone Tablets",26,26
+exo,34,15,"The New Stone Tablets",27,28
+exo,34,16,"The Radiant Face of Moses",29,32
+exo,34,17,"The Radiant Face of Moses",33,35
+exo,35,1,"Sabbath Regulations",1,3
+exo,35,2,"Materials for the Tabernacle(E)(F)",4,9
+exo,35,3,"Materials for the Tabernacle(E)(F)",10,19
+exo,35,4,"Materials for the Tabernacle(E)(F)",20,29
+exo,35,5,"Bezalel and Oholiab(AD)",30,35
+exo,36,1,"(无小标题)",1,1
+exo,36,2,"(无小标题)",2,5
+exo,36,3,"(无小标题)",6,7
+exo,36,4,"The Tabernacle(I)",8,13
+exo,36,5,"The Tabernacle(I)",14,19
+exo,36,6,"The Tabernacle(I)",20,30
+exo,36,7,"The Tabernacle(I)",31,34
+exo,36,8,"The Tabernacle(I)",35,38
+exo,37,1,"The Ark(A)",1,5
+exo,37,2,"The Ark(A)",6,9
+exo,37,3,"The Table(I)",10,16
+exo,37,4,"The Lampstand(M)",17,22
+exo,37,5,"The Lampstand(M)",23,24
+exo,37,6,"The Altar of Incense(Q)",25,28
+exo,37,7,"The Altar of Incense(Q)",29,29
+exo,38,1,"The Altar of Burnt Offering(A)",1,7
+exo,38,2,"The Basin for Washing",8,8
+exo,38,3,"The Courtyard(F)",9,11
+exo,38,4,"The Courtyard(F)",12,17
+exo,38,5,"The Courtyard(F)",18,20
+exo,38,6,"The Materials Used",21,24
+exo,38,7,"The Materials Used",25,28
+exo,38,8,"The Materials Used",29,31
+exo,39,1,"The Priestly Garments",1,1
+exo,39,2,"The Ephod(D)",2,5
+exo,39,3,"The Ephod(D)",6,7
+exo,39,4,"The Breastpiece(F)",8,14
+exo,39,5,"The Breastpiece(F)",15,21
+exo,39,6,"Other Priestly Garments(I)",22,26
+exo,39,7,"Other Priestly Garments(I)",27,29
+exo,39,8,"Other Priestly Garments(I)",30,31
+exo,39,9,"Moses Inspects the Tabernacle(N)",32,41
+exo,39,10,"Moses Inspects the Tabernacle(N)",42,43
+exo,40,1,"Setting Up the Tabernacle",1,5
+exo,40,2,"Setting Up the Tabernacle",6,8
+exo,40,3,"Setting Up the Tabernacle",9,11
+exo,40,4,"Setting Up the Tabernacle",12,16
+exo,40,5,"Setting Up the Tabernacle",17,19
+exo,40,6,"Setting Up the Tabernacle",20,21
+exo,40,7,"Setting Up the Tabernacle",22,23
+exo,40,8,"Setting Up the Tabernacle",24,25
+exo,40,9,"Setting Up the Tabernacle",26,27
+exo,40,10,"Setting Up the Tabernacle",28,29
+exo,40,11,"Setting Up the Tabernacle",30,32
+exo,40,12,"Setting Up the Tabernacle",33,33
+exo,40,13,"The Glory of the Lord",34,35
+exo,40,14,"The Glory of the Lord",36,38
