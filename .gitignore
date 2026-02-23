@@ -1,17 +1,24 @@
 # Dependencies
 node_modules
+/node_modules
 .pnpm-store
+/.pnp
+.pnp.js
 
 # Build
 .next
+/.next/
 out
+/out/
 dist
+/build
 *.tsbuildinfo
 
 # Env
 .env
 .env.local
 .env.*.local
+.env*.local
 
 # IDE
 .idea
@@ -22,3 +29,29 @@ dist
 # Debug
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+/coverage
+
+# Vercel
+.vercel
+
+# TypeScript
+next-env.d.ts
+
+# Misc
+*.pem
+
+# Data (generated)
+/data/bible.json
+
+# Crawled screenshots
+/scripts/screenshots/
+scripts/
+scripts/**
+
+# XML files
+*.xml
+**/*.xml
