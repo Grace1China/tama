@@ -4,6 +4,7 @@ import { useState } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
 import { Input } from '@/components/ui/input';
+import { apiBase } from '@/lib/apiBase';
 
 export default function IndicatorPage() {
   const [groupByQuarter, setGroupByQuarter] = useState(false);
@@ -46,7 +47,7 @@ export default function IndicatorPage() {
 
       {/* 股价走势图 */}
       {selectedTsCode && (
-        <PriceChart tsCode={selectedTsCode} apiPath="/api/parq/indicator" />
+        <PriceChart tsCode={selectedTsCode} apiPath={`${apiBase}/api/parq/indicator`} />
       )}
 
       {/* 数据表格 */}
@@ -54,7 +55,7 @@ export default function IndicatorPage() {
         category="indicator" 
         title="交易指标"
         useServerPagination={true}
-        apiPath="/api/parq/indicator"
+        apiPath={`${apiBase}/api/parq/indicator`}
         extraQueryParams={groupByQuarter ? { groupByQuarter: true } : {}}
       />
     </div>

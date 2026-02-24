@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { apiBase } from '@/lib/apiBase';
 import { AgGridReact } from 'ag-grid-react';
 import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -55,7 +56,7 @@ export default function DataGrid({
   }, [extraQueryParams]);
 
   const getApiUrl = useCallback((page: number, size: number, sortQuery = '', filterQuery = '') => {
-    const basePath = apiPath || `/api/csv/${category}`;
+    const basePath = apiBase + (apiPath || `/api/csv/${category}`);
     let extraParams = '';
     const currentExtraParams = extraQueryParamsRef.current;
     if (Object.keys(currentExtraParams).length > 0) {
@@ -79,7 +80,7 @@ export default function DataGrid({
     setLoading(true);
     setError(null);
     try {
-      const basePath = apiPath || `/api/csv/${category}`;
+      const basePath = apiBase + (apiPath || `/api/csv/${category}`);
       let extraParams = '';
       const currentExtraParams = extraQueryParamsRef.current;
       if (Object.keys(currentExtraParams).length > 0) {
@@ -482,7 +483,7 @@ export default function DataGrid({
           
           try {
             console.log(`Fetching page ${page} for rows ${startRow} (${category})`);
-            const basePath = apiPath || `/api/csv/${category}`;
+            const basePath = apiBase + (apiPath || `/api/csv/${category}`);
             let extraParams = '';
             const currentExtraParams = extraQueryParamsRef.current;
             if (Object.keys(currentExtraParams).length > 0) {

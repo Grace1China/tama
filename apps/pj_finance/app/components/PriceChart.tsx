@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiBase } from '@/lib/apiBase';
 import {
   ComposedChart,
   Bar,
@@ -63,7 +64,7 @@ interface PriceChartProps {
 
 export default function PriceChart({ 
   tsCode, 
-  apiPath = '/api/parq/indicator',
+  apiPath = `${apiBase}/api/parq/indicator`,
   dateField = 'end_date',
   leftData1,
   barField,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { apiBase } from '@/lib/apiBase';
 
 interface StockRecord {
   ts_code: string;
@@ -61,7 +62,7 @@ export default function MultiDimsPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch('/api/csv/stockList?page=1&size=10000');
+        const res = await fetch(`${apiBase}/api/csv/stockList?page=1&size=10000`);
         if (!res.ok) {
           throw new Error(`加载失败: ${res.statusText}`);
         }

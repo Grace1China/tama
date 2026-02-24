@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
 import { Input } from '@/components/ui/input';
+import { apiBase } from '@/lib/apiBase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RGL from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -91,13 +92,13 @@ export default function Income1Page() {
                   leftData1={{
                     barField: "total_revenue",
                     barFieldLabel: "营业总收入",
-                    barApiPath: "/api/parq/income1",
+                    barApiPath: `${apiBase}/api/parq/income1`,
                     barDateField: "end_date"
                   }}
                   rightData1={{
                     lineField: "total_mv",
                     lineFieldLabel: "总市值（万元）",
-                    lineApiPath: "/api/csv/indicator",
+                    lineApiPath: `${apiBase}/api/csv/indicator`,
                     lineDateField: "trade_date",
                     lineSource: "csv"
                   }}
@@ -124,7 +125,7 @@ export default function Income1Page() {
             category="income1"
             title="利润表1"
             useServerPagination={true}
-            apiPath="/api/parq/income1"
+            apiPath={`${apiBase}/api/parq/income1`}
             extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
           />
         </TabsContent>
@@ -134,7 +135,7 @@ export default function Income1Page() {
               category="indicator"
               title="每日指标（按季度分组）"
               useServerPagination={true}
-              apiPath="/api/csv/indicator"
+              apiPath={`${apiBase}/api/csv/indicator`}
               extraQueryParams={{ ts_code: selectedTsCode, source: 'csv' }}
             />
           ) : (

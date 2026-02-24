@@ -4,6 +4,7 @@ import { useState } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
 import { Input } from '@/components/ui/input';
+import { apiBase } from '@/lib/apiBase';
 
 export default function BalanceSheetPage() {
   const [groupByQuarter, setGroupByQuarter] = useState(false);
@@ -46,7 +47,7 @@ export default function BalanceSheetPage() {
 
       {/* 股价走势图 */}
       {selectedTsCode && (
-        <PriceChart tsCode={selectedTsCode} apiPath="/api/parq/balanceSheet" />
+        <PriceChart tsCode={selectedTsCode} apiPath={`${apiBase}/api/parq/balanceSheet`} />
       )}
 
       {/* 数据表格 */}
@@ -54,7 +55,7 @@ export default function BalanceSheetPage() {
         category="balanceSheet" 
         title="资产负债表"
         useServerPagination={true}
-        apiPath="/api/parq/balanceSheet"
+        apiPath={`${apiBase}/api/parq/balanceSheet`}
         extraQueryParams={groupByQuarter ? { groupByQuarter: true } : {}}
       />
     </div>
