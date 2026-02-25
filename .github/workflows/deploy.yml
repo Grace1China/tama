@@ -1,5 +1,4 @@
-# 部署：构建 pj_finance / pj_bible 并推送到对应分支存储构建版本
-# 分支 pd_finance = pj_finance 构建产物，pd_bible = pj_bible 构建产物
+# 部署：构建 pj_finance + pj_bible，推送到单一分支 pd_tama
 name: Deploy
 
 # 推送到 main 或 master 时执行；也可在 Actions 页手动 Run workflow
@@ -13,8 +12,8 @@ defaults:
     shell: bash
 
 jobs:
-  deploy-pj_finance:
-    name: Build & push to pd_finance
+  deploy:
+    name: Build & push to pd_tama
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -22,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,44 +35,18 @@ jobs:
       - name: Remove pj_finance/temp for build
         run: rm -rf apps/pj_finance/temp
 
-      - name: Build pj_finance
-        run: npm run build:finance
-
-      - name: Push build to pd_finance
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f apps/pj_finance/.next
-          git diff --staged --quiet || git commit -m "chore(deploy): pj_finance build $(date -u +%Y%m%d-%H%M%S)"
-          git push --force origin HEAD:pd_finance
-
-  deploy-pj_bible:
-    name: Build & push to pd_bible
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Build pj_bible
         run: npm run build:bible
 
-      - name: Push build to pd_bible
+      - name: Build pj_finance
+        run: npm run build:finance
+
+      - name: Push build to pd_tama
+        env:
+          TOKEN: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f apps/pj_bible/.next
-          git diff --staged --quiet || git commit -m "chore(deploy): pj_bible build $(date -u +%Y%m%d-%H%M%S)"
-          git push --force origin HEAD:pd_bible
+          git add -f apps/pj_bible/.next apps/pj_finance/.next
+          git diff --staged --quiet || git commit -m "chore(deploy): pj_bible + pj_finance build $(date -u +%Y%m%d-%H%M%S)"
+          git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pd_tama
