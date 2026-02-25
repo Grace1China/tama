@@ -47,6 +47,9 @@ next-env.d.ts
 # Data (generated)
 /data/bible.json
 
+# pj_finance 数据目录：本地为软链接，生产部署后在主机上单独挂载，构建时不参与
+apps/pj_finance/temp
+
 # Crawled screenshots
 /scripts/screenshots/
 scripts/
