@@ -1,0 +1,36 @@
+# CI/CD: 构建 pj_bible 与 pj_finance（Next.js 应用）
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build pj_bible & pj_finance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build pj_bible
+        run: npm run build:bible
+
+      - name: Build pj_finance
+        run: npm run build:finance
