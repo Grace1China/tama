@@ -1,0 +1,20 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/balanceSheet/page": "app/balanceSheet/page.js",
+  "/fiIndicator/page": "app/fiIndicator/page.js",
+  "/income1/page": "app/income1/page.js",
+  "/indicator/page": "app/indicator/page.js",
+  "/multiDims/page": "app/multiDims/page.js",
+  "/page": "app/page.js",
+  "/stockList/page": "app/stockList/page.js",
+  "/profit/page": "app/profit/page.js",
+  "/tuShare/page": "app/tuShare/page.js",
+  "/api/parq/balanceSheet/route": "app/api/parq/balanceSheet/route.js",
+  "/api/parq/income1/route": "app/api/parq/income1/route.js",
+  "/api/tuShare/csv/route": "app/api/tuShare/csv/route.js",
+  "/api/tuShare/entries/route": "app/api/tuShare/entries/route.js",
+  "/api/csv/indicator/route": "app/api/csv/indicator/route.js",
+  "/api/csv/[category]/route": "app/api/csv/[category]/route.js",
+  "/api/tuShare/parquet/route": "app/api/tuShare/parquet/route.js",
+  "/api/parq/indicator/route": "app/api/parq/indicator/route.js"
+}
