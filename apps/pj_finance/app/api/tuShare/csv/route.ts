@@ -5,6 +5,8 @@ import Papa from 'papaparse';
 
 const BASE = 'temp/tuShare';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const rel = request.nextUrl.searchParams.get('path');

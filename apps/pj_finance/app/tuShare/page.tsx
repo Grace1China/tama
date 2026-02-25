@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { apiBase } from '@/lib/apiBase';
 import CsvTableView from '../components/CsvTableView';
-import type { CsvTableData } from '../components/CsvTableView';
+import type { CsvTableData, FetchPageFn } from '../components/CsvTableView';
 import { FolderOpen, FileSpreadsheet, ChevronRight, Home } from 'lucide-react';
 
 type ViewMode = 'list' | 'file';
@@ -51,10 +51,16 @@ export default function TuSharePage() {
 
   const handleOpenFile = async (filename: string) => {
     const filePath = currentPath ? `${currentPath}/${filename}` : filename;
+    const isParquet = filename.toLowerCase().endsWith('.parquet');
+    const apiPath = isParquet ? '/api/tuShare/parquet' : '/api/tuShare/csv';
+    const pageSize = 50;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBase}/api/tuShare/csv?path=${encodeURIComponent(filePath)}`);
+      const url = isParquet
+        ? `${apiBase}${apiPath}?path=${encodeURIComponent(filePath)}&page=1&size=${pageSize}`
+        : `${apiBase}${apiPath}?path=${encodeURIComponent(filePath)}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       setSelectedFilePath(filePath);
@@ -72,6 +78,22 @@ export default function TuSharePage() {
       setLoading(false);
     }
   };
+
+  const fetchParquetPage: FetchPageFn | undefined = selectedFilePath?.toLowerCase().endsWith('.parquet')
+    ? async (page, pageSize, sortField, sortDir) => {
+        const params = new URLSearchParams({
+          path: selectedFilePath,
+          page: String(page),
+          size: String(pageSize),
+        });
+        if (sortField) params.set('sortField', sortField);
+        if (sortDir) params.set('sortDir', sortDir);
+        const res = await fetch(`${apiBase}/api/tuShare/parquet?${params.toString()}`);
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        return { data: json.data || [], totalRows: json.totalRows ?? 0 };
+      }
+    : undefined;
 
   const handleBackFromFile = () => {
     setViewMode('list');
@@ -143,7 +165,7 @@ export default function TuSharePage() {
               )}
               {entries.files.length > 0 && (
                 <div>
-                  <h2 className="text-sm font-medium text-muted-foreground mb-2">CSV 文件</h2>
+                  <h2 className="text-sm font-medium text-muted-foreground mb-2">数据文件 (CSV / Parquet)</h2>
                   <ul className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
                     {entries.files.map((name) => (
                       <li key={name}>
@@ -170,7 +192,12 @@ export default function TuSharePage() {
 
       {viewMode === 'file' && csvData && (
         <div className="min-h-[500px]">
-          <CsvTableView data={csvData} onBack={handleBackFromFile} />
+          <CsvTableView
+            data={csvData}
+            onBack={handleBackFromFile}
+            fetchPage={fetchParquetPage}
+            pageSize={50}
+          />
         </div>
       )}
     </div>

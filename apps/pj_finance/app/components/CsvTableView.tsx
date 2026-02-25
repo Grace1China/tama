@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
+import type { IDatasource, GridReadyEvent } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { Button } from '@/components/ui/button';
@@ -49,15 +50,28 @@ function formatNumber(value: unknown): string {
   return num.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/** 服务端分页：按页拉取数据，用于 Parquet 等大文件 */
+export type FetchPageFn = (
+  page: number,
+  pageSize: number,
+  sortField?: string,
+  sortDir?: string
+) => Promise<{ data: Record<string, unknown>[]; totalRows: number }>;
+
 interface CsvTableViewProps {
   data: CsvTableData;
   onBack: () => void;
+  /** 提供时使用服务端分页（infinite row model），不提供则使用客户端分页 */
+  fetchPage?: FetchPageFn;
+  /** 服务端分页时的每页条数，默认 50 */
+  pageSize?: number;
 }
 
-export default function CsvTableView({ data, onBack }: CsvTableViewProps) {
+export default function CsvTableView({ data, onBack, fetchPage, pageSize: pageSizeProp = 50 }: CsvTableViewProps) {
   const gridRef = useRef<AgGridReactType>(null);
-  const { headers, originalHeaders, data: rowData } = data;
+  const { headers, originalHeaders, data: rowData, totalRows } = data;
   const orig = originalHeaders ?? headers;
+  const useServerPagination = !!fetchPage;
 
   const columnDefs = useMemo(() => {
     return headers.map((header, i) => {
@@ -85,6 +99,31 @@ export default function CsvTableView({ data, onBack }: CsvTableViewProps) {
     []
   );
 
+  const onGridReady = useCallback(
+    (event: GridReadyEvent) => {
+      if (!useServerPagination || !fetchPage) return;
+      const pageSize = pageSizeProp;
+      const dataSource: IDatasource = {
+        getRows: async (params) => {
+          const { startRow, successCallback, failCallback, sortModel } = params;
+          const page = Math.floor(startRow / pageSize) + 1;
+          const sortField = sortModel?.[0]?.colId;
+          const sortDir = sortModel?.[0]?.sort === 'asc' ? 'asc' : 'desc';
+          try {
+            const res = await fetchPage(page, pageSize, sortField, sortDir);
+            const lastRow = res.totalRows <= 0 ? -1 : Math.min(startRow + res.data.length, res.totalRows) - 1;
+            successCallback(res.data, lastRow);
+          } catch (e) {
+            console.error('CsvTableView fetchPage error:', e);
+            failCallback();
+          }
+        },
+      };
+      (event.api as { setGridOption(key: string, value: unknown): void }).setGridOption('datasource', dataSource);
+    },
+    [useServerPagination, fetchPage, pageSizeProp]
+  );
+
   return (
     <div className="flex flex-col gap-3 h-full">
       <div className="flex items-center gap-2">
@@ -93,20 +132,23 @@ export default function CsvTableView({ data, onBack }: CsvTableViewProps) {
           返回
         </Button>
         <span className="text-sm text-muted-foreground">
-          {data.filename} · 共 {data.totalRows} 行
+          {data.filename} · 共 {totalRows} 行
         </span>
       </div>
       <div className="ag-theme-alpine w-full" style={{ height: 500 }}>
         <AgGridReact
           ref={gridRef}
-          rowData={rowData}
+          rowData={useServerPagination ? undefined : rowData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           domLayout="normal"
           pagination={true}
-          paginationPageSize={50}
+          paginationPageSize={pageSizeProp}
           paginationPageSizeSelector={[20, 50, 100, 200]}
           suppressCellFocus={false}
+          rowModelType={useServerPagination ? 'infinite' : 'clientSide'}
+          cacheBlockSize={useServerPagination ? pageSizeProp : undefined}
+          onGridReady={onGridReady}
         />
       </div>
     </div>
