@@ -32,5 +32,9 @@ jobs:
       - name: Build pj_bible
         run: npm run build:bible
 
+      # 构建时不依赖 temp（生产环境再挂载）；若仓库中有软链接则删掉，避免 Next 构建时 stat 报错
+      - name: Remove pj_finance/temp for build
+        run: rm -rf apps/pj_finance/temp
+
       - name: Build pj_finance
         run: npm run build:finance

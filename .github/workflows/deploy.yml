@@ -1,0 +1,74 @@
+# 部署：构建 pj_finance / pj_bible 并推送到对应分支存储构建版本
+# 分支 pd_finance = pj_finance 构建产物，pd_bible = pj_bible 构建产物
+name: Deploy
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy-pj_finance:
+    name: Build & push to pd_finance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Remove pj_finance/temp for build
+        run: rm -rf apps/pj_finance/temp
+
+      - name: Build pj_finance
+        run: npm run build:finance
+
+      - name: Push build to pd_finance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f apps/pj_finance/.next
+          git diff --staged --quiet || git commit -m "chore(deploy): pj_finance build $(date -u +%Y%m%d-%H%M%S)"
+          git push --force origin HEAD:pd_finance
+
+  deploy-pj_bible:
+    name: Build & push to pd_bible
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build pj_bible
+        run: npm run build:bible
+
+      - name: Push build to pd_bible
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f apps/pj_bible/.next
+          git diff --staged --quiet || git commit -m "chore(deploy): pj_bible build $(date -u +%Y%m%d-%H%M%S)"
+          git push --force origin HEAD:pd_bible
