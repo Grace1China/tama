@@ -2,6 +2,7 @@
 # 分支 pd_finance = pj_finance 构建产物，pd_bible = pj_bible 构建产物
 name: Deploy
 
+# 推送到 main 或 master 时执行；也可在 Actions 页手动 Run workflow
 on:
   push:
     branches: [main, master]
@@ -15,6 +16,8 @@ jobs:
   deploy-pj_finance:
     name: Build & push to pd_finance
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +50,8 @@ jobs:
   deploy-pj_bible:
     name: Build & push to pd_bible
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
