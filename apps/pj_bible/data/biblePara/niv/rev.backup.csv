@@ -1,0 +1,171 @@
+book,chapter,paragraph,title,startVerseNo,endVerseNo
+rev,1,1,"Prologue",1,3
+rev,1,2,"Greetings and Doxology",4,4
+rev,1,3,"Greetings and Doxology",4,4
+rev,1,4,"Greetings and Doxology",4,5
+rev,1,5,"Greetings and Doxology",5,6
+rev,1,6,"Greetings and Doxology",7,7
+rev,1,7,"Greetings and Doxology",8,8
+rev,1,8,"John’s Vision of Christ",9,11
+rev,1,9,"John’s Vision of Christ",12,16
+rev,1,10,"John’s Vision of Christ",17,18
+rev,1,11,"John’s Vision of Christ",19,20
+rev,2,1,"To the Church in Ephesus",1,1
+rev,2,2,"To the Church in Smyrna",8,8
+rev,2,3,"To the Church in Pergamum",12,12
+rev,2,4,"To the Church in Thyatira",18,18
+rev,3,1,"To the Church in Sardis",1,1
+rev,3,2,"To the Church in Philadelphia",7,7
+rev,3,3,"To the Church in Laodicea",14,14
+rev,4,1,"The Throne in Heaven",1,6
+rev,4,2,"The Throne in Heaven",6,8
+rev,4,3,"The Throne in Heaven",9,10
+rev,4,4,"The Throne in Heaven",11,11
+rev,5,1,"The Scroll and the Lamb",1,5
+rev,5,2,"The Scroll and the Lamb",6,9
+rev,5,3,"The Scroll and the Lamb",9,10
+rev,5,4,"The Scroll and the Lamb",11,12
+rev,5,5,"The Scroll and the Lamb",12,12
+rev,5,6,"The Scroll and the Lamb",13,13
+rev,5,7,"The Scroll and the Lamb",13,13
+rev,5,8,"The Scroll and the Lamb",14,14
+rev,6,1,"The Seals",1,2
+rev,6,2,"The Seals",3,4
+rev,6,3,"The Seals",5,6
+rev,6,4,"The Seals",7,8
+rev,6,5,"The Seals",9,11
+rev,6,6,"The Seals",12,14
+rev,6,7,"The Seals",15,17
+rev,7,1,"144,000 Sealed",1,4
+rev,7,2,"The Great Multitude in White Robes",9,10
+rev,7,3,"The Great Multitude in White Robes",10,10
+rev,7,4,"The Great Multitude in White Robes",11,12
+rev,7,5,"The Great Multitude in White Robes",12,12
+rev,7,6,"The Great Multitude in White Robes",13,13
+rev,7,7,"The Great Multitude in White Robes",14,14
+rev,7,8,"The Great Multitude in White Robes",14,15
+rev,7,9,"The Great Multitude in White Robes",15,17
+rev,8,1,"The Seventh Seal and the Golden Censer",1,1
+rev,8,2,"The Seventh Seal and the Golden Censer",2,2
+rev,8,3,"The Seventh Seal and the Golden Censer",3,5
+rev,8,4,"The Trumpets",6,6
+rev,8,5,"The Trumpets",7,7
+rev,8,6,"The Trumpets",8,9
+rev,8,7,"The Trumpets",10,11
+rev,8,8,"The Trumpets",12,12
+rev,8,9,"The Trumpets",13,13
+rev,9,1,"(无小标题)",1,6
+rev,9,2,"(无小标题)",7,11
+rev,9,3,"(无小标题)",12,12
+rev,9,4,"(无小标题)",13,16
+rev,9,5,"(无小标题)",17,19
+rev,9,6,"(无小标题)",20,21
+rev,10,1,"The Angel and the Little Scroll",1,4
+rev,10,2,"The Angel and the Little Scroll",5,7
+rev,10,3,"The Angel and the Little Scroll",8,8
+rev,10,4,"The Angel and the Little Scroll",9,11
+rev,11,1,"The Two Witnesses",1,6
+rev,11,2,"The Two Witnesses",7,10
+rev,11,3,"The Two Witnesses",11,12
+rev,11,4,"The Two Witnesses",13,13
+rev,11,5,"The Two Witnesses",14,14
+rev,11,6,"The Seventh Trumpet",15,15
+rev,11,7,"The Seventh Trumpet",15,15
+rev,11,8,"The Seventh Trumpet",16,17
+rev,11,9,"The Seventh Trumpet",17,18
+rev,11,10,"The Seventh Trumpet",19,19
+rev,12,1,"The Woman and the Dragon",1,6
+rev,12,2,"The Woman and the Dragon",7,9
+rev,12,3,"The Woman and the Dragon",10,10
+rev,12,4,"The Woman and the Dragon",10,12
+rev,12,5,"The Woman and the Dragon",13,17
+rev,13,1,"The Beast out of the Sea",1,4
+rev,13,2,"The Beast out of the Sea",5,8
+rev,13,3,"The Beast out of the Sea",9,9
+rev,13,4,"The Beast out of the Sea",10,10
+rev,13,5,"The Beast out of the Sea",10,10
+rev,13,6,"The Beast out of the Earth",11,17
+rev,13,7,"The Beast out of the Earth",18,18
+rev,14,1,"The Lamb and the 144,000",1,5
+rev,14,2,"The Three Angels",6,7
+rev,14,3,"The Three Angels",8,8
+rev,14,4,"The Three Angels",9,12
+rev,14,5,"The Three Angels",13,13
+rev,14,6,"The Three Angels",13,13
+rev,14,7,"Harvesting the Earth and Trampling the Winepress",14,16
+rev,14,8,"Harvesting the Earth and Trampling the Winepress",17,20
+rev,15,1,"Seven Angels With Seven Plagues",1,3
+rev,15,2,"Seven Angels With Seven Plagues",3,4
+rev,15,3,"Seven Angels With Seven Plagues",5,8
+rev,16,1,"The Seven Bowls of God’s Wrath",1,1
+rev,16,2,"The Seven Bowls of God’s Wrath",2,2
+rev,16,3,"The Seven Bowls of God’s Wrath",3,3
+rev,16,4,"The Seven Bowls of God’s Wrath",4,5
+rev,16,5,"The Seven Bowls of God’s Wrath",5,6
+rev,16,6,"The Seven Bowls of God’s Wrath",7,7
+rev,16,7,"The Seven Bowls of God’s Wrath",7,7
+rev,16,8,"The Seven Bowls of God’s Wrath",8,9
+rev,16,9,"The Seven Bowls of God’s Wrath",10,11
+rev,16,10,"The Seven Bowls of God’s Wrath",12,14
+rev,16,11,"The Seven Bowls of God’s Wrath",16,16
+rev,16,12,"The Seven Bowls of God’s Wrath",17,21
+rev,17,1,"Babylon, the Prostitute on the Beast",1,2
+rev,17,2,"Babylon, the Prostitute on the Beast",3,5
+rev,17,3,"Babylon, the Prostitute on the Beast",6,6
+rev,17,4,"Babylon, the Prostitute on the Beast",6,8
+rev,17,5,"Babylon, the Prostitute on the Beast",9,11
+rev,17,6,"Babylon, the Prostitute on the Beast",12,14
+rev,17,7,"Babylon, the Prostitute on the Beast",15,18
+rev,18,1,"Lament Over Fallen Babylon",1,2
+rev,18,2,"Lament Over Fallen Babylon",2,3
+rev,18,3,"Warning to Escape Babylon’s Judgment",4,4
+rev,18,4,"Warning to Escape Babylon’s Judgment",4,8
+rev,18,5,"Threefold Woe Over Babylon’s Fall",9,10
+rev,18,6,"Threefold Woe Over Babylon’s Fall",10,10
+rev,18,7,"Threefold Woe Over Babylon’s Fall",11,13
+rev,18,8,"Threefold Woe Over Babylon’s Fall",14,16
+rev,18,9,"Threefold Woe Over Babylon’s Fall",16,17
+rev,18,10,"Threefold Woe Over Babylon’s Fall",17,19
+rev,18,11,"Threefold Woe Over Babylon’s Fall",19,19
+rev,18,12,"Threefold Woe Over Babylon’s Fall",20,20
+rev,18,13,"The Finality of Babylon’s Doom",21,21
+rev,18,14,"The Finality of Babylon’s Doom",21,24
+rev,19,1,"Threefold Hallelujah Over Babylon’s Fall",1,1
+rev,19,2,"Threefold Hallelujah Over Babylon’s Fall",1,2
+rev,19,3,"Threefold Hallelujah Over Babylon’s Fall",3,3
+rev,19,4,"Threefold Hallelujah Over Babylon’s Fall",3,3
+rev,19,5,"Threefold Hallelujah Over Babylon’s Fall",4,4
+rev,19,6,"Threefold Hallelujah Over Babylon’s Fall",4,4
+rev,19,7,"Threefold Hallelujah Over Babylon’s Fall",5,5
+rev,19,8,"Threefold Hallelujah Over Babylon’s Fall",5,5
+rev,19,9,"Threefold Hallelujah Over Babylon’s Fall",6,6
+rev,19,10,"Threefold Hallelujah Over Babylon’s Fall",6,8
+rev,19,11,"Threefold Hallelujah Over Babylon’s Fall",8,8
+rev,19,12,"Threefold Hallelujah Over Babylon’s Fall",9,9
+rev,19,13,"Threefold Hallelujah Over Babylon’s Fall",10,10
+rev,19,14,"The Heavenly Warrior Defeats the Beast",11,16
+rev,19,15,"The Heavenly Warrior Defeats the Beast",17,18
+rev,19,16,"The Heavenly Warrior Defeats the Beast",19,21
+rev,20,1,"The Thousand Years",1,3
+rev,20,2,"The Thousand Years",4,6
+rev,20,3,"The Judgment of Satan",7,10
+rev,20,4,"The Judgment of the Dead",11,15
+rev,21,1,"A New Heaven and a New Earth",1,4
+rev,21,2,"A New Heaven and a New Earth",5,5
+rev,21,3,"A New Heaven and a New Earth",6,8
+rev,21,4,"The New Jerusalem, the Bride of the Lamb",9,14
+rev,21,5,"The New Jerusalem, the Bride of the Lamb",15,21
+rev,21,6,"The New Jerusalem, the Bride of the Lamb",22,27
+rev,22,1,"Eden Restored",1,5
+rev,22,2,"John and the Angel",6,6
+rev,22,3,"John and the Angel",7,7
+rev,22,4,"John and the Angel",8,9
+rev,22,5,"John and the Angel",10,11
+rev,22,6,"Epilogue: Invitation and Warning",12,13
+rev,22,7,"Epilogue: Invitation and Warning",14,15
+rev,22,8,"Epilogue: Invitation and Warning",16,16
+rev,22,9,"Epilogue: Invitation and Warning",17,17
+rev,22,10,"Epilogue: Invitation and Warning",18,19
+rev,22,11,"Epilogue: Invitation and Warning",20,20
+rev,22,12,"Epilogue: Invitation and Warning",20,20
+rev,22,13,"Epilogue: Invitation and Warning",21,21

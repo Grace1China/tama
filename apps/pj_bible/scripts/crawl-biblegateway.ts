@@ -116,11 +116,13 @@ export async function crawlPassage(url: string, bookId?: string): Promise<Paragr
     }
   };
 
-  // 遍历 .text-html 下的所有元素
-  $textHtml.children().each((_, el) => {
+  // 遍历 .text-html 下所有相关元素（按文档顺序）：
+  // - h3：小标题
+  // - p：段落
+  // - div.poetry / div.list：诗歌或列表段落
+  $textHtml.find('h3, p, div.poetry, div.list').each((_, el) => {
     const $el = $(el);
     const tag = el.tagName?.toLowerCase();
-    const classAttr = $el.attr('class') || '';
 
     // h3 是小标题
     if (tag === 'h3') {
@@ -129,8 +131,8 @@ export async function crawlPassage(url: string, bookId?: string): Promise<Paragr
       return;
     }
 
-    // p 标签或 div.poetry 是段落
-    if (tag === 'p' || (tag === 'div' && $el.hasClass('poetry'))||(tag ==='div'&&$el.hasClass('list'))) {
+    // p 标签或 div.poetry / div.list 是段落
+    if (tag === 'p' || (tag === 'div' && ($el.hasClass('poetry') || $el.hasClass('list')))) {
       // 先处理之前的段落
       processParagraph();
 

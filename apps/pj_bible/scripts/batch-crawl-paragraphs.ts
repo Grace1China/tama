@@ -91,7 +91,7 @@ async function main() {
 
   const header = 'book,chapter,paragraph,title,startVerseNo,endVerseNo';
 
-  for (const book of bible.books.filter(book => book.id == 'GEN')) {///filter(book => book.id == 'Zephaniah' || book.id == 'Nahum')
+  for (const book of bible.books.filter(book => book.id == 'REV')) {///filter(book => book.id == 'Zephaniah' || book.id == 'Nahum')
     console.log(`\n处理: ${book.title} (${book.id}) - ${book.chapters.length} 章`);
     totalBooks++;
 
