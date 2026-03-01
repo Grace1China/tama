@@ -61,6 +61,10 @@ jobs:
           git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pj_bible
           git checkout -
 
+      - name: Trigger pj_bible publish (pull + pm2 restart on server)
+        run: |
+          curl -sf --max-time 60 "http://www.quanyuan.live/publishBook" || echo "Warning: publishBook call failed (server may run script separately)"
+
       - name: Push pj_finance build to branch pj_finance
         env:
           TOKEN: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}

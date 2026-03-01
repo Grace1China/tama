@@ -52,8 +52,8 @@ apps/pj_finance/temp
 
 # Crawled screenshots
 /scripts/screenshots/
-scripts/
-scripts/**
+# scripts/
+# scripts/**
 
 # XML files
 *.xml
