@@ -60,6 +60,15 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
 
   // Get paragraph records for a chapter (when paragraphInfo is present, e.g. Romans)
   // 去重：按 (chapter, paragraph) 去重，避免 API 返回重复记录
+  /** 用于锚点 id：标题转成 URL 安全字符串 */
+  const slug = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'sect';
+
   const getParagraphsForChapter = (chapterId: number): ParagraphInfo[] => {
     if (!paragraphInfo) return [];
     const filtered = paragraphInfo.filter((p) => p.chapter === chapterId);
@@ -105,7 +114,11 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
             const isFirstPara = paraIndex === 0;
 
             return (
-              <div key={`${chapter.id}-${para.paragraph}`} className="mb-4 first:mt-0">
+              <div
+                key={`${chapter.id}-${para.paragraph}`}
+                id={showTitle && titleToShow ? `sect-${chapter.id}-${slug(titleToShow)}` : undefined}
+                className="mb-4 first:mt-0"
+              >
                 {showTitle && titleToShow && (
                   <div className="font-bold text-gray-800 mb-2">{titleToShow}</div>
                 )}
@@ -132,6 +145,7 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
       return (
         <div
           key={chapter.id}
+          id={`ch-${chapter.id}`}
           ref={(el) => {
             if (el) chapterRefsMap.current.set(chapter.id, el);
             else chapterRefsMap.current.delete(chapter.id);

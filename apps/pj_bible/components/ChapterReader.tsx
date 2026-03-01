@@ -85,8 +85,58 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
 
   const firstChapterId = (b: Book) => b.chapters[0]?.id ?? 1;
 
+  /** 与 VerseDisplay 一致的 slug，用于右侧目录锚点 */
+  const slug = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'sect';
+
+  /** 右侧目录：只显示小标题，括号内为「章:节」；无 paragraphInfo 时显示「章:1」 */
+  const tocSections = ((): { chapterId: number; title: string; isChapterOnly: boolean; startVerseNo?: number }[] => {
+    const startIndex = book.chapters.findIndex((ch) => ch.id === startChapterId);
+    if (startIndex === -1) return [];
+    const chs = book.chapters.slice(startIndex);
+    const seen = new Set<number>();
+    const chaptersToShow = chs.filter((ch) => {
+      if (seen.has(ch.id)) return false;
+      seen.add(ch.id);
+      return true;
+    });
+    if (!paragraphInfo || paragraphInfo.length === 0) {
+      return chaptersToShow.map((ch) => ({ chapterId: ch.id, title: `${ch.id}:1`, isChapterOnly: true }));
+    }
+    const out: { chapterId: number; title: string; isChapterOnly: boolean; startVerseNo?: number }[] = [];
+    for (const ch of chaptersToShow) {
+      const paras = paragraphInfo.filter((p) => p.chapter === ch.id);
+      const seenKey = new Set<string>();
+      const deduped = paras.filter((p) => {
+        const key = `${p.chapter}-${p.paragraph}`;
+        if (seenKey.has(key)) return false;
+        seenKey.add(key);
+        return true;
+      });
+      for (let i = 0; i < deduped.length; i++) {
+        const para = deduped[i];
+        const showTitle = i === 0 || deduped[i - 1].title !== para.title;
+        const titleToShow = para.title && para.title !== '(无小标题)' ? para.title : null;
+        if (showTitle && titleToShow) {
+          out.push({ chapterId: ch.id, title: titleToShow, isChapterOnly: false, startVerseNo: para.startVerseNo });
+        }
+      }
+    }
+    return out;
+  })();
+
+  const scrollToSection = (anchorId: string) => {
+    const el = document.getElementById(anchorId);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+  };
+
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-4rem)] flex flex-col">
+    <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col px-2">
       <div className="flex-shrink-0 pt-2 pb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
         {allBooks ? (
           <>
@@ -227,14 +277,42 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
         </h1> */}
       </div>
 
-      <div className="flex-1 min-h-0">
-        <VerseDisplay
-          chapters={book.chapters}
-          startChapterId={startChapterId}
-          onChapterChange={setCurrentChapter}
-          paragraphInfo={paragraphInfo}
-          wholeBook={wholeBook}
-        />
+      <div className="flex-1 min-h-0 flex gap-4">
+        <div className="flex-1 min-w-0">
+          <VerseDisplay
+            chapters={book.chapters}
+            startChapterId={startChapterId}
+            onChapterChange={setCurrentChapter}
+            paragraphInfo={paragraphInfo}
+            wholeBook={wholeBook}
+          />
+        </div>
+        {tocSections.length > 0 && (
+          <aside className="flex-shrink-0 w-48 pt-2 overflow-y-auto max-h-full">
+            <nav className="text-sm" aria-label="章节与段落目录">
+              <ul className="space-y-1">
+                {tocSections.map((item, i) => {
+                  const anchorId = item.isChapterOnly
+                    ? `ch-${item.chapterId}`
+                    : `sect-${item.chapterId}-${slug(item.title)}`;
+                  const verseRef = item.isChapterOnly ? `${item.chapterId}:1` : `${item.chapterId}:${item.startVerseNo ?? 1}`;
+                  const label = item.isChapterOnly ? item.title : `${item.title} (${verseRef})`;
+                  return (
+                    <li key={`${item.chapterId}-${item.title}-${i}`}>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection(anchorId)}
+                        className="text-left w-full text-blue-600 hover:text-blue-800 hover:underline break-words"
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          </aside>
+        )}
       </div>
     </div>
   );
