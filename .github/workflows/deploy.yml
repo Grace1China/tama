@@ -77,3 +77,29 @@ jobs:
           git diff --staged --quiet || git commit -m "chore(deploy): pj_finance build $(date -u +%Y%m%d-%H%M%S)"
           git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pj_finance
           git checkout -
+
+  # 可选：把 main、pj_bible、pj_finance 同步到 Gitee，便于国内 clone
+  # 需在仓库 Settings → Secrets 添加 GITEE_TOKEN，Variables 添加 GITEE_REPO（如 用户名/tama_pd）
+  sync-gitee:
+    name: Sync to Gitee
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ vars.GITEE_REPO != '' }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Push to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_REPO: ${{ vars.GITEE_REPO }}
+        run: |
+          [ -n "${GITEE_TOKEN}" ] || { echo "GITEE_TOKEN not set, skip sync"; exit 0; }
+          git remote add gitee "https://${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git" 2>/dev/null || git remote set-url gitee "https://${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          git push gitee "origin/${DEFAULT_BRANCH}:${DEFAULT_BRANCH}" origin/pj_bible:pj_bible origin/pj_finance:pj_finance --force

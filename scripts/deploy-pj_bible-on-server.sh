@@ -9,10 +9,10 @@ set -e
 : "${PROJECT_DIR:=$(cd "$(dirname "$0")/.." && pwd)}"
 cd "$PROJECT_DIR"
 
-echo "[$(date -Iseconds)] Pulling pj_bible..."
+echo "[$(date -Iseconds)] Fetching and resetting to origin/pj_bible..."
 git fetch origin pj_bible
 git checkout pj_bible
-git pull origin pj_bible
+git reset --hard origin/pj_bible
 
 echo "[$(date -Iseconds)] Restarting pm2 app pj_bible..."
 pm2 restart pj_bible
