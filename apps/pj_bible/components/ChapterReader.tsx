@@ -55,6 +55,9 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
     startChapter ?? null
   );
   const [paragraphInfo, setParagraphInfo] = useState<ParagraphInfo[] | null>(null);
+  const [pageInfo, setPageInfo] = useState({ currentPage: 0, totalPages: 1 });
+  const [scrollToPageRequest, setScrollToPageRequest] = useState<number | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -133,6 +136,12 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const scrollToSection = (anchorId: string) => {
     const el = document.getElementById(anchorId);
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+  };
+
+  const handleScrollToPageRequestHandled = () => setScrollToPageRequest(null);
+  const handleActiveSectionId = (id: string | null) => {
+    console.log('handleActiveSectionId', id);
+    setActiveSectionId(id);
   };
 
   return (
@@ -271,10 +280,29 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
           )}
         </div>
 
-        {/* <h1 className="text-2xl font-bold">
-          {book.title}
-          {currentChapter ? ` 第 ${currentChapter.id} 章` : ''}
-        </h1> */}
+        {pageInfo.totalPages > 1 && (
+          <div className=" flex items-center gap-3 text-sm">
+            <button
+              type="button"
+              onClick={() => setScrollToPageRequest(Math.max(0, pageInfo.currentPage - 1))}
+              disabled={pageInfo.currentPage === 0}
+              className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ＜
+            </button>
+            <span className="text-gray-600">
+              {pageInfo.currentPage + 1} / {pageInfo.totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setScrollToPageRequest(Math.min(pageInfo.totalPages - 1, pageInfo.currentPage + 1))}
+              disabled={pageInfo.currentPage >= pageInfo.totalPages - 1}
+              className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ＞
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 flex gap-4">
@@ -283,6 +311,10 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             chapters={book.chapters}
             startChapterId={startChapterId}
             onChapterChange={setCurrentChapter}
+            onPageInfo={(currentPage, totalPages) => setPageInfo({ currentPage, totalPages })}
+            scrollToPageRequest={scrollToPageRequest}
+            onScrollToPageRequestHandled={handleScrollToPageRequestHandled}
+            onActiveSectionId={handleActiveSectionId}
             paragraphInfo={paragraphInfo}
             wholeBook={wholeBook}
           />
@@ -302,7 +334,12 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
                       <button
                         type="button"
                         onClick={() => scrollToSection(anchorId)}
-                        className="text-left w-full text-blue-600 hover:text-blue-800 hover:underline break-words"
+                        title={label}
+                        className={`text-left w-full whitespace-nowrap overflow-hidden text-ellipsis hover:underline ${
+                          activeSectionId === anchorId
+                            ? 'text-blue-800 font-semibold bg-blue-50 rounded'
+                            : 'text-blue-600 hover:text-blue-800'
+                        }`}
                       >
                         {label}
                       </button>

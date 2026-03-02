@@ -8,12 +8,29 @@ interface VerseDisplayProps {
   chapters: Chapter[];
   startChapterId: number;
   onChapterChange?: (chapter: Chapter) => void;
+  /** 页码变化时回调，供父组件在面包屑旁渲染分页 */
+  onPageInfo?: (currentPage: number, totalPages: number) => void;
+  /** 父组件请求滚动到某页，执行后调用 onScrollToPageRequestHandled */
+  scrollToPageRequest?: number | null;
+  onScrollToPageRequestHandled?: () => void;
+  /** 当前视口内第一个可见的段落/章节 id（用于右侧目录高亮） */
+  onActiveSectionId?: (id: string | null) => void;
   paragraphInfo?: ParagraphInfo[] | null;
   /** 全本模式：章节不换页 */
   wholeBook?: boolean;
 }
 
-export default function VerseDisplay({ chapters, startChapterId, onChapterChange, paragraphInfo, wholeBook }: VerseDisplayProps) {
+export default function VerseDisplay({
+  chapters,
+  startChapterId,
+  onChapterChange,
+  onPageInfo,
+  scrollToPageRequest,
+  onScrollToPageRequestHandled,
+  onActiveSectionId,
+  paragraphInfo,
+  wholeBook,
+}: VerseDisplayProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const chapterRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -57,6 +74,23 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
     onChapterChange(visibleChapter);
   };
   updateVisibleChapterRef.current = updateVisibleChapter;
+
+  const updateActiveSection = () => {
+    if (!onActiveSectionId) return;
+    const scroller = scrollerRef.current;
+    const content = contentRef.current;
+    if (!scroller || !content) return;
+    const scrollerRect = scroller.getBoundingClientRect();
+    const sections = content.querySelectorAll<HTMLElement>('[id^="sect-"], [id^="ch-"]');
+    for (const el of sections) {
+      const r = el.getBoundingClientRect();
+      if (r.left < scrollerRect.right && r.right > scrollerRect.left) {
+        onActiveSectionId(el.id);
+        return;
+      }
+    }
+    onActiveSectionId(null);
+  };
 
   // Get paragraph records for a chapter (when paragraphInfo is present, e.g. Romans)
   // 去重：按 (chapter, paragraph) 去重，避免 API 返回重复记录
@@ -206,6 +240,7 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
 
             setCurrentPage((p) => Math.min(pages - 1, Math.max(0, p)));
             updateVisibleChapterRef.current();
+            updateActiveSection();
           });
         });
       },100)
@@ -248,6 +283,7 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
           : getPageWidth(scroller);
         setCurrentPage(Math.round(scroller.scrollLeft / effectivePageWidth));
         updateVisibleChapterRef.current();
+        updateActiveSection();
       });
     };
 
@@ -266,6 +302,18 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
     scroller.scrollTo({ left: page * effectivePageWidth, behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    onPageInfo?.(currentPage, totalPages);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅在页码变化时通知父组件，避免回调引用变化导致无限循环
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (scrollToPageRequest == null) return;
+    scrollToPage(scrollToPageRequest);
+    onScrollToPageRequestHandled?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅响应 scrollToPageRequest 变化，避免因回调引用重复滚动
+  }, [scrollToPageRequest]);
+
   return (
     <div className="w-full h-full flex flex-col min-h-0">
       <div
@@ -276,7 +324,6 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
         <div
           ref={contentRef}
           className="text-lg leading-relaxed "
-          // p-6 md:p-8
           style={{
             columnWidth: 'var(--page-width)',
             columnGap: '2rem',
@@ -287,30 +334,6 @@ export default function VerseDisplay({ chapters, startChapterId, onChapterChange
           {verseSpans}
         </div>
       </div>
-
-      {totalPages > 1 ? (
-        <div className="mt-3 flex items-center justify-center gap-3 text-sm">
-          <button
-            type="button"
-            onClick={() => scrollToPage(Math.max(0, currentPage - 1))}
-            disabled={currentPage === 0}
-            className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            上一頁
-          </button>
-          <span className="text-gray-600">
-            {currentPage + 1} / {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => scrollToPage(Math.min(totalPages - 1, currentPage + 1))}
-            disabled={currentPage >= totalPages - 1}
-            className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            下一頁
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
