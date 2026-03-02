@@ -79,11 +79,12 @@ git clone https://你的用户名:你的私人令牌@gitee.com/你的用户名/t
 - 打开：仓库 → **Settings** → **Secrets and variables** → **Actions**。
 - **Secrets** 页：点 **New repository secret**，新建：
   - 名称填 `GITEE_TOKEN`，值填上面复制的 Gitee 私人令牌。
-- **Variables** 页：点 **New repository variable**，新建：
-  - 名称填 `GITEE_REPO`，值填 Gitee 仓库路径，例如 `你的用户名/tama_pd`（不要带 `https://gitee.com/` 和 `.git`）。
+- **Variables** 页：点 **New repository variable**，新建两个变量：
+  - `GITEE_REPO`：Gitee 仓库路径，例如 `你的用户名/tama_pd`（不要带 `https://gitee.com/` 和 `.git`）。
+  - `GITEE_USER`：你的 Gitee 登录用户名（Gitee 要求 HTTPS 推送到时用「用户名:令牌」认证，只填令牌会报错）。
 
 ### 3. 启用同步 workflow
 
 仓库里已有 `.github/workflows/sync-gitee.yml` 时，推送 main 并完成部署后会自动执行「同步到 Gitee」任务；也可在 Actions 页手动 Run workflow。
 
-未配置 `GITEE_TOKEN` / `GITEE_REPO` 时，该 job 会跳过，不影响部署。
+未配置 `GITEE_TOKEN`、`GITEE_REPO` 或 `GITEE_USER` 时，该 job 会跳过，不影响部署。
