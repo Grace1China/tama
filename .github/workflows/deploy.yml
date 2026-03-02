@@ -1,4 +1,4 @@
-# 部署：构建 pj_bible 与 pj_finance，分别推送到分支 pj_bible、pj_finance
+# 部署：构建完成后推送到分支 pd_bible、pd_finance（pd=product），再把 pd_bible 同步到 Gitee
 name: Deploy
 
 # 推送到 main 或 master 时执行；也可在 Actions 页手动 Run workflow
@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   deploy:
-    name: Build & push to pj_bible / pj_finance
+    name: Build & push to pd_bible / pd_finance
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,42 +43,42 @@ jobs:
 
       - name: Save build artifacts
         run: |
-          cp -r apps/pj_bible/.next /tmp/pj_bible_build
-          cp -r apps/pj_finance/.next /tmp/pj_finance_build
+          cp -r apps/pj_bible/.next /tmp/pd_bible_build
+          cp -r apps/pj_finance/.next /tmp/pd_finance_build
 
-      - name: Push pj_bible build to branch pj_bible
+      - name: Push pd_bible build to branch pd_bible
         env:
           TOKEN: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin pj_bible || true
-          git checkout pj_bible 2>/dev/null || git checkout -B pj_bible
+          git fetch origin pd_bible || true
+          git checkout pd_bible 2>/dev/null || git checkout -B pd_bible
           rm -rf apps/pj_bible/.next
-          cp -r /tmp/pj_bible_build apps/pj_bible/.next
+          cp -r /tmp/pd_bible_build apps/pj_bible/.next
           git add -f apps/pj_bible/.next
-          git diff --staged --quiet || git commit -m "chore(deploy): pj_bible build $(date -u +%Y%m%d-%H%M%S)"
-          git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pj_bible
+          git diff --staged --quiet || git commit -m "chore(deploy): pd_bible build $(date -u +%Y%m%d-%H%M%S)"
+          git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pd_bible
           git checkout -
 
-      - name: Trigger pj_bible publish (pull + pm2 restart on server)
+      - name: Trigger pd_bible publish (pull + pm2 restart on server)
         run: |
           curl -sf --max-time 60 "http://www.quanyuan.live/publishBook" || echo "Warning: publishBook call failed (server may run script separately)"
 
-      - name: Push pj_finance build to branch pj_finance
+      - name: Push pd_finance build to branch pd_finance
         env:
           TOKEN: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          git fetch origin pj_finance || true
-          git checkout pj_finance 2>/dev/null || git checkout -B pj_finance
+          git fetch origin pd_finance || true
+          git checkout pd_finance 2>/dev/null || git checkout -B pd_finance
           rm -rf apps/pj_finance/.next
-          cp -r /tmp/pj_finance_build apps/pj_finance/.next
+          cp -r /tmp/pd_finance_build apps/pj_finance/.next
           git add -f apps/pj_finance/.next
-          git diff --staged --quiet || git commit -m "chore(deploy): pj_finance build $(date -u +%Y%m%d-%H%M%S)"
-          git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pj_finance
+          git diff --staged --quiet || git commit -m "chore(deploy): pd_finance build $(date -u +%Y%m%d-%H%M%S)"
+          git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pd_finance
           git checkout -
 
-  # 可选：把 main、pj_bible、pj_finance 同步到 Gitee，便于国内 clone
+  # 可选：仅把 pd_bible 分支（含构建产物）同步到 Gitee，便于国内 clone
   # 需在 Secrets 添加 GITEE_TOKEN，Variables 添加 GITEE_REPO、GITEE_USER（Gitee 用户名）
   sync-gitee:
     name: Sync to Gitee
@@ -94,7 +94,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
 
-      - name: Push to Gitee
+      - name: Push to Gitee (仅 pd_bible 分支，含构建产物)
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
           GITEE_REPO: ${{ vars.GITEE_REPO }}
@@ -105,8 +105,4 @@ jobs:
           git config http.postBuffer 524288000
           GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
-          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
-          push_one() { git push gitee "refs/remotes/origin/$1:refs/heads/$1" --force || true; }
-          push_one "${DEFAULT_BRANCH}"
-          push_one pj_bible
-          push_one pj_finance
+          git push gitee "refs/remotes/origin/pd_bible:refs/heads/pd_bible" --force

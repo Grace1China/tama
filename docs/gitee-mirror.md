@@ -2,7 +2,7 @@
 
 把项目同步到 Gitee，在国内服务器或本机用 `git clone` 从 Gitee 拉取，可避免直连 GitHub 慢或被墙。
 
-**推荐做法**：本地只推送到 GitHub，不配置 Gitee 远程。在 GitHub 仓库里配好 Gitee 的 Token 和仓库路径（见第四节），每次部署完成后 Actions 会自动把 main、pj_bible、pj_finance 同步到 Gitee，国内直接从 Gitee clone 即可。
+**推荐做法**：本地只推送到 GitHub，不配置 Gitee 远程。在 GitHub 仓库里配好 Gitee 的 Token 和仓库路径（见第四节），每次部署完成后 Actions 会自动把 **pd_bible** 分支（pd=product，含构建产物 `apps/pj_bible/.next`）同步到 Gitee，国内可直接 `git clone -b pd_bible` 从 Gitee 拉取。
 
 ---
 
@@ -25,9 +25,9 @@ git remote add gitee https://gitee.com/你的用户名/tama_pd.git
 # 推送当前分支（如 main）
 git push -u gitee main
 
-# 若有 pj_bible、pj_finance 等分支也要镜像，一并推送
-git push gitee pj_bible
-git push gitee pj_finance
+# 若有 pd_bible、pd_finance 等分支也要镜像，一并推送
+git push gitee pd_bible
+git push gitee pd_finance
 ```
 
 之后每次在 GitHub 合并或推送后，可手动同步到 Gitee：
@@ -35,8 +35,8 @@ git push gitee pj_finance
 ```bash
 git fetch origin
 git push gitee main
-git push gitee pj_bible
-git push gitee pj_finance
+git push gitee pd_bible
+git push gitee pd_finance
 ```
 
 若 Gitee 仓库已存在且与本地历史不一致，首次推送可能需加强制（谨慎使用）：`git push gitee main --force`。
@@ -52,8 +52,8 @@ git push gitee pj_finance
 git clone https://gitee.com/你的用户名/tama_pd.git
 cd tama_pd
 
-# 若需要某一分支（如 pj_bible）
-git clone -b pj_bible https://gitee.com/你的用户名/tama_pd.git
+# 若需要某一分支（如 pd_bible，含构建产物）
+git clone -b pd_bible https://gitee.com/你的用户名/tama_pd.git
 cd tama_pd
 ```
 
@@ -67,7 +67,7 @@ git clone https://你的用户名:你的私人令牌@gitee.com/你的用户名/t
 
 ## 四、用 GitHub Actions 自动同步到 Gitee（可选）
 
-希望每次推送到 GitHub 的 main 并完成部署后，自动把 main、pj_bible、pj_finance 推到 Gitee，可使用仓库里已配置的 workflow。
+希望每次推送到 GitHub 的 main 并完成部署后，自动把 **pd_bible** 分支（含构建产物）推到 Gitee，可使用仓库里已配置的 workflow。
 
 ### 1. 在 Gitee 创建私人令牌
 
@@ -81,7 +81,9 @@ git clone https://你的用户名:你的私人令牌@gitee.com/你的用户名/t
   - 名称填 `GITEE_TOKEN`，值填上面复制的 Gitee 私人令牌。
 - **Variables** 页：点 **New repository variable**，新建两个变量：
   - `GITEE_REPO`：Gitee 仓库路径，例如 `你的用户名/tama_pd`（不要带 `https://gitee.com/` 和 `.git`）。
-  - `GITEE_USER`：你的 Gitee 登录用户名（Gitee 要求 HTTPS 推送到时用「用户名:令牌」认证，只填令牌会报错）。
+  - `GITEE_USER`：你的 Gitee 登录用户名（Gitee 要求 HTTPS 推送时用「用户名:令牌」认证，只填令牌会报错）。
+
+（当前仅同步 **pd_bible** 分支到 Gitee，不推送 main / pd_finance。）
 
 ### 3. 启用同步 workflow
 

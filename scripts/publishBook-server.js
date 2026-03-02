@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 简易 HTTP 服务：收到 /publishBook 请求时执行 deploy-pj_bible-on-server.sh
+ * 简易 HTTP 服务：收到 /publishBook 请求时执行 deploy-pd_bible-on-server.sh
  * 用法：在项目根目录执行 node scripts/publishBook-server.js
  * 或：PROJECT_DIR=/path/to/repo node scripts/publishBook-server.js
  *
@@ -17,7 +17,7 @@ const fs = require('fs');
 
 const PORT = parseInt(process.env.PORT || '3999', 10);
 const PROJECT_DIR = process.env.PROJECT_DIR || path.resolve(__dirname, '..');
-const SCRIPT_PATH = path.join(PROJECT_DIR, 'scripts', 'deploy-pj_bible-on-server.sh');
+const SCRIPT_PATH = path.join(PROJECT_DIR, 'scripts', 'deploy-pd_bible-on-server.sh');
 const PUBLISH_TOKEN = process.env.PUBLISH_TOKEN || '';
 
 function runDeployScript() {

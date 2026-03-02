@@ -2,7 +2,7 @@
 
 ## 1. 访问 /publishBook 时执行部署：Node 服务
 
-`publishBook-server.js` 是一个简易 HTTP 服务：收到对 `/publishBook` 的请求时，在服务器上执行 `deploy-pj_bible-on-server.sh`（拉取 pj_bible 分支并 `pm2 restart pj_bible`）。
+`publishBook-server.js` 是一个简易 HTTP 服务：收到对 `/publishBook` 的请求时，在服务器上执行 `deploy-pd_bible-on-server.sh`（拉取 pd_bible 分支并 `pm2 restart pd_bible`，pd=product）。
 
 ### 在服务器上运行
 
@@ -62,12 +62,12 @@ www.quanyuan.live {
 
 ---
 
-## 2. 部署脚本本身：deploy-pj_bible-on-server.sh
+## 2. 部署脚本本身：deploy-pd_bible-on-server.sh
 
-在**服务器**上由上述服务调用（或手动执行）：拉取 `pj_bible` 分支并执行 `pm2 restart pj_bible`。
+在**服务器**上由上述服务调用（或手动执行）：拉取 `pd_bible` 分支并执行 `pm2 restart pd_bible`（pd=product）。
 
 - **服务器准备**：
-  1. 确保 `scripts/deploy-pj_bible-on-server.sh` 可执行：`chmod +x scripts/deploy-pj_bible-on-server.sh`
+  1. 确保 `scripts/deploy-pd_bible-on-server.sh` 可执行：`chmod +x scripts/deploy-pd_bible-on-server.sh`
   2. 若项目不在脚本所在仓库根目录，运行服务或脚本前设置：`export PROJECT_DIR=/实际/项目/路径`
 
 - **可选鉴权**：在运行 `publishBook-server.js` 时设置 `PUBLISH_TOKEN`，GitHub Actions 需在请求中带上该 token（见下方）。
@@ -77,7 +77,7 @@ www.quanyuan.live {
 若设置了 `PUBLISH_TOKEN`，可在仓库 Settings → Secrets 里添加 `PUBLISH_BOOK_TOKEN`，并在 workflow 中这样调用：
 
 ```yaml
-- name: Trigger pj_bible publish
+- name: Trigger pd_bible publish
   run: |
     curl -sf --max-time 60 "http://www.quanyuan.live/publishBook?token=${{ secrets.PUBLISH_BOOK_TOKEN }}"
 ```

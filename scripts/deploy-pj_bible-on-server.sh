@@ -10,9 +10,9 @@ set -e
 cd "$PROJECT_DIR"
 
 echo "[$(date -Iseconds)] Fetching and resetting to origin/pj_bible..."
-git fetch origin pj_bible
-git checkout pj_bible
-git reset --hard origin/pj_bible
+git fetch origin pd_bible
+git checkout pd_bible
+git reset --hard origin/pd_bible
 
 echo "[$(date -Iseconds)] Restarting pm2 app pj_bible..."
 pm2 restart pj_bible
