@@ -105,4 +105,4 @@ jobs:
           GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
           DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
-          git push gitee "origin/${DEFAULT_BRANCH}:${DEFAULT_BRANCH}" origin/pj_bible:pj_bible origin/pj_finance:pj_finance --force
+          git push gitee "refs/remotes/origin/${DEFAULT_BRANCH}:refs/heads/${DEFAULT_BRANCH}" "refs/remotes/origin/pj_bible:refs/heads/pj_bible" "refs/remotes/origin/pj_finance:refs/heads/pj_finance" --force
