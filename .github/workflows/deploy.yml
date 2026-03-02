@@ -102,7 +102,11 @@ jobs:
         run: |
           [ -n "${GITEE_TOKEN}" ] || { echo "GITEE_TOKEN not set, skip sync"; exit 0; }
           [ -n "${GITEE_USER}" ] || { echo "GITEE_USER not set, skip sync (set Variables → GITEE_USER to your Gitee username)"; exit 0; }
+          git config http.postBuffer 524288000
           GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
           DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
-          git push gitee "refs/remotes/origin/${DEFAULT_BRANCH}:refs/heads/${DEFAULT_BRANCH}" "refs/remotes/origin/pj_bible:refs/heads/pj_bible" "refs/remotes/origin/pj_finance:refs/heads/pj_finance" --force
+          push_one() { git push gitee "refs/remotes/origin/$1:refs/heads/$1" --force || true; }
+          push_one "${DEFAULT_BRANCH}"
+          push_one pj_bible
+          push_one pj_finance
