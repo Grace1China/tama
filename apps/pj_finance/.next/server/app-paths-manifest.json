@@ -11,10 +11,10 @@
   "/tuShare/page": "app/tuShare/page.js",
   "/api/parq/income1/route": "app/api/parq/income1/route.js",
   "/api/parq/balanceSheet/route": "app/api/parq/balanceSheet/route.js",
+  "/api/csv/[category]/route": "app/api/csv/[category]/route.js",
+  "/api/csv/indicator/route": "app/api/csv/indicator/route.js",
   "/api/tuShare/csv/route": "app/api/tuShare/csv/route.js",
   "/api/tuShare/entries/route": "app/api/tuShare/entries/route.js",
-  "/api/csv/indicator/route": "app/api/csv/indicator/route.js",
-  "/api/csv/[category]/route": "app/api/csv/[category]/route.js",
   "/api/tuShare/parquet/route": "app/api/tuShare/parquet/route.js",
   "/api/parq/indicator/route": "app/api/parq/indicator/route.js"
 }
