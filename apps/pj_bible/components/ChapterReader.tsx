@@ -134,6 +134,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   })();
 
   const scrollToSection = (anchorId: string) => {
+    console.log('scrollToSection', anchorId);
     const el = document.getElementById(anchorId);
     el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
   };
@@ -326,7 +327,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
                 {tocSections.map((item, i) => {
                   const anchorId = item.isChapterOnly
                     ? `ch-${item.chapterId}`
-                    : `sect-${item.chapterId}-${slug(item.title)}`;
+                    : `sect-${item.chapterId}-${item.startVerseNo ?? 1}-${slug(item.title)}`;
                   const verseRef = item.isChapterOnly ? `${item.chapterId}:1` : `${item.chapterId}:${item.startVerseNo ?? 1}`;
                   const label = item.isChapterOnly ? item.title : `${item.title} (${verseRef})`;
                   return (

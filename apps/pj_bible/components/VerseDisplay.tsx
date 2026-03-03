@@ -81,15 +81,29 @@ export default function VerseDisplay({
     const content = contentRef.current;
     if (!scroller || !content) return;
     const scrollerRect = scroller.getBoundingClientRect();
-    const sections = content.querySelectorAll<HTMLElement>('[id^="sect-"], [id^="ch-"]');
-    for (const el of sections) {
-      const r = el.getBoundingClientRect();
-      if (r.left < scrollerRect.right && r.right > scrollerRect.left) {
-        onActiveSectionId(el.id);
-        return;
+    const findFirstVisible = (selector: string): string | null => {
+      const sections = content.querySelectorAll<HTMLElement>(selector);
+      for (const el of sections) {
+        const r = el.getBoundingClientRect();
+        if (r.left < scrollerRect.right && r.right > scrollerRect.left) {
+          return el.id;
+        }
       }
+      return null;
+    };
+
+    // 优先使用段落标题（sect-xxx-xxx-...），找不到时再退回整章容器（ch-xxx）
+    const sectId = findFirstVisible('[id^="sect-"]');
+    if (sectId) {
+      onActiveSectionId(sectId);
+      return;
     }
-    onActiveSectionId(null);
+    // const chId = findFirstVisible('[id^="ch-"]');
+    // if (chId) {
+    //   onActiveSectionId(chId);
+    //   return;
+    // }
+    // onActiveSectionId(null);
   };
 
   // Get paragraph records for a chapter (when paragraphInfo is present, e.g. Romans)
@@ -146,15 +160,20 @@ export default function VerseDisplay({
             const showTitle = paraIndex === 0 || paragraphs[paraIndex - 1].title !== para.title;
             const titleToShow = para.title && para.title !== '(无小标题)' ? para.title : null;
             const isFirstPara = paraIndex === 0;
+            const anchorId =
+              showTitle && titleToShow
+                ? `sect-${chapter.id}-${para.startVerseNo}-${slug(titleToShow)}`
+                : undefined;
 
             return (
               <div
                 key={`${chapter.id}-${para.paragraph}`}
-                id={showTitle && titleToShow ? `sect-${chapter.id}-${slug(titleToShow)}` : undefined}
                 className="mb-4 first:mt-0"
               >
                 {showTitle && titleToShow && (
-                  <div className="font-bold text-gray-800 mb-2">{titleToShow}</div>
+                  <div id={anchorId} className="font-bold text-gray-800 mb-2">
+                    {titleToShow}
+                  </div>
                 )}
                 <div
                   className="leading-relaxed"
