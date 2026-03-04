@@ -76,6 +76,7 @@ export default function VerseDisplay({
   updateVisibleChapterRef.current = updateVisibleChapter;
 
   const updateActiveSection = () => {
+    console.log('updateActiveSection');
     if (!onActiveSectionId) return;
     const scroller = scrollerRef.current;
     const content = contentRef.current;
@@ -91,10 +92,11 @@ export default function VerseDisplay({
       }
       return null;
     };
-
+    console.log('findFirstVisible', findFirstVisible);
     // 优先使用段落标题（sect-xxx-xxx-...），找不到时再退回整章容器（ch-xxx）
     const sectId = findFirstVisible('[id^="sect-"]');
     if (sectId) {
+      console.log('updateActiveSection 111', sectId);
       onActiveSectionId(sectId);
       return;
     }
@@ -294,6 +296,7 @@ export default function VerseDisplay({
 
     let raf = 0;
     const onScroll = () => {
+      console.log('onScroll');
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const content = contentRef.current;
@@ -318,7 +321,7 @@ export default function VerseDisplay({
     const content = contentRef.current;
     if (!scroller || !content) return;
     const effectivePageWidth = getEffectivePageWidth(scroller, content);
-    scroller.scrollTo({ left: page * effectivePageWidth, behavior: 'smooth' });
+    scroller.scrollTo({ left: page * effectivePageWidth, behavior: 'instant' });
   };
 
   useEffect(() => {
@@ -338,7 +341,7 @@ export default function VerseDisplay({
       <div
         ref={scrollerRef}
         className="bg-white rounded-lg shadow-sm flex-1 min-h-0 overflow-x-auto overflow-y-hidden scrollbar-hide"
-        style={{ scrollSnapType: 'x mandatory' }}
+        style={{ scrollSnapType: 'x mandatory',overscrollBehaviorX: 'none' }}
       >
         <div
           ref={contentRef}

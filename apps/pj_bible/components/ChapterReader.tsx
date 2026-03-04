@@ -58,6 +58,9 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const [pageInfo, setPageInfo] = useState({ currentPage: 0, totalPages: 1 });
   const [scrollToPageRequest, setScrollToPageRequest] = useState<number | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  /** 用户点击 TOC 的 section，以点击为准高亮；滚动导致可见段变化时清除，改用滚动首可见 */
+  const [lastClickedSectionId, setLastClickedSectionId] = useState<string | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +84,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
     const el = currentBookItemRef.current;
     if (!el) return;
     const t = requestAnimationFrame(() => {
-      el.scrollIntoView({ block: 'center', behavior: 'auto' });
+      el.scrollIntoView({ block: 'center', behavior: 'instant' });
     });
     return () => cancelAnimationFrame(t);
   }, [bookMenuOpen]);
@@ -134,15 +137,33 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   })();
 
   const scrollToSection = (anchorId: string) => {
+    // 1. 设置标记：告诉系统这是程序触发的滚动
+    isProgrammaticScrollRef.current = true;
     console.log('scrollToSection', anchorId);
+    console.log('scrollToSection 222 setLastClickedSectionId：', lastClickedSectionId,'anchorId:',anchorId);
     const el = document.getElementById(anchorId);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    if(el){
+    el?.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
+
+      // 2. 释放标记：
+      // 如果 behavior 是 'instant'，滚动几乎是同步完成的
+      // 如果是 'smooth'，则需要监听 scrollend 事件或使用 setTimeout
+      setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+        setLastClickedSectionId(anchorId);
+      }, 50);
+    }
   };
 
   const handleScrollToPageRequestHandled = () => setScrollToPageRequest(null);
+  /** 滚动时由 VerseDisplay 调用。若当前是点击态且报上来的 id 与点击的一致，不更新，避免点击触发的滚动覆盖高亮；否则按滚动结果更新并清除点击态 */
   const handleActiveSectionId = (id: string | null) => {
-    console.log('handleActiveSectionId', id);
+    console.log('handleActiveSectionId 222', id, 'lastClickedSectionId 222', lastClickedSectionId, 'isProgrammaticScrollRef.current', isProgrammaticScrollRef.current);
+    if (isProgrammaticScrollRef.current) {
+      return;
+    }
     setActiveSectionId(id);
+    setLastClickedSectionId(null);
   };
 
   return (
@@ -322,6 +343,9 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
         </div>
         {tocSections.length > 0 && (
           <aside className="flex-shrink-0 w-48 pt-2 overflow-y-auto max-h-full">
+            <div className="text-xs text-gray-500 mb-2 break-all" aria-hidden>
+              lastClicked: {lastClickedSectionId ?? 'null'} | active: {activeSectionId ?? 'null'} → 高亮用: {(lastClickedSectionId ?? activeSectionId) ?? 'null'}
+            </div>
             <nav className="text-sm" aria-label="章节与段落目录">
               <ul className="space-y-1">
                 {tocSections.map((item, i) => {
@@ -337,7 +361,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
                         onClick={() => scrollToSection(anchorId)}
                         title={label}
                         className={`text-left w-full whitespace-nowrap overflow-hidden text-ellipsis hover:underline ${
-                          activeSectionId === anchorId
+                          (lastClickedSectionId ?? activeSectionId) === anchorId
                             ? 'text-blue-800 font-semibold bg-blue-50 rounded'
                             : 'text-blue-600 hover:text-blue-800'
                         }`}
