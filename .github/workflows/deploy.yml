@@ -61,10 +61,6 @@ jobs:
           git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pd_bible
           git checkout -
 
-      - name: Trigger pd_bible publish (pull + pm2 restart on server)
-        run: |
-          curl -sf --max-time 60 "http://www.quanyuan.live/publishBook" || echo "Warning: publishBook call failed (server may run script separately)"
-
       - name: Push pd_finance build to branch pd_finance
         env:
           TOKEN: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
@@ -106,3 +102,7 @@ jobs:
           GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
           git push gitee "refs/remotes/origin/pd_bible:refs/heads/pd_bible" --force
+
+      - name: Trigger pd_bible publish (pull from Gitee + pm2 restart on server)
+        run: |
+          curl -sf --max-time 60 "http://www.quanyuan.live/publishBook" || echo "Warning: publishBook call failed (server may run script separately)"
