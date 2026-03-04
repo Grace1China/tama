@@ -1,4 +1,5 @@
 {
+  "/api/bible/route": "app/api/bible/route.js",
   "/_not-found/page": "app/_not-found/page.js",
   "/api/paragraphs/route": "app/api/paragraphs/route.js",
   "/book/[bookId]/[chapterId]/page": "app/book/[bookId]/[chapterId]/page.js",
