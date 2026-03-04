@@ -139,8 +139,8 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const scrollToSection = (anchorId: string) => {
     // 1. 设置标记：告诉系统这是程序触发的滚动
     isProgrammaticScrollRef.current = true;
-    console.log('scrollToSection', anchorId);
-    console.log('scrollToSection 222 setLastClickedSectionId：', lastClickedSectionId,'anchorId:',anchorId);
+    // console.log('scrollToSection', anchorId);
+    // console.log('scrollToSection 222 setLastClickedSectionId：', lastClickedSectionId,'anchorId:',anchorId);
     const el = document.getElementById(anchorId);
     if(el){
     el?.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
@@ -158,7 +158,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const handleScrollToPageRequestHandled = () => setScrollToPageRequest(null);
   /** 滚动时由 VerseDisplay 调用。若当前是点击态且报上来的 id 与点击的一致，不更新，避免点击触发的滚动覆盖高亮；否则按滚动结果更新并清除点击态 */
   const handleActiveSectionId = (id: string | null) => {
-    console.log('handleActiveSectionId 222', id, 'lastClickedSectionId 222', lastClickedSectionId, 'isProgrammaticScrollRef.current', isProgrammaticScrollRef.current);
+    // console.log('handleActiveSectionId 222', id, 'lastClickedSectionId 222', lastClickedSectionId, 'isProgrammaticScrollRef.current', isProgrammaticScrollRef.current);
     if (isProgrammaticScrollRef.current) {
       return;
     }
@@ -177,6 +177,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             >
               ← 返回
             </Link>
+            {/* 换书组件 */}
             <div
               className="relative inline-block ml-1"
               onMouseEnter={() => {
@@ -226,6 +227,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             ← 返回 {book.title}
           </Link>
         )}
+        {/* 换章节组件 */}
         <div
           className="relative inline-block"
           onMouseEnter={() => {
@@ -264,6 +266,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
           )}
         </div>
 
+        {/* 换版本组件 */}
         <div
           className="relative inline-block"
           onMouseEnter={() => {
@@ -301,7 +304,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             </div>
           )}
         </div>
-
+        {/* 换页面组件 */}
         {pageInfo.totalPages > 1 && (
           <div className=" flex items-center gap-3 text-sm">
             <button
@@ -326,7 +329,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
           </div>
         )}
       </div>
-
+        {/* 书本内容 */}
       <div className="flex-1 min-h-0 flex gap-4">
         <div className="flex-1 min-w-0">
           <VerseDisplay

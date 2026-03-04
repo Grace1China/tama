@@ -10,13 +10,15 @@ const VERSION_FILES: Record<BibleVersion, string> = {
   niv: 'bible-niv.json',
 };
 
-const bibleCache: Partial<Record<BibleVersion, Bible>> = {};
+type BibleCacheEntry = {
+  bible: Bible;
+  /** 对应 JSON 文件的最后修改时间（毫秒），用于检查是否需要重新加载 */
+  mtimeMs: number;
+};
+
+const bibleCache: Partial<Record<BibleVersion, BibleCacheEntry>> = {};
 
 export async function getBible(version: BibleVersion = 'cuvs'): Promise<Bible> {
-  if (bibleCache[version]) {
-    return bibleCache[version]!;
-  }
-
   const fileName = VERSION_FILES[version];
   const filePath = path.join(process.cwd(), 'data', fileName);
 
@@ -26,9 +28,18 @@ export async function getBible(version: BibleVersion = 'cuvs'): Promise<Bible> {
     );
   }
 
+  const stat = fs.statSync(filePath);
+  const mtimeMs = stat.mtimeMs;
+  const cached = bibleCache[version];
+
+  // 如果已有缓存且文件修改时间未变化，直接返回缓存，避免重复读盘
+  if (cached && cached.mtimeMs === mtimeMs) {
+    return cached.bible;
+  }
+
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const bible = JSON.parse(fileContents) as Bible;
-  bibleCache[version] = bible;
+  bibleCache[version] = { bible, mtimeMs };
   return bible;
 }
 

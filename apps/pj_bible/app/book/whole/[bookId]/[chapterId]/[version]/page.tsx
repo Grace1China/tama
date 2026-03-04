@@ -1,5 +1,5 @@
-import { getBook, getBible, type BibleVersion } from '@/lib/bible-data';
-import ChapterReader from '@/components/ChapterReader';
+import type { BibleVersion } from '@/lib/bible-data';
+import WholeBookClient from '@/components/WholeBookClient';
 import { notFound } from 'next/navigation';
 
 const VALID_VERSIONS: BibleVersion[] = ['cuvs', 'cuvt', 'niv'];
@@ -21,23 +21,12 @@ export default async function WholeBookPage({
   if (!version) {
     notFound();
   }
-
-  const [bible, book] = await Promise.all([getBible(version), getBook(params.bookId, version)]);
   const startChapterId = parseInt(params.chapterId, 10);
 
-  if (!book) {
-    notFound();
-  }
-
-  const chapter = book.chapters.find((ch) => ch.id === startChapterId);
-  const effectiveChapterId = chapter ? startChapterId : book.chapters[0]?.id ?? 1;
-
   return (
-    <ChapterReader
-      book={book}
-      allBooks={bible.books}
-      startChapterId={effectiveChapterId}
-      wholeBook
+    <WholeBookClient
+      bookId={params.bookId}
+      startChapterId={startChapterId}
       version={version}
     />
   );

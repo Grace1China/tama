@@ -103,6 +103,10 @@ jobs:
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
           git push gitee "refs/remotes/origin/pd_bible:refs/heads/pd_bible" --force
       - name: Trigger pd_bible publish (pull from Gitee + pm2 restart on server)
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
-          curl -sf --max-time 60 "http://www.quanyuan.live/publishBook" || echo "Warning: publishBook call failed (server may run script separately)"
-
+          curl -sf --max-time 60 \
+            -H "x-publish-token: ${PUBLISH_TOKEN}" \
+            "http://www.quanyuan.live/publishBook" \
+            || echo "Warning: publishBook call failed (server may run script separately)"

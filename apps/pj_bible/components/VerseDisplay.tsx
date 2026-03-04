@@ -76,7 +76,7 @@ export default function VerseDisplay({
   updateVisibleChapterRef.current = updateVisibleChapter;
 
   const updateActiveSection = () => {
-    console.log('updateActiveSection');
+    // console.log('updateActiveSection');
     if (!onActiveSectionId) return;
     const scroller = scrollerRef.current;
     const content = contentRef.current;
@@ -92,11 +92,11 @@ export default function VerseDisplay({
       }
       return null;
     };
-    console.log('findFirstVisible', findFirstVisible);
+    // console.log('findFirstVisible', findFirstVisible);
     // 优先使用段落标题（sect-xxx-xxx-...），找不到时再退回整章容器（ch-xxx）
     const sectId = findFirstVisible('[id^="sect-"]');
     if (sectId) {
-      console.log('updateActiveSection 111', sectId);
+      // console.log('updateActiveSection 111', sectId);
       onActiveSectionId(sectId);
       return;
     }
@@ -296,7 +296,7 @@ export default function VerseDisplay({
 
     let raf = 0;
     const onScroll = () => {
-      console.log('onScroll');
+      // console.log('onScroll');
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const content = contentRef.current;
