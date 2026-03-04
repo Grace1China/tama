@@ -20,7 +20,7 @@
       "static/chunks/fd9d1056-95542c12c8153870.js",
       "static/chunks/23-a78c227209d638a5.js",
       "static/chunks/main-app-34c8c8da26f2469d.js",
-      "static/css/a89f9536f5dbf884.css",
+      "static/css/925f2e180a916d72.css",
       "static/chunks/app/layout-7d8dad0a5abdfefa.js"
     ],
     "/book/[bookId]/[chapterId]/page": [
@@ -52,7 +52,7 @@
       "static/chunks/23-a78c227209d638a5.js",
       "static/chunks/main-app-34c8c8da26f2469d.js",
       "static/chunks/231-95354d13698d9daf.js",
-      "static/chunks/855-f371b8d95d9958ac.js",
+      "static/chunks/855-958d376f1442ffb7.js",
       "static/chunks/app/book/[bookId]/[chapterId]/[version]/page-7f7399a5cd25fb2a.js"
     ],
     "/book/whole/[bookId]/[chapterId]/[version]/page": [
@@ -61,7 +61,7 @@
       "static/chunks/23-a78c227209d638a5.js",
       "static/chunks/main-app-34c8c8da26f2469d.js",
       "static/chunks/231-95354d13698d9daf.js",
-      "static/chunks/855-f371b8d95d9958ac.js",
+      "static/chunks/855-958d376f1442ffb7.js",
       "static/chunks/app/book/whole/[bookId]/[chapterId]/[version]/page-7b396302cd30e4ce.js"
     ]
   }
