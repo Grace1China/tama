@@ -65,14 +65,6 @@
       "static/chunks/263-d0922b1286c0bd1a.js",
       "static/chunks/app/income1/page-a470a225851ee2d3.js"
     ],
-    "/page": [
-      "static/chunks/webpack-e9a0a25433ab8d5b.js",
-      "static/chunks/fd9d1056-4b908a5312199cb5.js",
-      "static/chunks/23-8a7a02c9a1465494.js",
-      "static/chunks/main-app-40c05c8f9f059715.js",
-      "static/chunks/231-843362798b26497f.js",
-      "static/chunks/app/page-4b7b3942058ed312.js"
-    ],
     "/indicator/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
       "static/chunks/fd9d1056-4b908a5312199cb5.js",
@@ -95,18 +87,13 @@
       "static/chunks/main-app-40c05c8f9f059715.js",
       "static/chunks/app/multiDims/page-4cb754ca8ca4760f.js"
     ],
-    "/profit/page": [
+    "/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
       "static/chunks/fd9d1056-4b908a5312199cb5.js",
       "static/chunks/23-8a7a02c9a1465494.js",
       "static/chunks/main-app-40c05c8f9f059715.js",
-      "static/css/755fcd4345d9e241.css",
-      "static/css/64bb53d45b0a03b0.css",
-      "static/chunks/cff6e2ba-e10f49081344c30d.js",
-      "static/chunks/576-745aef4112f33122.js",
-      "static/chunks/876-3683341a965ed8bd.js",
-      "static/chunks/674-b4fe7656aad94d1e.js",
-      "static/chunks/app/profit/page-73e1425cc6646533.js"
+      "static/chunks/231-843362798b26497f.js",
+      "static/chunks/app/page-4b7b3942058ed312.js"
     ],
     "/stockList/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
@@ -120,6 +107,19 @@
       "static/chunks/876-3683341a965ed8bd.js",
       "static/chunks/674-b4fe7656aad94d1e.js",
       "static/chunks/app/stockList/page-a073f18dcac013b1.js"
+    ],
+    "/profit/page": [
+      "static/chunks/webpack-e9a0a25433ab8d5b.js",
+      "static/chunks/fd9d1056-4b908a5312199cb5.js",
+      "static/chunks/23-8a7a02c9a1465494.js",
+      "static/chunks/main-app-40c05c8f9f059715.js",
+      "static/css/755fcd4345d9e241.css",
+      "static/css/64bb53d45b0a03b0.css",
+      "static/chunks/cff6e2ba-e10f49081344c30d.js",
+      "static/chunks/576-745aef4112f33122.js",
+      "static/chunks/876-3683341a965ed8bd.js",
+      "static/chunks/674-b4fe7656aad94d1e.js",
+      "static/chunks/app/profit/page-73e1425cc6646533.js"
     ],
     "/tuShare/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
