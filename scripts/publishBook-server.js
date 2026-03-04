@@ -52,6 +52,7 @@ function parseUrl(url) {
 
 const server = http.createServer((req, res) => {
   const { pathname, params } = parseUrl(req.url || '');
+  console.log(`visit publishBook server: ${req.url}`);
 
   if (pathname !== '/publishBook') {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
