@@ -343,9 +343,6 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
         </div>
         {tocSections.length > 0 && (
           <aside className="flex-shrink-0 w-48 pt-2 overflow-y-auto max-h-full">
-            <div className="text-xs text-gray-500 mb-2 break-all" aria-hidden>
-              lastClicked: {lastClickedSectionId ?? 'null'} | active: {activeSectionId ?? 'null'} → 高亮用: {(lastClickedSectionId ?? activeSectionId) ?? 'null'}
-            </div>
             <nav className="text-sm" aria-label="章节与段落目录">
               <ul className="space-y-1">
                 {tocSections.map((item, i) => {

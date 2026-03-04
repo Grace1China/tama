@@ -17,7 +17,7 @@ const fs = require('fs');
 
 const PORT = parseInt(process.env.PORT || '3999', 10);
 const PROJECT_DIR = process.env.PROJECT_DIR || path.resolve(__dirname, '..');
-const SCRIPT_PATH = path.join(PROJECT_DIR, 'scripts', 'deploy-pd_bible-on-server.sh');
+const SCRIPT_PATH = path.join(PROJECT_DIR, 'gabriel', 'deploy-pj_bible-on-server.sh');
 const PUBLISH_TOKEN = process.env.PUBLISH_TOKEN || '';
 
 function runDeployScript() {
