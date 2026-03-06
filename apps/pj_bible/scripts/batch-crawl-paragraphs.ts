@@ -78,7 +78,62 @@ function appendRecordsToCSV(filePath: string, records: ParagraphRecord[]): void 
   fs.appendFileSync(filePath, csvContent, 'utf-8');
 }
 
-async function main() {
+/**
+ * 保存记录并按章节、段落排序
+ * 如果记录已存在，则会被新记录覆盖（通过 filter 掉旧章节实现）
+ */
+function saveAndSortCSV(filePath: string, newRecords: ParagraphRecord[]): void {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  const header = 'book,chapter,paragraph,title,startVerseNo,endVerseNo';
+  let allRecords: ParagraphRecord[] = [...newRecords];
+
+  // 1. 如果文件已存在，读取现有数据进行合并
+  if (fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const lines = content.split('\n').slice(1); // 跳过表头
+
+    const existingRecords: ParagraphRecord[] = lines
+      .filter(line => line.trim() !== '')
+      .map(line => {
+        // 简单的 CSV 解析（处理带引号的标题）
+        const match = line.match(/([^,]+),([^,]+),([^,]+),"(.*)",([^,]+),([^,]+)/);
+        if (!match) return null;
+        return {
+          book: match[1],
+          chapter: parseInt(match[2]),
+          paragraph: parseInt(match[3]),
+          title: match[4],
+          startVerseNo: parseInt(match[5]),
+          endVerseNo: parseInt(match[6])
+        };
+      })
+      .filter((r): r is ParagraphRecord => r !== null);
+
+    // 2. 排除掉当前正在爬取的章节（防止重复，实现“替换”效果）
+    const newChapters = new Set(newRecords.map(r => r.chapter));
+    const filteredExisting = existingRecords.filter(r => !newChapters.has(r.chapter));
+    
+    allRecords = [...filteredExisting, ...newRecords];
+  }
+
+  // 3. 排序逻辑：先按章节(chapter)升序，再按段落(paragraph)升序
+  allRecords.sort((a, b) => {
+    if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+    return a.paragraph - b.paragraph;
+  });
+
+  // 4. 转换为 CSV 字符串并写入
+  const rows = allRecords.map(r => 
+    `${r.book},${r.chapter},${r.paragraph},"${r.title}",${r.startVerseNo},${r.endVerseNo}`
+  );
+  fs.writeFileSync(filePath, [header, ...rows].join('\n') + '\n', 'utf-8');
+}
+
+async function main1() {
   const bible = loadBible();
   const outputDir = path.join(__dirname, '..', 'data', 'biblePara','niv');
 
@@ -91,7 +146,7 @@ async function main() {
 
   const header = 'book,chapter,paragraph,title,startVerseNo,endVerseNo';
 
-  for (const book of bible.books.filter(book => book.id == 'REV')) {///filter(book => book.id == 'Zephaniah' || book.id == 'Nahum')
+  for (const book of bible.books.filter(book => book.id == 'PSA')) {///filter(book => book.id == 'Zephaniah' || book.id == 'Nahum')
     console.log(`\n处理: ${book.title} (${book.id}) - ${book.chapters.length} 章`);
     totalBooks++;
 
@@ -151,6 +206,57 @@ async function main() {
     fs.writeFileSync(errorLogPath, JSON.stringify(errors, null, 2), 'utf-8');
     console.log(`\n错误日志已保存到: ${errorLogPath}`);
   }
+}
+
+async function main() {
+  const bible = loadBible();
+  const outputDir = path.join(__dirname, '..', 'data', 'biblePara', 'niv');
+
+  // 获取命令行参数
+  const argBookId = process.argv[3];    // 书本 ID (如: PSA)
+  const argChapterId = process.argv[4]; // 章节 ID (如: 1)
+  console.log('argBookId:',argBookId);
+
+  // 过滤书籍
+  let booksToProcess = bible.books;
+  if (argBookId) {
+    booksToProcess = bible.books.filter(b => b.id.toLowerCase() === argBookId.toLowerCase());
+  } else {
+    // 默认示例：只处理诗篇，你可以根据需要改为全选
+    booksToProcess = bible.books.filter(book => book.id === 'PSA');
+  }
+  console.log('booksToProcess:',booksToProcess);
+
+  for (const book of booksToProcess) {
+    console.log(`\n处理: ${book.title} (${book.id})`);
+    const bookCsvPath = path.join(outputDir, `${book.id.toLowerCase()}.csv`);
+
+    // 确定章节
+    let chaptersToProcess = book.chapters;
+    if (argChapterId) {
+      const target = parseInt(argChapterId, 10);
+      chaptersToProcess = book.chapters.filter(c => c.id === target);
+    }
+
+    for (const chapter of chaptersToProcess) {
+      const url = buildUrl(book.fullname || book.id, chapter.id);
+     
+      try {
+        console.log(`  正在爬取第 ${chapter.id} 章...`);
+        const records = await crawlPassage(url, book.id);
+        
+        if (records.length > 0) {
+          // 调用排序保存函数
+          saveAndSortCSV(bookCsvPath, records);
+          console.log(`    ✓ 成功并排序：${records.length} 条记录`);
+        }
+        await randomDelay(1, 2);
+      } catch (err) {
+        console.error(`    ✗ 错误: ${err}`);
+      }
+    }
+  }
+  console.log('\n任务结束');
 }
 
 main().catch((err) => {

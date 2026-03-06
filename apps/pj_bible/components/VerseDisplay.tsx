@@ -161,6 +161,12 @@ export default function VerseDisplay({
             if (versesToRender.length === 0) return null;
             const showTitle = paraIndex === 0 || paragraphs[paraIndex - 1].title !== para.title;
             const titleToShow = para.title && para.title !== '(无小标题)' ? para.title : null;
+            // 显示时去掉所有括号/方括号包裹的内容（无论在中间还是结尾），如 "(A)"、"(NIV)"、"[A]"
+            const titleDisplay =
+              titleToShow
+                ?.replace(/\s*(\([^)]*\)|\[[^\]]*\])\s*/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim() ?? titleToShow;
             const isFirstPara = paraIndex === 0;
             const anchorId =
               showTitle && titleToShow
@@ -174,7 +180,7 @@ export default function VerseDisplay({
               >
                 {showTitle && titleToShow && (
                   <div id={anchorId} className="font-bold text-gray-800 mb-2">
-                    {titleToShow}
+                    {titleDisplay}
                   </div>
                 )}
                 <div

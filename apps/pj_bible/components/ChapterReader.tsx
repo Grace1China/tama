@@ -100,6 +100,13 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || 'sect';
 
+  /** 去掉标题中所有 () / [] 包裹内容，并压缩空格 */
+  const cleanTitle = (s: string) =>
+    (s ?? '')
+      .replace(/\s*(\([^)]*\)|\[[^\]]*\])\s*/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
   /** 右侧目录：只显示小标题，括号内为「章:节」；无 paragraphInfo 时显示「章:1」 */
   const tocSections = ((): { chapterId: number; title: string; isChapterOnly: boolean; startVerseNo?: number }[] => {
     const startIndex = book.chapters.findIndex((ch) => ch.id === startChapterId);
@@ -126,8 +133,10 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
       });
       for (let i = 0; i < deduped.length; i++) {
         const para = deduped[i];
-        const showTitle = i === 0 || deduped[i - 1].title !== para.title;
-        const titleToShow = para.title && para.title !== '(无小标题)' ? para.title : null;
+        const currentTitle = cleanTitle(para.title ?? '');
+        const prevTitle = i === 0 ? '' : cleanTitle(deduped[i - 1].title ?? '');
+        const showTitle = i === 0 || prevTitle !== currentTitle;
+        const titleToShow = currentTitle && currentTitle !== '(无小标题)' ? currentTitle : null;
         if (showTitle && titleToShow) {
           out.push({ chapterId: ch.id, title: titleToShow, isChapterOnly: false, startVerseNo: para.startVerseNo });
         }

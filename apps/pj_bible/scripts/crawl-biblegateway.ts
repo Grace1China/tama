@@ -117,15 +117,15 @@ export async function crawlPassage(url: string, bookId?: string): Promise<Paragr
   };
 
   // 遍历 .text-html 下所有相关元素（按文档顺序）：
-  // - h3：小标题
+  // - h3 / h4：小标题
   // - p：段落
   // - div.poetry / div.list：诗歌或列表段落
-  $textHtml.find('h3, p, div.poetry, div.list').each((_, el) => {
+  $textHtml.find('h3, h4, p, div.poetry, div.list').each((_, el) => {
     const $el = $(el);
     const tag = el.tagName?.toLowerCase();
 
-    // h3 是小标题
-    if (tag === 'h3') {
+    // h3 / h4 是小标题（可能同时出现作为一段标题）
+    if (tag === 'h3' || tag === 'h4') {
       processParagraph();
       currentTitle = $el.text().trim() || '(无小标题)';
       return;

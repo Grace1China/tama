@@ -1,829 +1,1655 @@
 book,chapter,paragraph,title,startVerseNo,endVerseNo
 psa,1,1,"Psalm 1",1,3
-psa,1,2,"Psalm 1",4,5
-psa,1,3,"Psalm 1",6,6
+psa,1,2,"Psalm 1",1,3
+psa,1,3,"Psalm 1",4,5
+psa,1,4,"Psalm 1",4,5
+psa,1,5,"Psalm 1",6,6
+psa,1,6,"Psalm 1",6,6
 psa,2,1,"Psalm 2",1,3
-psa,2,2,"Psalm 2",4,6
-psa,2,3,"Psalm 2",7,7
-psa,2,4,"Psalm 2",7,9
-psa,2,5,"Psalm 2",10,12
-psa,3,1,"Psalm 3[a]",1,2
-psa,3,2,"Psalm 3[a]",3,4
-psa,3,3,"Psalm 3[a]",5,6
-psa,3,4,"Psalm 3[a]",7,7
-psa,3,5,"Psalm 3[a]",8,8
-psa,4,1,"Psalm 4[a]",1,1
-psa,4,2,"Psalm 4[a]",2,3
-psa,4,3,"Psalm 4[a]",4,5
-psa,4,4,"Psalm 4[a]",6,7
-psa,4,5,"Psalm 4[a]",8,8
-psa,5,1,"Psalm 5[a]",1,2
-psa,5,2,"Psalm 5[a]",3,7
-psa,5,3,"Psalm 5[a]",8,11
-psa,5,4,"Psalm 5[a]",12,12
-psa,6,1,"Psalm 6[a]",1,3
-psa,6,2,"Psalm 6[a]",4,5
-psa,6,3,"Psalm 6[a]",6,6
-psa,6,4,"Psalm 6[a]",6,7
-psa,6,5,"Psalm 6[a]",8,10
-psa,7,1,"Psalm 7[a]",1,2
-psa,7,2,"Psalm 7[a]",3,5
-psa,7,3,"Psalm 7[a]",6,9
-psa,7,4,"Psalm 7[a]",10,13
-psa,7,5,"Psalm 7[a]",14,16
-psa,7,6,"Psalm 7[a]",17,17
-psa,8,1,"Psalm 8[a]",1,1
-psa,8,2,"Psalm 8[a]",1,4
-psa,8,3,"Psalm 8[a]",5,8
-psa,8,4,"Psalm 8[a]",9,9
-psa,9,1,"Psalm 9[a][b]",1,2
-psa,9,2,"Psalm 9[a][b]",3,6
-psa,9,3,"Psalm 9[a][b]",7,10
-psa,9,4,"Psalm 9[a][b]",11,12
-psa,9,5,"Psalm 9[a][b]",13,14
-psa,9,6,"Psalm 9[a][b]",15,18
-psa,9,7,"Psalm 9[a][b]",19,20
+psa,2,2,"Psalm 2",1,3
+psa,2,3,"Psalm 2",4,6
+psa,2,4,"Psalm 2",4,6
+psa,2,5,"Psalm 2",7,7
+psa,2,6,"Psalm 2",7,9
+psa,2,7,"Psalm 2",7,9
+psa,2,8,"Psalm 2",10,12
+psa,2,9,"Psalm 2",10,12
+psa,3,1,"A psalm of David. When he fled from his son Absalom.(A)",1,2
+psa,3,2,"A psalm of David. When he fled from his son Absalom.(A)",1,2
+psa,3,3,"A psalm of David. When he fled from his son Absalom.(A)",3,4
+psa,3,4,"A psalm of David. When he fled from his son Absalom.(A)",3,4
+psa,3,5,"A psalm of David. When he fled from his son Absalom.(A)",5,6
+psa,3,6,"A psalm of David. When he fled from his son Absalom.(A)",5,6
+psa,3,7,"A psalm of David. When he fled from his son Absalom.(A)",7,7
+psa,3,8,"A psalm of David. When he fled from his son Absalom.(A)",7,7
+psa,3,9,"A psalm of David. When he fled from his son Absalom.(A)",8,8
+psa,3,10,"A psalm of David. When he fled from his son Absalom.(A)",8,8
+psa,4,1,"For the director of music. With stringed instruments. A psalm of David.",1,1
+psa,4,2,"For the director of music. With stringed instruments. A psalm of David.",1,1
+psa,4,3,"For the director of music. With stringed instruments. A psalm of David.",2,3
+psa,4,4,"For the director of music. With stringed instruments. A psalm of David.",2,3
+psa,4,5,"For the director of music. With stringed instruments. A psalm of David.",4,5
+psa,4,6,"For the director of music. With stringed instruments. A psalm of David.",4,5
+psa,4,7,"For the director of music. With stringed instruments. A psalm of David.",6,7
+psa,4,8,"For the director of music. With stringed instruments. A psalm of David.",6,7
+psa,4,9,"For the director of music. With stringed instruments. A psalm of David.",8,8
+psa,4,10,"For the director of music. With stringed instruments. A psalm of David.",8,8
+psa,5,1,"For the director of music. For pipes. A psalm of David.",1,2
+psa,5,2,"For the director of music. For pipes. A psalm of David.",1,2
+psa,5,3,"For the director of music. For pipes. A psalm of David.",3,7
+psa,5,4,"For the director of music. For pipes. A psalm of David.",3,7
+psa,5,5,"For the director of music. For pipes. A psalm of David.",8,11
+psa,5,6,"For the director of music. For pipes. A psalm of David.",8,11
+psa,5,7,"For the director of music. For pipes. A psalm of David.",12,12
+psa,5,8,"For the director of music. For pipes. A psalm of David.",12,12
+psa,6,1,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",1,3
+psa,6,2,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",1,3
+psa,6,3,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",4,5
+psa,6,4,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",4,5
+psa,6,5,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",6,6
+psa,6,6,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",6,6
+psa,6,7,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",6,7
+psa,6,8,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",6,7
+psa,6,9,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",8,10
+psa,6,10,"For the director of music. With stringed instruments. According to sheminith.[b] A psalm of David.",8,10
+psa,7,1,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",1,2
+psa,7,2,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",1,2
+psa,7,3,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",3,5
+psa,7,4,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",3,5
+psa,7,5,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",6,9
+psa,7,6,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",6,9
+psa,7,7,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",10,13
+psa,7,8,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",10,13
+psa,7,9,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",14,16
+psa,7,10,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",14,16
+psa,7,11,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",17,17
+psa,7,12,"A shiggaion[b](A) of David, which he sang to the Lord concerning Cush, a Benjamite.",17,17
+psa,8,1,"For the director of music. According to gittith.[b] A psalm of David.",1,1
+psa,8,2,"For the director of music. According to gittith.[b] A psalm of David.",1,1
+psa,8,3,"For the director of music. According to gittith.[b] A psalm of David.",1,4
+psa,8,4,"For the director of music. According to gittith.[b] A psalm of David.",1,4
+psa,8,5,"For the director of music. According to gittith.[b] A psalm of David.",5,8
+psa,8,6,"For the director of music. According to gittith.[b] A psalm of David.",5,8
+psa,8,7,"For the director of music. According to gittith.[b] A psalm of David.",9,9
+psa,8,8,"For the director of music. According to gittith.[b] A psalm of David.",9,9
+psa,9,1,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",1,2
+psa,9,2,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",1,2
+psa,9,3,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",3,6
+psa,9,4,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",3,6
+psa,9,5,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",7,10
+psa,9,6,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",7,10
+psa,9,7,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",11,12
+psa,9,8,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",11,12
+psa,9,9,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",13,14
+psa,9,10,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",13,14
+psa,9,11,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",15,18
+psa,9,12,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",15,18
+psa,9,13,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",19,20
+psa,9,14,"For the director of music. To the tune of “The Death of the Son.” A psalm of David.",19,20
 psa,10,1,"Psalm 10[a]",1,1
-psa,10,2,"Psalm 10[a]",2,6
-psa,10,3,"Psalm 10[a]",7,11
-psa,10,4,"Psalm 10[a]",12,15
-psa,10,5,"Psalm 10[a]",16,18
-psa,11,1,"Psalm 11",1,3
-psa,11,2,"Psalm 11",4,6
-psa,11,3,"Psalm 11",7,7
-psa,12,1,"Psalm 12[a]",1,2
-psa,12,2,"Psalm 12[a]",3,4
-psa,12,3,"Psalm 12[a]",5,6
-psa,12,4,"Psalm 12[a]",7,8
-psa,13,1,"Psalm 13[a]",1,2
-psa,13,2,"Psalm 13[a]",3,4
-psa,13,3,"Psalm 13[a]",5,6
-psa,14,1,"Psalm 14(A)",1,1
-psa,14,2,"Psalm 14(A)",2,3
-psa,14,3,"Psalm 14(A)",4,4
-psa,14,4,"Psalm 14(A)",4,6
-psa,14,5,"Psalm 14(A)",7,7
-psa,15,1,"Psalm 15",1,1
-psa,15,2,"Psalm 15",2,5
-psa,15,3,"Psalm 15",5,5
-psa,16,1,"Psalm 16",1,1
-psa,16,2,"Psalm 16",2,4
-psa,16,3,"Psalm 16",5,8
-psa,16,4,"Psalm 16",9,11
-psa,17,1,"Psalm 17",1,2
-psa,17,2,"Psalm 17",3,5
-psa,17,3,"Psalm 17",6,9
-psa,17,4,"Psalm 17",10,12
-psa,17,5,"Psalm 17",13,14
-psa,17,6,"Psalm 17",15,15
-psa,18,1,"Psalm 18[a](A)",1,1
-psa,18,2,"Psalm 18[a](A)",2,2
-psa,18,3,"Psalm 18[a](A)",3,5
-psa,18,4,"Psalm 18[a](A)",6,15
-psa,18,5,"Psalm 18[a](A)",16,19
-psa,18,6,"Psalm 18[a](A)",20,24
-psa,18,7,"Psalm 18[a](A)",25,29
-psa,18,8,"Psalm 18[a](A)",30,36
-psa,18,9,"Psalm 18[a](A)",37,45
-psa,18,10,"Psalm 18[a](A)",46,49
-psa,18,11,"Psalm 18[a](A)",50,50
-psa,19,1,"Psalm 19[a]",1,6
-psa,19,2,"Psalm 19[a]",7,9
-psa,19,3,"Psalm 19[a]",10,13
-psa,19,4,"Psalm 19[a]",14,14
-psa,20,1,"Psalm 20[a]",1,5
-psa,20,2,"Psalm 20[a]",5,5
-psa,20,3,"Psalm 20[a]",6,9
-psa,21,1,"Psalm 21[a]",1,1
-psa,21,2,"Psalm 21[a]",2,7
-psa,21,3,"Psalm 21[a]",8,12
-psa,21,4,"Psalm 21[a]",13,13
-psa,22,1,"Psalm 22[a]",1,2
-psa,22,2,"Psalm 22[a]",3,5
-psa,22,3,"Psalm 22[a]",6,8
-psa,22,4,"Psalm 22[a]",9,10
-psa,22,5,"Psalm 22[a]",11,11
-psa,22,6,"Psalm 22[a]",12,15
-psa,22,7,"Psalm 22[a]",16,18
-psa,22,8,"Psalm 22[a]",19,21
-psa,22,9,"Psalm 22[a]",22,24
-psa,22,10,"Psalm 22[a]",25,26
-psa,22,11,"Psalm 22[a]",27,28
-psa,22,12,"Psalm 22[a]",29,31
-psa,23,1,"Psalm 23",1,4
-psa,23,2,"Psalm 23",5,6
-psa,24,1,"Psalm 24",1,2
-psa,24,2,"Psalm 24",3,4
-psa,24,3,"Psalm 24",5,6
-psa,24,4,"Psalm 24",7,10
-psa,25,1,"Psalm 25[a]",1,1
-psa,25,2,"Psalm 25[a]",2,3
-psa,25,3,"Psalm 25[a]",4,7
-psa,25,4,"Psalm 25[a]",8,11
-psa,25,5,"Psalm 25[a]",12,15
-psa,25,6,"Psalm 25[a]",16,19
-psa,25,7,"Psalm 25[a]",20,21
-psa,25,8,"Psalm 25[a]",22,22
-psa,26,1,"Psalm 26",1,3
-psa,26,2,"Psalm 26",4,7
-psa,26,3,"Psalm 26",8,11
-psa,26,4,"Psalm 26",12,12
-psa,27,1,"Psalm 27",1,1
-psa,27,2,"Psalm 27",2,3
-psa,27,3,"Psalm 27",4,5
-psa,27,4,"Psalm 27",6,6
-psa,27,5,"Psalm 27",7,12
-psa,27,6,"Psalm 27",13,14
-psa,28,1,"Psalm 28",1,2
-psa,28,2,"Psalm 28",3,4
-psa,28,3,"Psalm 28",5,5
-psa,28,4,"Psalm 28",6,7
-psa,28,5,"Psalm 28",8,9
-psa,29,1,"Psalm 29",1,2
-psa,29,2,"Psalm 29",3,9
-psa,29,3,"Psalm 29",10,11
-psa,30,1,"Psalm 30[a]",1,3
-psa,30,2,"Psalm 30[a]",4,5
-psa,30,3,"Psalm 30[a]",6,7
-psa,30,4,"Psalm 30[a]",8,10
-psa,30,5,"Psalm 30[a]",11,12
-psa,31,1,"Psalm 31[a](A)",1,5
-psa,31,2,"Psalm 31[a](A)",6,8
-psa,31,3,"Psalm 31[a](A)",9,13
-psa,31,4,"Psalm 31[a](A)",14,18
-psa,31,5,"Psalm 31[a](A)",19,20
-psa,31,6,"Psalm 31[a](A)",21,22
-psa,31,7,"Psalm 31[a](A)",23,24
-psa,32,1,"Psalm 32",1,2
-psa,32,2,"Psalm 32",3,4
-psa,32,3,"Psalm 32",5,5
-psa,32,4,"Psalm 32",6,7
-psa,32,5,"Psalm 32",8,10
-psa,32,6,"Psalm 32",11,11
+psa,10,2,"Psalm 10[a]",1,1
+psa,10,3,"Psalm 10[a]",2,6
+psa,10,4,"Psalm 10[a]",2,6
+psa,10,5,"Psalm 10[a]",7,11
+psa,10,6,"Psalm 10[a]",7,11
+psa,10,7,"Psalm 10[a]",12,15
+psa,10,8,"Psalm 10[a]",12,15
+psa,10,9,"Psalm 10[a]",16,18
+psa,10,10,"Psalm 10[a]",16,18
+psa,11,1,"For the director of music. Of David.",1,3
+psa,11,2,"For the director of music. Of David.",1,3
+psa,11,3,"For the director of music. Of David.",4,6
+psa,11,4,"For the director of music. Of David.",4,6
+psa,11,5,"For the director of music. Of David.",7,7
+psa,11,6,"For the director of music. Of David.",7,7
+psa,12,1,"For the director of music. According to sheminith.[b] A psalm of David.",1,2
+psa,12,2,"For the director of music. According to sheminith.[b] A psalm of David.",1,2
+psa,12,3,"For the director of music. According to sheminith.[b] A psalm of David.",3,4
+psa,12,4,"For the director of music. According to sheminith.[b] A psalm of David.",3,4
+psa,12,5,"For the director of music. According to sheminith.[b] A psalm of David.",5,6
+psa,12,6,"For the director of music. According to sheminith.[b] A psalm of David.",5,6
+psa,12,7,"For the director of music. According to sheminith.[b] A psalm of David.",7,8
+psa,12,8,"For the director of music. According to sheminith.[b] A psalm of David.",7,8
+psa,13,1,"For the director of music. A psalm of David.",1,2
+psa,13,2,"For the director of music. A psalm of David.",1,2
+psa,13,3,"For the director of music. A psalm of David.",3,4
+psa,13,4,"For the director of music. A psalm of David.",3,4
+psa,13,5,"For the director of music. A psalm of David.",5,6
+psa,13,6,"For the director of music. A psalm of David.",5,6
+psa,14,1,"For the director of music. Of David.",1,1
+psa,14,2,"For the director of music. Of David.",1,1
+psa,14,3,"For the director of music. Of David.",2,3
+psa,14,4,"For the director of music. Of David.",2,3
+psa,14,5,"For the director of music. Of David.",4,4
+psa,14,6,"For the director of music. Of David.",4,4
+psa,14,7,"For the director of music. Of David.",4,6
+psa,14,8,"For the director of music. Of David.",4,6
+psa,14,9,"For the director of music. Of David.",7,7
+psa,14,10,"For the director of music. Of David.",7,7
+psa,15,1,"A psalm of David.",1,1
+psa,15,2,"A psalm of David.",1,1
+psa,15,3,"A psalm of David.",2,5
+psa,15,4,"A psalm of David.",2,5
+psa,15,5,"A psalm of David.",5,5
+psa,15,6,"A psalm of David.",5,5
+psa,16,1,"A miktam[a] of David.",1,1
+psa,16,2,"A miktam[a] of David.",1,1
+psa,16,3,"A miktam[a] of David.",2,4
+psa,16,4,"A miktam[a] of David.",2,4
+psa,16,5,"A miktam[a] of David.",5,8
+psa,16,6,"A miktam[a] of David.",5,8
+psa,16,7,"A miktam[a] of David.",9,11
+psa,16,8,"A miktam[a] of David.",9,11
+psa,17,1,"A prayer of David.",1,2
+psa,17,2,"A prayer of David.",1,2
+psa,17,3,"A prayer of David.",3,5
+psa,17,4,"A prayer of David.",3,5
+psa,17,5,"A prayer of David.",6,9
+psa,17,6,"A prayer of David.",6,9
+psa,17,7,"A prayer of David.",10,12
+psa,17,8,"A prayer of David.",10,12
+psa,17,9,"A prayer of David.",13,14
+psa,17,10,"A prayer of David.",13,14
+psa,17,11,"A prayer of David.",15,15
+psa,17,12,"A prayer of David.",15,15
+psa,18,1,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",1,1
+psa,18,2,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",1,1
+psa,18,3,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",2,2
+psa,18,4,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",2,2
+psa,18,5,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",3,5
+psa,18,6,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",3,5
+psa,18,7,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",6,15
+psa,18,8,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",6,15
+psa,18,9,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",16,19
+psa,18,10,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",16,19
+psa,18,11,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",20,24
+psa,18,12,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",20,24
+psa,18,13,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",25,29
+psa,18,14,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",25,29
+psa,18,15,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",30,36
+psa,18,16,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",30,36
+psa,18,17,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",37,45
+psa,18,18,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",37,45
+psa,18,19,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",46,49
+psa,18,20,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",46,49
+psa,18,21,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",50,50
+psa,18,22,"For the director of music. Of David the servant of the Lord. He sang to the Lord the words of this song when the Lord delivered him from the hand of all his enemies and from the hand of Saul. He said:",50,50
+psa,19,1,"For the director of music. A psalm of David.",1,6
+psa,19,2,"For the director of music. A psalm of David.",1,6
+psa,19,3,"For the director of music. A psalm of David.",7,9
+psa,19,4,"For the director of music. A psalm of David.",7,9
+psa,19,5,"For the director of music. A psalm of David.",10,13
+psa,19,6,"For the director of music. A psalm of David.",10,13
+psa,19,7,"For the director of music. A psalm of David.",14,14
+psa,19,8,"For the director of music. A psalm of David.",14,14
+psa,20,1,"For the director of music. A psalm of David.",1,5
+psa,20,2,"For the director of music. A psalm of David.",1,5
+psa,20,3,"For the director of music. A psalm of David.",5,5
+psa,20,4,"For the director of music. A psalm of David.",5,5
+psa,20,5,"For the director of music. A psalm of David.",6,9
+psa,20,6,"For the director of music. A psalm of David.",6,9
+psa,21,1,"For the director of music. A psalm of David.",1,1
+psa,21,2,"For the director of music. A psalm of David.",1,1
+psa,21,3,"For the director of music. A psalm of David.",2,7
+psa,21,4,"For the director of music. A psalm of David.",2,7
+psa,21,5,"For the director of music. A psalm of David.",8,12
+psa,21,6,"For the director of music. A psalm of David.",8,12
+psa,21,7,"For the director of music. A psalm of David.",13,13
+psa,21,8,"For the director of music. A psalm of David.",13,13
+psa,22,1,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",1,2
+psa,22,2,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",1,2
+psa,22,3,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",3,5
+psa,22,4,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",3,5
+psa,22,5,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",6,8
+psa,22,6,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",6,8
+psa,22,7,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",9,10
+psa,22,8,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",9,10
+psa,22,9,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",11,11
+psa,22,10,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",11,11
+psa,22,11,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",12,15
+psa,22,12,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",12,15
+psa,22,13,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",16,18
+psa,22,14,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",16,18
+psa,22,15,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",19,21
+psa,22,16,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",19,21
+psa,22,17,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",22,24
+psa,22,18,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",22,24
+psa,22,19,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",25,26
+psa,22,20,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",25,26
+psa,22,21,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",27,28
+psa,22,22,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",27,28
+psa,22,23,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",29,31
+psa,22,24,"For the director of music. To the tune of “The Doe of the Morning.” A psalm of David.",29,31
+psa,23,1,"A psalm of David.",1,4
+psa,23,2,"A psalm of David.",1,4
+psa,23,3,"A psalm of David.",5,6
+psa,23,4,"A psalm of David.",5,6
+psa,24,1,"Of David. A psalm.",1,2
+psa,24,2,"Of David. A psalm.",1,2
+psa,24,3,"Of David. A psalm.",3,4
+psa,24,4,"Of David. A psalm.",3,4
+psa,24,5,"Of David. A psalm.",5,6
+psa,24,6,"Of David. A psalm.",5,6
+psa,24,7,"Of David. A psalm.",7,10
+psa,24,8,"Of David. A psalm.",7,10
+psa,25,1,"Of David.",1,1
+psa,25,2,"Of David.",1,1
+psa,25,3,"Of David.",2,3
+psa,25,4,"Of David.",2,3
+psa,25,5,"Of David.",4,7
+psa,25,6,"Of David.",4,7
+psa,25,7,"Of David.",8,11
+psa,25,8,"Of David.",8,11
+psa,25,9,"Of David.",12,15
+psa,25,10,"Of David.",12,15
+psa,25,11,"Of David.",16,19
+psa,25,12,"Of David.",16,19
+psa,25,13,"Of David.",20,21
+psa,25,14,"Of David.",20,21
+psa,25,15,"Of David.",22,22
+psa,25,16,"Of David.",22,22
+psa,26,1,"Of David.",1,3
+psa,26,2,"Of David.",1,3
+psa,26,3,"Of David.",4,7
+psa,26,4,"Of David.",4,7
+psa,26,5,"Of David.",8,11
+psa,26,6,"Of David.",8,11
+psa,26,7,"Of David.",12,12
+psa,26,8,"Of David.",12,12
+psa,27,1,"Of David.",1,1
+psa,27,2,"Of David.",1,1
+psa,27,3,"Of David.",2,3
+psa,27,4,"Of David.",2,3
+psa,27,5,"Of David.",4,5
+psa,27,6,"Of David.",4,5
+psa,27,7,"Of David.",6,6
+psa,27,8,"Of David.",6,6
+psa,27,9,"Of David.",7,12
+psa,27,10,"Of David.",7,12
+psa,27,11,"Of David.",13,14
+psa,27,12,"Of David.",13,14
+psa,28,1,"Of David.",1,2
+psa,28,2,"Of David.",1,2
+psa,28,3,"Of David.",3,4
+psa,28,4,"Of David.",3,4
+psa,28,5,"Of David.",5,5
+psa,28,6,"Of David.",5,5
+psa,28,7,"Of David.",6,7
+psa,28,8,"Of David.",6,7
+psa,28,9,"Of David.",8,9
+psa,28,10,"Of David.",8,9
+psa,29,1,"A psalm of David.",1,2
+psa,29,2,"A psalm of David.",1,2
+psa,29,3,"A psalm of David.",3,9
+psa,29,4,"A psalm of David.",3,9
+psa,29,5,"A psalm of David.",10,11
+psa,29,6,"A psalm of David.",10,11
+psa,30,1,"A psalm. A song. For the dedication of the temple.[b] Of David.",1,3
+psa,30,2,"A psalm. A song. For the dedication of the temple.[b] Of David.",1,3
+psa,30,3,"A psalm. A song. For the dedication of the temple.[b] Of David.",4,5
+psa,30,4,"A psalm. A song. For the dedication of the temple.[b] Of David.",4,5
+psa,30,5,"A psalm. A song. For the dedication of the temple.[b] Of David.",6,7
+psa,30,6,"A psalm. A song. For the dedication of the temple.[b] Of David.",6,7
+psa,30,7,"A psalm. A song. For the dedication of the temple.[b] Of David.",8,10
+psa,30,8,"A psalm. A song. For the dedication of the temple.[b] Of David.",8,10
+psa,30,9,"A psalm. A song. For the dedication of the temple.[b] Of David.",11,12
+psa,30,10,"A psalm. A song. For the dedication of the temple.[b] Of David.",11,12
+psa,31,1,"For the director of music. A psalm of David.",1,5
+psa,31,2,"For the director of music. A psalm of David.",1,5
+psa,31,3,"For the director of music. A psalm of David.",6,8
+psa,31,4,"For the director of music. A psalm of David.",6,8
+psa,31,5,"For the director of music. A psalm of David.",9,13
+psa,31,6,"For the director of music. A psalm of David.",9,13
+psa,31,7,"For the director of music. A psalm of David.",14,18
+psa,31,8,"For the director of music. A psalm of David.",14,18
+psa,31,9,"For the director of music. A psalm of David.",19,20
+psa,31,10,"For the director of music. A psalm of David.",19,20
+psa,31,11,"For the director of music. A psalm of David.",21,22
+psa,31,12,"For the director of music. A psalm of David.",21,22
+psa,31,13,"For the director of music. A psalm of David.",23,24
+psa,31,14,"For the director of music. A psalm of David.",23,24
+psa,32,1,"Of David. A maskil.[a]",1,2
+psa,32,2,"Of David. A maskil.[a]",1,2
+psa,32,3,"Of David. A maskil.[a]",3,4
+psa,32,4,"Of David. A maskil.[a]",3,4
+psa,32,5,"Of David. A maskil.[a]",5,5
+psa,32,6,"Of David. A maskil.[a]",5,5
+psa,32,7,"Of David. A maskil.[a]",6,7
+psa,32,8,"Of David. A maskil.[a]",6,7
+psa,32,9,"Of David. A maskil.[a]",8,10
+psa,32,10,"Of David. A maskil.[a]",8,10
+psa,32,11,"Of David. A maskil.[a]",11,11
+psa,32,12,"Of David. A maskil.[a]",11,11
 psa,33,1,"Psalm 33",1,3
-psa,33,2,"Psalm 33",4,5
-psa,33,3,"Psalm 33",6,9
-psa,33,4,"Psalm 33",10,11
-psa,33,5,"Psalm 33",12,15
-psa,33,6,"Psalm 33",16,19
-psa,33,7,"Psalm 33",20,22
-psa,34,1,"Psalm 34[a][b]",1,3
-psa,34,2,"Psalm 34[a][b]",4,7
-psa,34,3,"Psalm 34[a][b]",8,14
-psa,34,4,"Psalm 34[a][b]",15,16
-psa,34,5,"Psalm 34[a][b]",17,18
-psa,34,6,"Psalm 34[a][b]",19,20
-psa,34,7,"Psalm 34[a][b]",21,22
-psa,35,1,"Psalm 35",1,3
-psa,35,2,"Psalm 35",4,6
-psa,35,3,"Psalm 35",7,10
-psa,35,4,"Psalm 35",11,16
-psa,35,5,"Psalm 35",17,21
-psa,35,6,"Psalm 35",22,25
-psa,35,7,"Psalm 35",26,27
-psa,35,8,"Psalm 35",28,28
-psa,36,1,"Psalm 36[a]",1,1
-psa,36,2,"Psalm 36[a]",2,4
-psa,36,3,"Psalm 36[a]",5,9
-psa,36,4,"Psalm 36[a]",10,12
-psa,37,1,"Psalm 37[a]",1,2
-psa,37,2,"Psalm 37[a]",3,4
-psa,37,3,"Psalm 37[a]",5,6
-psa,37,4,"Psalm 37[a]",7,7
-psa,37,5,"Psalm 37[a]",8,9
-psa,37,6,"Psalm 37[a]",10,11
-psa,37,7,"Psalm 37[a]",12,13
-psa,37,8,"Psalm 37[a]",14,15
-psa,37,9,"Psalm 37[a]",16,17
-psa,37,10,"Psalm 37[a]",18,19
-psa,37,11,"Psalm 37[a]",20,20
-psa,37,12,"Psalm 37[a]",21,22
-psa,37,13,"Psalm 37[a]",23,24
-psa,37,14,"Psalm 37[a]",25,26
-psa,37,15,"Psalm 37[a]",27,28
-psa,37,16,"Psalm 37[a]",28,29
-psa,37,17,"Psalm 37[a]",30,31
-psa,37,18,"Psalm 37[a]",32,33
-psa,37,19,"Psalm 37[a]",34,34
-psa,37,20,"Psalm 37[a]",35,36
-psa,37,21,"Psalm 37[a]",37,38
-psa,37,22,"Psalm 37[a]",39,40
-psa,38,1,"Psalm 38[a]",1,4
-psa,38,2,"Psalm 38[a]",5,8
-psa,38,3,"Psalm 38[a]",9,12
-psa,38,4,"Psalm 38[a]",13,16
-psa,38,5,"Psalm 38[a]",17,20
-psa,38,6,"Psalm 38[a]",21,22
-psa,39,1,"Psalm 39[a]",1,3
-psa,39,2,"Psalm 39[a]",4,5
-psa,39,3,"Psalm 39[a]",6,6
-psa,39,4,"Psalm 39[a]",7,11
-psa,39,5,"Psalm 39[a]",12,13
-psa,40,1,"Psalm 40[a](A)",1,3
-psa,40,2,"Psalm 40[a](A)",4,5
-psa,40,3,"Psalm 40[a](A)",6,8
-psa,40,4,"Psalm 40[a](A)",9,10
-psa,40,5,"Psalm 40[a](A)",11,13
-psa,40,6,"Psalm 40[a](A)",14,16
-psa,40,7,"Psalm 40[a](A)",17,17
-psa,41,1,"Psalm 41[a]",1,3
-psa,41,2,"Psalm 41[a]",4,6
-psa,41,3,"Psalm 41[a]",7,9
-psa,41,4,"Psalm 41[a]",10,12
-psa,41,5,"Psalm 41[a]",13,13
-psa,42,1,"Psalm 42[a][b]",1,4
-psa,42,2,"Psalm 42[a][b]",5,5
-psa,42,3,"Psalm 42[a][b]",6,7
-psa,42,4,"Psalm 42[a][b]",8,8
-psa,42,5,"Psalm 42[a][b]",9,10
-psa,42,6,"Psalm 42[a][b]",11,11
+psa,33,2,"Psalm 33",1,3
+psa,33,3,"Psalm 33",4,5
+psa,33,4,"Psalm 33",4,5
+psa,33,5,"Psalm 33",6,9
+psa,33,6,"Psalm 33",6,9
+psa,33,7,"Psalm 33",10,11
+psa,33,8,"Psalm 33",10,11
+psa,33,9,"Psalm 33",12,15
+psa,33,10,"Psalm 33",12,15
+psa,33,11,"Psalm 33",16,19
+psa,33,12,"Psalm 33",16,19
+psa,33,13,"Psalm 33",20,22
+psa,33,14,"Psalm 33",20,22
+psa,34,1,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",1,3
+psa,34,2,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",1,3
+psa,34,3,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",4,7
+psa,34,4,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",4,7
+psa,34,5,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",8,14
+psa,34,6,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",8,14
+psa,34,7,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",15,16
+psa,34,8,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",15,16
+psa,34,9,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",17,18
+psa,34,10,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",17,18
+psa,34,11,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",19,20
+psa,34,12,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",19,20
+psa,34,13,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",21,22
+psa,34,14,"Of David. When he pretended to be insane(A) before Abimelek, who drove him away, and he left.",21,22
+psa,35,1,"Of David.",1,3
+psa,35,2,"Of David.",1,3
+psa,35,3,"Of David.",4,6
+psa,35,4,"Of David.",4,6
+psa,35,5,"Of David.",7,10
+psa,35,6,"Of David.",7,10
+psa,35,7,"Of David.",11,16
+psa,35,8,"Of David.",11,16
+psa,35,9,"Of David.",17,21
+psa,35,10,"Of David.",17,21
+psa,35,11,"Of David.",22,25
+psa,35,12,"Of David.",22,25
+psa,35,13,"Of David.",26,27
+psa,35,14,"Of David.",26,27
+psa,35,15,"Of David.",28,28
+psa,35,16,"Of David.",28,28
+psa,36,1,"For the director of music. Of David the servant of the Lord.",1,1
+psa,36,2,"For the director of music. Of David the servant of the Lord.",1,1
+psa,36,3,"For the director of music. Of David the servant of the Lord.",2,4
+psa,36,4,"For the director of music. Of David the servant of the Lord.",2,4
+psa,36,5,"For the director of music. Of David the servant of the Lord.",5,9
+psa,36,6,"For the director of music. Of David the servant of the Lord.",5,9
+psa,36,7,"For the director of music. Of David the servant of the Lord.",10,12
+psa,36,8,"For the director of music. Of David the servant of the Lord.",10,12
+psa,37,1,"Of David.",1,2
+psa,37,2,"Of David.",1,2
+psa,37,3,"Of David.",3,4
+psa,37,4,"Of David.",3,4
+psa,37,5,"Of David.",5,6
+psa,37,6,"Of David.",5,6
+psa,37,7,"Of David.",7,7
+psa,37,8,"Of David.",7,7
+psa,37,9,"Of David.",8,9
+psa,37,10,"Of David.",8,9
+psa,37,11,"Of David.",10,11
+psa,37,12,"Of David.",10,11
+psa,37,13,"Of David.",12,13
+psa,37,14,"Of David.",12,13
+psa,37,15,"Of David.",14,15
+psa,37,16,"Of David.",14,15
+psa,37,17,"Of David.",16,17
+psa,37,18,"Of David.",16,17
+psa,37,19,"Of David.",18,19
+psa,37,20,"Of David.",18,19
+psa,37,21,"Of David.",20,20
+psa,37,22,"Of David.",20,20
+psa,37,23,"Of David.",21,22
+psa,37,24,"Of David.",21,22
+psa,37,25,"Of David.",23,24
+psa,37,26,"Of David.",23,24
+psa,37,27,"Of David.",25,26
+psa,37,28,"Of David.",25,26
+psa,37,29,"Of David.",27,28
+psa,37,30,"Of David.",27,28
+psa,37,31,"Of David.",28,29
+psa,37,32,"Of David.",28,29
+psa,37,33,"Of David.",30,31
+psa,37,34,"Of David.",30,31
+psa,37,35,"Of David.",32,33
+psa,37,36,"Of David.",32,33
+psa,37,37,"Of David.",34,34
+psa,37,38,"Of David.",34,34
+psa,37,39,"Of David.",35,36
+psa,37,40,"Of David.",35,36
+psa,37,41,"Of David.",37,38
+psa,37,42,"Of David.",37,38
+psa,37,43,"Of David.",39,40
+psa,37,44,"Of David.",39,40
+psa,38,1,"A psalm of David. A petition.",1,4
+psa,38,2,"A psalm of David. A petition.",1,4
+psa,38,3,"A psalm of David. A petition.",5,8
+psa,38,4,"A psalm of David. A petition.",5,8
+psa,38,5,"A psalm of David. A petition.",9,12
+psa,38,6,"A psalm of David. A petition.",9,12
+psa,38,7,"A psalm of David. A petition.",13,16
+psa,38,8,"A psalm of David. A petition.",13,16
+psa,38,9,"A psalm of David. A petition.",17,20
+psa,38,10,"A psalm of David. A petition.",17,20
+psa,38,11,"A psalm of David. A petition.",21,22
+psa,38,12,"A psalm of David. A petition.",21,22
+psa,39,1,"For the director of music. For Jeduthun. A psalm of David.",1,3
+psa,39,2,"For the director of music. For Jeduthun. A psalm of David.",1,3
+psa,39,3,"For the director of music. For Jeduthun. A psalm of David.",4,5
+psa,39,4,"For the director of music. For Jeduthun. A psalm of David.",4,5
+psa,39,5,"For the director of music. For Jeduthun. A psalm of David.",6,6
+psa,39,6,"For the director of music. For Jeduthun. A psalm of David.",6,6
+psa,39,7,"For the director of music. For Jeduthun. A psalm of David.",7,11
+psa,39,8,"For the director of music. For Jeduthun. A psalm of David.",7,11
+psa,39,9,"For the director of music. For Jeduthun. A psalm of David.",12,13
+psa,39,10,"For the director of music. For Jeduthun. A psalm of David.",12,13
+psa,40,1,"For the director of music. Of David. A psalm.",1,3
+psa,40,2,"For the director of music. Of David. A psalm.",1,3
+psa,40,3,"For the director of music. Of David. A psalm.",4,5
+psa,40,4,"For the director of music. Of David. A psalm.",4,5
+psa,40,5,"For the director of music. Of David. A psalm.",6,8
+psa,40,6,"For the director of music. Of David. A psalm.",6,8
+psa,40,7,"For the director of music. Of David. A psalm.",9,10
+psa,40,8,"For the director of music. Of David. A psalm.",9,10
+psa,40,9,"For the director of music. Of David. A psalm.",11,13
+psa,40,10,"For the director of music. Of David. A psalm.",11,13
+psa,40,11,"For the director of music. Of David. A psalm.",14,16
+psa,40,12,"For the director of music. Of David. A psalm.",14,16
+psa,40,13,"For the director of music. Of David. A psalm.",17,17
+psa,40,14,"For the director of music. Of David. A psalm.",17,17
+psa,41,1,"For the director of music. A psalm of David.",1,3
+psa,41,2,"For the director of music. A psalm of David.",1,3
+psa,41,3,"For the director of music. A psalm of David.",4,6
+psa,41,4,"For the director of music. A psalm of David.",4,6
+psa,41,5,"For the director of music. A psalm of David.",7,9
+psa,41,6,"For the director of music. A psalm of David.",7,9
+psa,41,7,"For the director of music. A psalm of David.",10,12
+psa,41,8,"For the director of music. A psalm of David.",10,12
+psa,41,9,"For the director of music. A psalm of David.",13,13
+psa,41,10,"For the director of music. A psalm of David.",13,13
+psa,42,1,"For the director of music. A maskil[c] of the Sons of Korah.",1,4
+psa,42,2,"For the director of music. A maskil[c] of the Sons of Korah.",1,4
+psa,42,3,"For the director of music. A maskil[c] of the Sons of Korah.",5,5
+psa,42,4,"For the director of music. A maskil[c] of the Sons of Korah.",5,5
+psa,42,5,"For the director of music. A maskil[c] of the Sons of Korah.",6,7
+psa,42,6,"For the director of music. A maskil[c] of the Sons of Korah.",6,7
+psa,42,7,"For the director of music. A maskil[c] of the Sons of Korah.",8,8
+psa,42,8,"For the director of music. A maskil[c] of the Sons of Korah.",8,8
+psa,42,9,"For the director of music. A maskil[c] of the Sons of Korah.",9,10
+psa,42,10,"For the director of music. A maskil[c] of the Sons of Korah.",9,10
+psa,42,11,"For the director of music. A maskil[c] of the Sons of Korah.",11,11
+psa,42,12,"For the director of music. A maskil[c] of the Sons of Korah.",11,11
 psa,43,1,"Psalm 43[a]",1,4
-psa,43,2,"Psalm 43[a]",5,5
-psa,44,1,"Psalm 44[a]",1,3
-psa,44,2,"Psalm 44[a]",4,8
-psa,44,3,"Psalm 44[a]",9,12
-psa,44,4,"Psalm 44[a]",13,16
-psa,44,5,"Psalm 44[a]",17,19
-psa,44,6,"Psalm 44[a]",20,22
-psa,44,7,"Psalm 44[a]",23,24
-psa,44,8,"Psalm 44[a]",25,26
-psa,45,1,"Psalm 45[a]",1,1
-psa,45,2,"Psalm 45[a]",2,2
-psa,45,3,"Psalm 45[a]",3,9
-psa,45,4,"Psalm 45[a]",10,15
-psa,45,5,"Psalm 45[a]",16,16
-psa,45,6,"Psalm 45[a]",17,17
-psa,46,1,"Psalm 46[a]",1,3
-psa,46,2,"Psalm 46[a]",4,6
-psa,46,3,"Psalm 46[a]",7,7
-psa,46,4,"Psalm 46[a]",8,10
-psa,46,5,"Psalm 46[a]",11,11
-psa,47,1,"Psalm 47[a]",1,1
-psa,47,2,"Psalm 47[a]",2,4
-psa,47,3,"Psalm 47[a]",5,7
-psa,47,4,"Psalm 47[a]",8,9
-psa,48,1,"Psalm 48[a]",1,1
-psa,48,2,"Psalm 48[a]",2,3
-psa,48,3,"Psalm 48[a]",4,7
-psa,48,4,"Psalm 48[a]",8,8
-psa,48,5,"Psalm 48[a]",9,11
-psa,48,6,"Psalm 48[a]",12,13
-psa,48,7,"Psalm 48[a]",14,14
-psa,49,1,"Psalm 49[a]",1,4
-psa,49,2,"Psalm 49[a]",5,11
-psa,49,3,"Psalm 49[a]",12,12
-psa,49,4,"Psalm 49[a]",13,19
-psa,49,5,"Psalm 49[a]",20,20
-psa,50,1,"Psalm 50",1,6
-psa,50,2,"Psalm 50",7,13
-psa,50,3,"Psalm 50",14,15
-psa,50,4,"Psalm 50",16,16
-psa,50,5,"Psalm 50",16,21
-psa,50,6,"Psalm 50",22,23
-psa,51,1,"Psalm 51[a]",1,2
-psa,51,2,"Psalm 51[a]",3,6
-psa,51,3,"Psalm 51[a]",7,9
-psa,51,4,"Psalm 51[a]",10,12
-psa,51,5,"Psalm 51[a]",13,17
-psa,51,6,"Psalm 51[a]",18,19
-psa,52,1,"Psalm 52[a]",1,4
-psa,52,2,"Psalm 52[a]",5,7
-psa,52,3,"Psalm 52[a]",8,9
-psa,53,1,"Psalm 53[a](A)",1,1
-psa,53,2,"Psalm 53[a](A)",2,3
-psa,53,3,"Psalm 53[a](A)",4,4
-psa,53,4,"Psalm 53[a](A)",4,5
-psa,53,5,"Psalm 53[a](A)",6,6
-psa,54,1,"Psalm 54[a]",1,2
-psa,54,2,"Psalm 54[a]",3,3
-psa,54,3,"Psalm 54[a]",4,4
-psa,54,4,"Psalm 54[a]",5,5
-psa,54,5,"Psalm 54[a]",6,7
-psa,55,1,"Psalm 55[a]",1,3
-psa,55,2,"Psalm 55[a]",4,8
-psa,55,3,"Psalm 55[a]",9,11
-psa,55,4,"Psalm 55[a]",12,14
-psa,55,5,"Psalm 55[a]",15,15
-psa,55,6,"Psalm 55[a]",16,19
-psa,55,7,"Psalm 55[a]",20,21
-psa,55,8,"Psalm 55[a]",22,23
-psa,55,9,"Psalm 55[a]",23,23
-psa,56,1,"Psalm 56[a]",1,2
-psa,56,2,"Psalm 56[a]",3,4
-psa,56,3,"Psalm 56[a]",5,7
-psa,56,4,"Psalm 56[a]",8,9
-psa,56,5,"Psalm 56[a]",10,11
-psa,56,6,"Psalm 56[a]",12,13
-psa,57,1,"Psalm 57[a](A)",1,1
-psa,57,2,"Psalm 57[a](A)",2,3
-psa,57,3,"Psalm 57[a](A)",4,4
-psa,57,4,"Psalm 57[a](A)",5,5
-psa,57,5,"Psalm 57[a](A)",6,6
-psa,57,6,"Psalm 57[a](A)",7,8
-psa,57,7,"Psalm 57[a](A)",9,10
-psa,57,8,"Psalm 57[a](A)",11,11
-psa,58,1,"Psalm 58[a]",1,2
-psa,58,2,"Psalm 58[a]",3,5
-psa,58,3,"Psalm 58[a]",6,8
-psa,58,4,"Psalm 58[a]",9,11
-psa,59,1,"Psalm 59[a]",1,2
-psa,59,2,"Psalm 59[a]",3,5
-psa,59,3,"Psalm 59[a]",6,8
-psa,59,4,"Psalm 59[a]",9,10
-psa,59,5,"Psalm 59[a]",10,13
-psa,59,6,"Psalm 59[a]",14,16
-psa,59,7,"Psalm 59[a]",17,17
-psa,60,1,"Psalm 60[a](A)",1,4
-psa,60,2,"Psalm 60[a](A)",5,8
-psa,60,3,"Psalm 60[a](A)",9,12
-psa,61,1,"Psalm 61[a]",1,1
-psa,61,2,"Psalm 61[a]",2,3
-psa,61,3,"Psalm 61[a]",4,5
-psa,61,4,"Psalm 61[a]",6,7
-psa,61,5,"Psalm 61[a]",8,8
-psa,62,1,"Psalm 62[a]",1,2
-psa,62,2,"Psalm 62[a]",3,4
-psa,62,3,"Psalm 62[a]",5,8
-psa,62,4,"Psalm 62[a]",9,10
-psa,62,5,"Psalm 62[a]",11,12
-psa,63,1,"Psalm 63[a]",1,1
-psa,63,2,"Psalm 63[a]",2,5
-psa,63,3,"Psalm 63[a]",6,8
-psa,63,4,"Psalm 63[a]",9,10
-psa,63,5,"Psalm 63[a]",11,11
-psa,64,1,"Psalm 64[a]",1,1
-psa,64,2,"Psalm 64[a]",2,4
-psa,64,3,"Psalm 64[a]",5,6
-psa,64,4,"Psalm 64[a]",7,9
-psa,64,5,"Psalm 64[a]",10,10
-psa,65,1,"Psalm 65[a]",1,4
-psa,65,2,"Psalm 65[a]",5,8
-psa,65,3,"Psalm 65[a]",9,13
-psa,66,1,"Psalm 66",1,4
-psa,66,2,"Psalm 66",5,7
-psa,66,3,"Psalm 66",8,12
-psa,66,4,"Psalm 66",13,15
-psa,66,5,"Psalm 66",16,20
-psa,67,1,"Psalm 67[a]",1,2
-psa,67,2,"Psalm 67[a]",3,5
-psa,67,3,"Psalm 67[a]",6,7
-psa,68,1,"Psalm 68[a]",1,3
-psa,68,2,"Psalm 68[a]",4,6
-psa,68,3,"Psalm 68[a]",7,10
-psa,68,4,"Psalm 68[a]",11,14
-psa,68,5,"Psalm 68[a]",15,18
-psa,68,6,"Psalm 68[a]",19,23
-psa,68,7,"Psalm 68[a]",24,27
-psa,68,8,"Psalm 68[a]",28,31
-psa,68,9,"Psalm 68[a]",32,35
-psa,68,10,"Psalm 68[a]",35,35
-psa,69,1,"Psalm 69[a]",1,4
-psa,69,2,"Psalm 69[a]",5,5
-psa,69,3,"Psalm 69[a]",6,12
-psa,69,4,"Psalm 69[a]",13,15
-psa,69,5,"Psalm 69[a]",16,18
-psa,69,6,"Psalm 69[a]",19,21
-psa,69,7,"Psalm 69[a]",22,28
-psa,69,8,"Psalm 69[a]",29,29
-psa,69,9,"Psalm 69[a]",30,33
-psa,69,10,"Psalm 69[a]",34,36
-psa,70,1,"Psalm 70[a](A)",1,1
-psa,70,2,"Psalm 70[a](A)",2,4
-psa,70,3,"Psalm 70[a](A)",5,5
+psa,43,2,"Psalm 43[a]",1,4
+psa,43,3,"Psalm 43[a]",5,5
+psa,43,4,"Psalm 43[a]",5,5
+psa,44,1,"For the director of music. Of the Sons of Korah. A maskil.[b]",1,3
+psa,44,2,"For the director of music. Of the Sons of Korah. A maskil.[b]",1,3
+psa,44,3,"For the director of music. Of the Sons of Korah. A maskil.[b]",4,8
+psa,44,4,"For the director of music. Of the Sons of Korah. A maskil.[b]",4,8
+psa,44,5,"For the director of music. Of the Sons of Korah. A maskil.[b]",9,12
+psa,44,6,"For the director of music. Of the Sons of Korah. A maskil.[b]",9,12
+psa,44,7,"For the director of music. Of the Sons of Korah. A maskil.[b]",13,16
+psa,44,8,"For the director of music. Of the Sons of Korah. A maskil.[b]",13,16
+psa,44,9,"For the director of music. Of the Sons of Korah. A maskil.[b]",17,19
+psa,44,10,"For the director of music. Of the Sons of Korah. A maskil.[b]",17,19
+psa,44,11,"For the director of music. Of the Sons of Korah. A maskil.[b]",20,22
+psa,44,12,"For the director of music. Of the Sons of Korah. A maskil.[b]",20,22
+psa,44,13,"For the director of music. Of the Sons of Korah. A maskil.[b]",23,24
+psa,44,14,"For the director of music. Of the Sons of Korah. A maskil.[b]",23,24
+psa,44,15,"For the director of music. Of the Sons of Korah. A maskil.[b]",25,26
+psa,44,16,"For the director of music. Of the Sons of Korah. A maskil.[b]",25,26
+psa,45,1,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",1,1
+psa,45,2,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",1,1
+psa,45,3,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",2,2
+psa,45,4,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",2,2
+psa,45,5,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",3,9
+psa,45,6,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",3,9
+psa,45,7,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",10,15
+psa,45,8,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",10,15
+psa,45,9,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",16,16
+psa,45,10,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",16,16
+psa,45,11,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",17,17
+psa,45,12,"For the director of music. To the tune of “Lilies.” Of the Sons of Korah. A maskil.[b] A wedding song.(A)",17,17
+psa,46,1,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",1,3
+psa,46,2,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",1,3
+psa,46,3,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",4,6
+psa,46,4,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",4,6
+psa,46,5,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",7,7
+psa,46,6,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",7,7
+psa,46,7,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",8,10
+psa,46,8,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",8,10
+psa,46,9,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",11,11
+psa,46,10,"For the director of music. Of the Sons of Korah. According to alamoth.[b] A song.",11,11
+psa,47,1,"For the director of music. Of the Sons of Korah. A psalm.",1,1
+psa,47,2,"For the director of music. Of the Sons of Korah. A psalm.",1,1
+psa,47,3,"For the director of music. Of the Sons of Korah. A psalm.",2,4
+psa,47,4,"For the director of music. Of the Sons of Korah. A psalm.",2,4
+psa,47,5,"For the director of music. Of the Sons of Korah. A psalm.",5,7
+psa,47,6,"For the director of music. Of the Sons of Korah. A psalm.",5,7
+psa,47,7,"For the director of music. Of the Sons of Korah. A psalm.",8,9
+psa,47,8,"For the director of music. Of the Sons of Korah. A psalm.",8,9
+psa,48,1,"A song. A psalm of the Sons of Korah.",1,1
+psa,48,2,"A song. A psalm of the Sons of Korah.",1,1
+psa,48,3,"A song. A psalm of the Sons of Korah.",2,3
+psa,48,4,"A song. A psalm of the Sons of Korah.",2,3
+psa,48,5,"A song. A psalm of the Sons of Korah.",4,7
+psa,48,6,"A song. A psalm of the Sons of Korah.",4,7
+psa,48,7,"A song. A psalm of the Sons of Korah.",8,8
+psa,48,8,"A song. A psalm of the Sons of Korah.",8,8
+psa,48,9,"A song. A psalm of the Sons of Korah.",9,11
+psa,48,10,"A song. A psalm of the Sons of Korah.",9,11
+psa,48,11,"A song. A psalm of the Sons of Korah.",12,13
+psa,48,12,"A song. A psalm of the Sons of Korah.",12,13
+psa,48,13,"A song. A psalm of the Sons of Korah.",14,14
+psa,48,14,"A song. A psalm of the Sons of Korah.",14,14
+psa,49,1,"For the director of music. Of the Sons of Korah. A psalm.",1,4
+psa,49,2,"For the director of music. Of the Sons of Korah. A psalm.",1,4
+psa,49,3,"For the director of music. Of the Sons of Korah. A psalm.",5,11
+psa,49,4,"For the director of music. Of the Sons of Korah. A psalm.",5,11
+psa,49,5,"For the director of music. Of the Sons of Korah. A psalm.",12,12
+psa,49,6,"For the director of music. Of the Sons of Korah. A psalm.",12,12
+psa,49,7,"For the director of music. Of the Sons of Korah. A psalm.",13,19
+psa,49,8,"For the director of music. Of the Sons of Korah. A psalm.",13,19
+psa,49,9,"For the director of music. Of the Sons of Korah. A psalm.",20,20
+psa,49,10,"For the director of music. Of the Sons of Korah. A psalm.",20,20
+psa,50,1,"A psalm of Asaph.",1,6
+psa,50,2,"A psalm of Asaph.",1,6
+psa,50,3,"A psalm of Asaph.",7,13
+psa,50,4,"A psalm of Asaph.",7,13
+psa,50,5,"A psalm of Asaph.",14,15
+psa,50,6,"A psalm of Asaph.",14,15
+psa,50,7,"A psalm of Asaph.",16,16
+psa,50,8,"A psalm of Asaph.",16,21
+psa,50,9,"A psalm of Asaph.",16,21
+psa,50,10,"A psalm of Asaph.",22,23
+psa,50,11,"A psalm of Asaph.",22,23
+psa,51,1,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",1,2
+psa,51,2,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",1,2
+psa,51,3,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",3,6
+psa,51,4,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",3,6
+psa,51,5,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",7,9
+psa,51,6,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",7,9
+psa,51,7,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",10,12
+psa,51,8,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",10,12
+psa,51,9,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",13,17
+psa,51,10,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",13,17
+psa,51,11,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",18,19
+psa,51,12,"For the director of music. A psalm of David. When the prophet Nathan came to him after David had committed adultery with Bathsheba.(A)",18,19
+psa,52,1,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",1,4
+psa,52,2,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",1,4
+psa,52,3,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",5,7
+psa,52,4,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",5,7
+psa,52,5,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",8,9
+psa,52,6,"For the director of music. A maskil[b] of David. When Doeg the Edomite(A) had gone to Saul and told him: “David has gone to the house of Ahimelek.”",8,9
+psa,53,1,"For the director of music. According to mahalath.[b] A maskil[c] of David.",1,1
+psa,53,2,"For the director of music. According to mahalath.[b] A maskil[c] of David.",1,1
+psa,53,3,"For the director of music. According to mahalath.[b] A maskil[c] of David.",2,3
+psa,53,4,"For the director of music. According to mahalath.[b] A maskil[c] of David.",2,3
+psa,53,5,"For the director of music. According to mahalath.[b] A maskil[c] of David.",4,4
+psa,53,6,"For the director of music. According to mahalath.[b] A maskil[c] of David.",4,4
+psa,53,7,"For the director of music. According to mahalath.[b] A maskil[c] of David.",4,5
+psa,53,8,"For the director of music. According to mahalath.[b] A maskil[c] of David.",4,5
+psa,53,9,"For the director of music. According to mahalath.[b] A maskil[c] of David.",6,6
+psa,53,10,"For the director of music. According to mahalath.[b] A maskil[c] of David.",6,6
+psa,54,1,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",1,2
+psa,54,2,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",1,2
+psa,54,3,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",3,3
+psa,54,4,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",3,3
+psa,54,5,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",4,4
+psa,54,6,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",4,4
+psa,54,7,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",5,5
+psa,54,8,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",5,5
+psa,54,9,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",6,7
+psa,54,10,"For the director of music. With stringed instruments. A maskil[b] of David. When the Ziphites(A) had gone to Saul and said, “Is not David hiding among us?”",6,7
+psa,55,1,"For the director of music. With stringed instruments. A maskil[b] of David.",1,3
+psa,55,2,"For the director of music. With stringed instruments. A maskil[b] of David.",1,3
+psa,55,3,"For the director of music. With stringed instruments. A maskil[b] of David.",4,8
+psa,55,4,"For the director of music. With stringed instruments. A maskil[b] of David.",4,8
+psa,55,5,"For the director of music. With stringed instruments. A maskil[b] of David.",9,11
+psa,55,6,"For the director of music. With stringed instruments. A maskil[b] of David.",9,11
+psa,55,7,"For the director of music. With stringed instruments. A maskil[b] of David.",12,14
+psa,55,8,"For the director of music. With stringed instruments. A maskil[b] of David.",12,14
+psa,55,9,"For the director of music. With stringed instruments. A maskil[b] of David.",15,15
+psa,55,10,"For the director of music. With stringed instruments. A maskil[b] of David.",15,15
+psa,55,11,"For the director of music. With stringed instruments. A maskil[b] of David.",16,19
+psa,55,12,"For the director of music. With stringed instruments. A maskil[b] of David.",16,19
+psa,55,13,"For the director of music. With stringed instruments. A maskil[b] of David.",20,21
+psa,55,14,"For the director of music. With stringed instruments. A maskil[b] of David.",20,21
+psa,55,15,"For the director of music. With stringed instruments. A maskil[b] of David.",22,23
+psa,55,16,"For the director of music. With stringed instruments. A maskil[b] of David.",22,23
+psa,55,17,"For the director of music. With stringed instruments. A maskil[b] of David.",23,23
+psa,55,18,"For the director of music. With stringed instruments. A maskil[b] of David.",23,23
+psa,56,1,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",1,2
+psa,56,2,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",1,2
+psa,56,3,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",3,4
+psa,56,4,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",3,4
+psa,56,5,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",5,7
+psa,56,6,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",5,7
+psa,56,7,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",8,9
+psa,56,8,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",8,9
+psa,56,9,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",10,11
+psa,56,10,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",10,11
+psa,56,11,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",12,13
+psa,56,12,"For the director of music. To the tune of “A Dove on Distant Oaks.” Of David. A miktam.[b] When the Philistines had seized him in Gath.",12,13
+psa,57,1,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",1,1
+psa,57,2,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",1,1
+psa,57,3,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",2,3
+psa,57,4,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",2,3
+psa,57,5,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",4,4
+psa,57,6,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",4,4
+psa,57,7,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",5,5
+psa,57,8,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",5,5
+psa,57,9,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",6,6
+psa,57,10,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",6,6
+psa,57,11,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",7,8
+psa,57,12,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",7,8
+psa,57,13,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",9,10
+psa,57,14,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",9,10
+psa,57,15,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",11,11
+psa,57,16,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When he had fled from Saul into the cave.(B)",11,11
+psa,58,1,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",1,2
+psa,58,2,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",1,2
+psa,58,3,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",3,5
+psa,58,4,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",3,5
+psa,58,5,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",6,8
+psa,58,6,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",6,8
+psa,58,7,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",9,11
+psa,58,8,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b]",9,11
+psa,59,1,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",1,2
+psa,59,2,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",1,2
+psa,59,3,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",3,5
+psa,59,4,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",3,5
+psa,59,5,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",6,8
+psa,59,6,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",6,8
+psa,59,7,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",9,10
+psa,59,8,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",9,10
+psa,59,9,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",10,13
+psa,59,10,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",10,13
+psa,59,11,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",14,16
+psa,59,12,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",14,16
+psa,59,13,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",17,17
+psa,59,14,"For the director of music. To the tune of “Do Not Destroy.” Of David. A miktam.[b] When Saul had sent men to watch David’s house(A) in order to kill him.",17,17
+psa,60,1,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",1,4
+psa,60,2,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",1,4
+psa,60,3,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",5,8
+psa,60,4,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",5,8
+psa,60,5,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",9,12
+psa,60,6,"For the director of music. To the tune of “The Lily of the Covenant.” A miktam[b] of David. For teaching. When he fought Aram Naharaim[c] and Aram Zobah,[d] and when Joab returned and struck down twelve thousand Edomites in the Valley of Salt.(B)",9,12
+psa,61,1,"For the director of music. With stringed instruments. Of David.",1,1
+psa,61,2,"For the director of music. With stringed instruments. Of David.",1,1
+psa,61,3,"For the director of music. With stringed instruments. Of David.",2,3
+psa,61,4,"For the director of music. With stringed instruments. Of David.",2,3
+psa,61,5,"For the director of music. With stringed instruments. Of David.",4,5
+psa,61,6,"For the director of music. With stringed instruments. Of David.",4,5
+psa,61,7,"For the director of music. With stringed instruments. Of David.",6,7
+psa,61,8,"For the director of music. With stringed instruments. Of David.",6,7
+psa,61,9,"For the director of music. With stringed instruments. Of David.",8,8
+psa,61,10,"For the director of music. With stringed instruments. Of David.",8,8
+psa,62,1,"For the director of music. For Jeduthun. A psalm of David.",1,2
+psa,62,2,"For the director of music. For Jeduthun. A psalm of David.",1,2
+psa,62,3,"For the director of music. For Jeduthun. A psalm of David.",3,4
+psa,62,4,"For the director of music. For Jeduthun. A psalm of David.",3,4
+psa,62,5,"For the director of music. For Jeduthun. A psalm of David.",5,8
+psa,62,6,"For the director of music. For Jeduthun. A psalm of David.",5,8
+psa,62,7,"For the director of music. For Jeduthun. A psalm of David.",9,10
+psa,62,8,"For the director of music. For Jeduthun. A psalm of David.",9,10
+psa,62,9,"For the director of music. For Jeduthun. A psalm of David.",11,12
+psa,62,10,"For the director of music. For Jeduthun. A psalm of David.",11,12
+psa,63,1,"A psalm of David. When he was in the Desert of Judah.",1,1
+psa,63,2,"A psalm of David. When he was in the Desert of Judah.",1,1
+psa,63,3,"A psalm of David. When he was in the Desert of Judah.",2,5
+psa,63,4,"A psalm of David. When he was in the Desert of Judah.",2,5
+psa,63,5,"A psalm of David. When he was in the Desert of Judah.",6,8
+psa,63,6,"A psalm of David. When he was in the Desert of Judah.",6,8
+psa,63,7,"A psalm of David. When he was in the Desert of Judah.",9,10
+psa,63,8,"A psalm of David. When he was in the Desert of Judah.",9,10
+psa,63,9,"A psalm of David. When he was in the Desert of Judah.",11,11
+psa,63,10,"A psalm of David. When he was in the Desert of Judah.",11,11
+psa,64,1,"For the director of music. A psalm of David.",1,1
+psa,64,2,"For the director of music. A psalm of David.",1,1
+psa,64,3,"For the director of music. A psalm of David.",2,4
+psa,64,4,"For the director of music. A psalm of David.",2,4
+psa,64,5,"For the director of music. A psalm of David.",5,6
+psa,64,6,"For the director of music. A psalm of David.",5,6
+psa,64,7,"For the director of music. A psalm of David.",7,9
+psa,64,8,"For the director of music. A psalm of David.",7,9
+psa,64,9,"For the director of music. A psalm of David.",10,10
+psa,64,10,"For the director of music. A psalm of David.",10,10
+psa,65,1,"For the director of music. A psalm of David. A song.",1,4
+psa,65,2,"For the director of music. A psalm of David. A song.",1,4
+psa,65,3,"For the director of music. A psalm of David. A song.",5,8
+psa,65,4,"For the director of music. A psalm of David. A song.",5,8
+psa,65,5,"For the director of music. A psalm of David. A song.",9,13
+psa,65,6,"For the director of music. A psalm of David. A song.",9,13
+psa,66,1,"For the director of music. A song. A psalm.",1,4
+psa,66,2,"For the director of music. A song. A psalm.",1,4
+psa,66,3,"For the director of music. A song. A psalm.",5,7
+psa,66,4,"For the director of music. A song. A psalm.",5,7
+psa,66,5,"For the director of music. A song. A psalm.",8,12
+psa,66,6,"For the director of music. A song. A psalm.",8,12
+psa,66,7,"For the director of music. A song. A psalm.",13,15
+psa,66,8,"For the director of music. A song. A psalm.",13,15
+psa,66,9,"For the director of music. A song. A psalm.",16,20
+psa,66,10,"For the director of music. A song. A psalm.",16,20
+psa,67,1,"For the director of music. With stringed instruments. A psalm. A song.",1,2
+psa,67,2,"For the director of music. With stringed instruments. A psalm. A song.",1,2
+psa,67,3,"For the director of music. With stringed instruments. A psalm. A song.",3,5
+psa,67,4,"For the director of music. With stringed instruments. A psalm. A song.",3,5
+psa,67,5,"For the director of music. With stringed instruments. A psalm. A song.",6,7
+psa,67,6,"For the director of music. With stringed instruments. A psalm. A song.",6,7
+psa,68,1,"For the director of music. Of David. A psalm. A song.",1,3
+psa,68,2,"For the director of music. Of David. A psalm. A song.",1,3
+psa,68,3,"For the director of music. Of David. A psalm. A song.",4,6
+psa,68,4,"For the director of music. Of David. A psalm. A song.",4,6
+psa,68,5,"For the director of music. Of David. A psalm. A song.",7,10
+psa,68,6,"For the director of music. Of David. A psalm. A song.",7,10
+psa,68,7,"For the director of music. Of David. A psalm. A song.",11,14
+psa,68,8,"For the director of music. Of David. A psalm. A song.",11,14
+psa,68,9,"For the director of music. Of David. A psalm. A song.",15,18
+psa,68,10,"For the director of music. Of David. A psalm. A song.",15,18
+psa,68,11,"For the director of music. Of David. A psalm. A song.",19,23
+psa,68,12,"For the director of music. Of David. A psalm. A song.",19,23
+psa,68,13,"For the director of music. Of David. A psalm. A song.",24,27
+psa,68,14,"For the director of music. Of David. A psalm. A song.",24,27
+psa,68,15,"For the director of music. Of David. A psalm. A song.",28,31
+psa,68,16,"For the director of music. Of David. A psalm. A song.",28,31
+psa,68,17,"For the director of music. Of David. A psalm. A song.",32,35
+psa,68,18,"For the director of music. Of David. A psalm. A song.",32,35
+psa,68,19,"For the director of music. Of David. A psalm. A song.",35,35
+psa,68,20,"For the director of music. Of David. A psalm. A song.",35,35
+psa,69,1,"For the director of music. To the tune of “Lilies.” Of David.",1,4
+psa,69,2,"For the director of music. To the tune of “Lilies.” Of David.",1,4
+psa,69,3,"For the director of music. To the tune of “Lilies.” Of David.",5,5
+psa,69,4,"For the director of music. To the tune of “Lilies.” Of David.",5,5
+psa,69,5,"For the director of music. To the tune of “Lilies.” Of David.",6,12
+psa,69,6,"For the director of music. To the tune of “Lilies.” Of David.",6,12
+psa,69,7,"For the director of music. To the tune of “Lilies.” Of David.",13,15
+psa,69,8,"For the director of music. To the tune of “Lilies.” Of David.",13,15
+psa,69,9,"For the director of music. To the tune of “Lilies.” Of David.",16,18
+psa,69,10,"For the director of music. To the tune of “Lilies.” Of David.",16,18
+psa,69,11,"For the director of music. To the tune of “Lilies.” Of David.",19,21
+psa,69,12,"For the director of music. To the tune of “Lilies.” Of David.",19,21
+psa,69,13,"For the director of music. To the tune of “Lilies.” Of David.",22,28
+psa,69,14,"For the director of music. To the tune of “Lilies.” Of David.",22,28
+psa,69,15,"For the director of music. To the tune of “Lilies.” Of David.",29,29
+psa,69,16,"For the director of music. To the tune of “Lilies.” Of David.",29,29
+psa,69,17,"For the director of music. To the tune of “Lilies.” Of David.",30,33
+psa,69,18,"For the director of music. To the tune of “Lilies.” Of David.",30,33
+psa,69,19,"For the director of music. To the tune of “Lilies.” Of David.",34,36
+psa,69,20,"For the director of music. To the tune of “Lilies.” Of David.",34,36
+psa,70,1,"For the director of music. Of David. A petition.",1,1
+psa,70,2,"For the director of music. Of David. A petition.",1,1
+psa,70,3,"For the director of music. Of David. A petition.",2,4
+psa,70,4,"For the director of music. Of David. A petition.",2,4
+psa,70,5,"For the director of music. Of David. A petition.",5,5
+psa,70,6,"For the director of music. Of David. A petition.",5,5
 psa,71,1,"Psalm 71(A)",1,4
-psa,71,2,"Psalm 71(A)",5,8
-psa,71,3,"Psalm 71(A)",9,13
-psa,71,4,"Psalm 71(A)",14,14
-psa,71,5,"Psalm 71(A)",15,18
-psa,71,6,"Psalm 71(A)",19,21
-psa,71,7,"Psalm 71(A)",22,24
-psa,72,1,"Psalm 72",1,2
-psa,72,2,"Psalm 72",3,7
-psa,72,3,"Psalm 72",8,11
-psa,72,4,"Psalm 72",12,14
-psa,72,5,"Psalm 72",15,17
-psa,72,6,"Psalm 72",17,17
-psa,72,7,"Psalm 72",18,19
-psa,72,8,"Psalm 72",20,20
-psa,73,1,"Psalm 73",1,1
-psa,73,2,"Psalm 73",2,3
-psa,73,3,"Psalm 73",4,11
-psa,73,4,"Psalm 73",12,12
-psa,73,5,"Psalm 73",13,14
-psa,73,6,"Psalm 73",15,17
-psa,73,7,"Psalm 73",18,20
-psa,73,8,"Psalm 73",21,22
-psa,73,9,"Psalm 73",23,26
-psa,73,10,"Psalm 73",27,28
-psa,74,1,"Psalm 74",1,3
-psa,74,2,"Psalm 74",4,8
-psa,74,3,"Psalm 74",9,11
-psa,74,4,"Psalm 74",12,12
-psa,74,5,"Psalm 74",13,17
-psa,74,6,"Psalm 74",18,23
-psa,75,1,"Psalm 75[a]",1,1
-psa,75,2,"Psalm 75[a]",2,5
-psa,75,3,"Psalm 75[a]",6,8
-psa,75,4,"Psalm 75[a]",9,10
-psa,76,1,"Psalm 76[a]",1,3
-psa,76,2,"Psalm 76[a]",4,6
-psa,76,3,"Psalm 76[a]",7,10
-psa,76,4,"Psalm 76[a]",11,12
-psa,77,1,"Psalm 77[a]",1,2
-psa,77,2,"Psalm 77[a]",3,6
-psa,77,3,"Psalm 77[a]",7,9
-psa,77,4,"Psalm 77[a]",10,12
-psa,77,5,"Psalm 77[a]",13,15
-psa,77,6,"Psalm 77[a]",16,19
-psa,77,7,"Psalm 77[a]",20,20
-psa,78,1,"Psalm 78",1,8
-psa,78,2,"Psalm 78",9,16
-psa,78,3,"Psalm 78",17,31
-psa,78,4,"Psalm 78",32,39
-psa,78,5,"Psalm 78",40,55
-psa,78,6,"Psalm 78",56,64
-psa,78,7,"Psalm 78",65,72
-psa,79,1,"Psalm 79",1,4
-psa,79,2,"Psalm 79",5,7
-psa,79,3,"Psalm 79",8,10
-psa,79,4,"Psalm 79",10,13
-psa,80,1,"Psalm 80[a]",1,2
-psa,80,2,"Psalm 80[a]",3,3
-psa,80,3,"Psalm 80[a]",4,6
-psa,80,4,"Psalm 80[a]",7,7
-psa,80,5,"Psalm 80[a]",8,11
-psa,80,6,"Psalm 80[a]",12,15
-psa,80,7,"Psalm 80[a]",16,18
-psa,80,8,"Psalm 80[a]",19,19
-psa,81,1,"Psalm 81[a]",1,2
-psa,81,2,"Psalm 81[a]",3,5
-psa,81,3,"Psalm 81[a]",5,5
-psa,81,4,"Psalm 81[a]",6,10
-psa,81,5,"Psalm 81[a]",11,12
-psa,81,6,"Psalm 81[a]",13,16
-psa,82,1,"Psalm 82",1,1
-psa,82,2,"Psalm 82",2,4
-psa,82,3,"Psalm 82",5,5
-psa,82,4,"Psalm 82",6,7
-psa,82,5,"Psalm 82",8,8
-psa,83,1,"Psalm 83[a]",1,4
-psa,83,2,"Psalm 83[a]",5,8
-psa,83,3,"Psalm 83[a]",9,12
-psa,83,4,"Psalm 83[a]",13,16
-psa,83,5,"Psalm 83[a]",17,18
-psa,84,1,"Psalm 84[a]",1,4
-psa,84,2,"Psalm 84[a]",5,7
-psa,84,3,"Psalm 84[a]",8,9
-psa,84,4,"Psalm 84[a]",10,11
-psa,84,5,"Psalm 84[a]",12,12
-psa,85,1,"Psalm 85[a]",1,3
-psa,85,2,"Psalm 85[a]",4,7
-psa,85,3,"Psalm 85[a]",8,9
-psa,85,4,"Psalm 85[a]",10,13
-psa,86,1,"Psalm 86",1,4
-psa,86,2,"Psalm 86",5,7
-psa,86,3,"Psalm 86",8,10
-psa,86,4,"Psalm 86",11,13
-psa,86,5,"Psalm 86",14,17
-psa,87,1,"Psalm 87",1,2
-psa,87,2,"Psalm 87",3,6
-psa,87,3,"Psalm 87",7,7
-psa,88,1,"Psalm 88[a]",1,2
-psa,88,2,"Psalm 88[a]",3,5
-psa,88,3,"Psalm 88[a]",6,9
-psa,88,4,"Psalm 88[a]",9,12
-psa,88,5,"Psalm 88[a]",13,14
-psa,88,6,"Psalm 88[a]",15,18
-psa,89,1,"Psalm 89[a]",1,4
-psa,89,2,"Psalm 89[a]",5,8
-psa,89,3,"Psalm 89[a]",9,13
-psa,89,4,"Psalm 89[a]",14,18
-psa,89,5,"Psalm 89[a]",19,29
-psa,89,6,"Psalm 89[a]",30,37
-psa,89,7,"Psalm 89[a]",38,45
-psa,89,8,"Psalm 89[a]",46,51
-psa,89,9,"Psalm 89[a]",52,52
-psa,90,1,"Psalm 90",1,2
-psa,90,2,"Psalm 90",3,6
-psa,90,3,"Psalm 90",7,12
-psa,90,4,"Psalm 90",13,16
-psa,90,5,"Psalm 90",17,17
+psa,71,2,"Psalm 71(A)",1,4
+psa,71,3,"Psalm 71(A)",5,8
+psa,71,4,"Psalm 71(A)",5,8
+psa,71,5,"Psalm 71(A)",9,13
+psa,71,6,"Psalm 71(A)",9,13
+psa,71,7,"Psalm 71(A)",14,14
+psa,71,8,"Psalm 71(A)",14,14
+psa,71,9,"Psalm 71(A)",15,18
+psa,71,10,"Psalm 71(A)",15,18
+psa,71,11,"Psalm 71(A)",19,21
+psa,71,12,"Psalm 71(A)",19,21
+psa,71,13,"Psalm 71(A)",22,24
+psa,71,14,"Psalm 71(A)",22,24
+psa,72,1,"Of Solomon.",1,2
+psa,72,2,"Of Solomon.",1,2
+psa,72,3,"Of Solomon.",3,7
+psa,72,4,"Of Solomon.",3,7
+psa,72,5,"Of Solomon.",8,11
+psa,72,6,"Of Solomon.",8,11
+psa,72,7,"Of Solomon.",12,14
+psa,72,8,"Of Solomon.",12,14
+psa,72,9,"Of Solomon.",15,17
+psa,72,10,"Of Solomon.",15,17
+psa,72,11,"Of Solomon.",17,17
+psa,72,12,"Of Solomon.",17,17
+psa,72,13,"Of Solomon.",18,19
+psa,72,14,"Of Solomon.",18,19
+psa,72,15,"Of Solomon.",20,20
+psa,72,16,"Of Solomon.",20,20
+psa,73,1,"A psalm of Asaph.",1,1
+psa,73,2,"A psalm of Asaph.",1,1
+psa,73,3,"A psalm of Asaph.",2,3
+psa,73,4,"A psalm of Asaph.",2,3
+psa,73,5,"A psalm of Asaph.",4,11
+psa,73,6,"A psalm of Asaph.",4,11
+psa,73,7,"A psalm of Asaph.",12,12
+psa,73,8,"A psalm of Asaph.",12,12
+psa,73,9,"A psalm of Asaph.",13,14
+psa,73,10,"A psalm of Asaph.",13,14
+psa,73,11,"A psalm of Asaph.",15,17
+psa,73,12,"A psalm of Asaph.",15,17
+psa,73,13,"A psalm of Asaph.",18,20
+psa,73,14,"A psalm of Asaph.",18,20
+psa,73,15,"A psalm of Asaph.",21,22
+psa,73,16,"A psalm of Asaph.",21,22
+psa,73,17,"A psalm of Asaph.",23,26
+psa,73,18,"A psalm of Asaph.",23,26
+psa,73,19,"A psalm of Asaph.",27,28
+psa,73,20,"A psalm of Asaph.",27,28
+psa,74,1,"A maskil[a] of Asaph.",1,3
+psa,74,2,"A maskil[a] of Asaph.",1,3
+psa,74,3,"A maskil[a] of Asaph.",4,8
+psa,74,4,"A maskil[a] of Asaph.",4,8
+psa,74,5,"A maskil[a] of Asaph.",9,11
+psa,74,6,"A maskil[a] of Asaph.",9,11
+psa,74,7,"A maskil[a] of Asaph.",12,12
+psa,74,8,"A maskil[a] of Asaph.",12,12
+psa,74,9,"A maskil[a] of Asaph.",13,17
+psa,74,10,"A maskil[a] of Asaph.",13,17
+psa,74,11,"A maskil[a] of Asaph.",18,23
+psa,74,12,"A maskil[a] of Asaph.",18,23
+psa,75,1,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",1,1
+psa,75,2,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",1,1
+psa,75,3,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",2,5
+psa,75,4,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",2,5
+psa,75,5,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",6,8
+psa,75,6,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",6,8
+psa,75,7,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",9,10
+psa,75,8,"For the director of music. To the tune of “Do Not Destroy.” A psalm of Asaph. A song.",9,10
+psa,76,1,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",1,3
+psa,76,2,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",1,3
+psa,76,3,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",4,6
+psa,76,4,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",4,6
+psa,76,5,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",7,10
+psa,76,6,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",7,10
+psa,76,7,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",11,12
+psa,76,8,"For the director of music. With stringed instruments. A psalm of Asaph. A song.",11,12
+psa,77,1,"For the director of music. For Jeduthun. Of Asaph. A psalm.",1,2
+psa,77,2,"For the director of music. For Jeduthun. Of Asaph. A psalm.",1,2
+psa,77,3,"For the director of music. For Jeduthun. Of Asaph. A psalm.",3,6
+psa,77,4,"For the director of music. For Jeduthun. Of Asaph. A psalm.",3,6
+psa,77,5,"For the director of music. For Jeduthun. Of Asaph. A psalm.",7,9
+psa,77,6,"For the director of music. For Jeduthun. Of Asaph. A psalm.",7,9
+psa,77,7,"For the director of music. For Jeduthun. Of Asaph. A psalm.",10,12
+psa,77,8,"For the director of music. For Jeduthun. Of Asaph. A psalm.",10,12
+psa,77,9,"For the director of music. For Jeduthun. Of Asaph. A psalm.",13,15
+psa,77,10,"For the director of music. For Jeduthun. Of Asaph. A psalm.",13,15
+psa,77,11,"For the director of music. For Jeduthun. Of Asaph. A psalm.",16,19
+psa,77,12,"For the director of music. For Jeduthun. Of Asaph. A psalm.",16,19
+psa,77,13,"For the director of music. For Jeduthun. Of Asaph. A psalm.",20,20
+psa,77,14,"For the director of music. For Jeduthun. Of Asaph. A psalm.",20,20
+psa,78,1,"A maskil[a] of Asaph.",1,8
+psa,78,2,"A maskil[a] of Asaph.",1,8
+psa,78,3,"A maskil[a] of Asaph.",9,16
+psa,78,4,"A maskil[a] of Asaph.",9,16
+psa,78,5,"A maskil[a] of Asaph.",17,31
+psa,78,6,"A maskil[a] of Asaph.",17,31
+psa,78,7,"A maskil[a] of Asaph.",32,39
+psa,78,8,"A maskil[a] of Asaph.",32,39
+psa,78,9,"A maskil[a] of Asaph.",40,55
+psa,78,10,"A maskil[a] of Asaph.",40,55
+psa,78,11,"A maskil[a] of Asaph.",56,64
+psa,78,12,"A maskil[a] of Asaph.",56,64
+psa,78,13,"A maskil[a] of Asaph.",65,72
+psa,78,14,"A maskil[a] of Asaph.",65,72
+psa,79,1,"A psalm of Asaph.",1,4
+psa,79,2,"A psalm of Asaph.",1,4
+psa,79,3,"A psalm of Asaph.",5,7
+psa,79,4,"A psalm of Asaph.",5,7
+psa,79,5,"A psalm of Asaph.",8,10
+psa,79,6,"A psalm of Asaph.",8,10
+psa,79,7,"A psalm of Asaph.",10,13
+psa,79,8,"A psalm of Asaph.",10,13
+psa,80,1,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",1,2
+psa,80,2,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",1,2
+psa,80,3,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",3,3
+psa,80,4,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",3,3
+psa,80,5,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",4,6
+psa,80,6,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",4,6
+psa,80,7,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",7,7
+psa,80,8,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",7,7
+psa,80,9,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",8,11
+psa,80,10,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",8,11
+psa,80,11,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",12,15
+psa,80,12,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",12,15
+psa,80,13,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",16,18
+psa,80,14,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",16,18
+psa,80,15,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",19,19
+psa,80,16,"For the director of music. To the tune of “The Lilies of the Covenant.” Of Asaph. A psalm.",19,19
+psa,81,1,"For the director of music. According to gittith.[b] Of Asaph.",1,2
+psa,81,2,"For the director of music. According to gittith.[b] Of Asaph.",1,2
+psa,81,3,"For the director of music. According to gittith.[b] Of Asaph.",3,5
+psa,81,4,"For the director of music. According to gittith.[b] Of Asaph.",3,5
+psa,81,5,"For the director of music. According to gittith.[b] Of Asaph.",5,5
+psa,81,6,"For the director of music. According to gittith.[b] Of Asaph.",5,5
+psa,81,7,"For the director of music. According to gittith.[b] Of Asaph.",6,10
+psa,81,8,"For the director of music. According to gittith.[b] Of Asaph.",6,10
+psa,81,9,"For the director of music. According to gittith.[b] Of Asaph.",11,12
+psa,81,10,"For the director of music. According to gittith.[b] Of Asaph.",11,12
+psa,81,11,"For the director of music. According to gittith.[b] Of Asaph.",13,16
+psa,81,12,"For the director of music. According to gittith.[b] Of Asaph.",13,16
+psa,82,1,"A psalm of Asaph.",1,1
+psa,82,2,"A psalm of Asaph.",1,1
+psa,82,3,"A psalm of Asaph.",2,4
+psa,82,4,"A psalm of Asaph.",2,4
+psa,82,5,"A psalm of Asaph.",5,5
+psa,82,6,"A psalm of Asaph.",5,5
+psa,82,7,"A psalm of Asaph.",6,7
+psa,82,8,"A psalm of Asaph.",6,7
+psa,82,9,"A psalm of Asaph.",8,8
+psa,82,10,"A psalm of Asaph.",8,8
+psa,83,1,"A song. A psalm of Asaph.",1,4
+psa,83,2,"A song. A psalm of Asaph.",1,4
+psa,83,3,"A song. A psalm of Asaph.",5,8
+psa,83,4,"A song. A psalm of Asaph.",5,8
+psa,83,5,"A song. A psalm of Asaph.",9,12
+psa,83,6,"A song. A psalm of Asaph.",9,12
+psa,83,7,"A song. A psalm of Asaph.",13,16
+psa,83,8,"A song. A psalm of Asaph.",13,16
+psa,83,9,"A song. A psalm of Asaph.",17,18
+psa,83,10,"A song. A psalm of Asaph.",17,18
+psa,84,1,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",1,4
+psa,84,2,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",1,4
+psa,84,3,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",5,7
+psa,84,4,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",5,7
+psa,84,5,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",8,9
+psa,84,6,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",8,9
+psa,84,7,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",10,11
+psa,84,8,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",10,11
+psa,84,9,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",12,12
+psa,84,10,"For the director of music. According to gittith.[b] Of the Sons of Korah. A psalm.",12,12
+psa,85,1,"For the director of music. Of the Sons of Korah. A psalm.",1,3
+psa,85,2,"For the director of music. Of the Sons of Korah. A psalm.",1,3
+psa,85,3,"For the director of music. Of the Sons of Korah. A psalm.",4,7
+psa,85,4,"For the director of music. Of the Sons of Korah. A psalm.",4,7
+psa,85,5,"For the director of music. Of the Sons of Korah. A psalm.",8,9
+psa,85,6,"For the director of music. Of the Sons of Korah. A psalm.",8,9
+psa,85,7,"For the director of music. Of the Sons of Korah. A psalm.",10,13
+psa,85,8,"For the director of music. Of the Sons of Korah. A psalm.",10,13
+psa,86,1,"A prayer of David.",1,4
+psa,86,2,"A prayer of David.",1,4
+psa,86,3,"A prayer of David.",5,7
+psa,86,4,"A prayer of David.",5,7
+psa,86,5,"A prayer of David.",8,10
+psa,86,6,"A prayer of David.",8,10
+psa,86,7,"A prayer of David.",11,13
+psa,86,8,"A prayer of David.",11,13
+psa,86,9,"A prayer of David.",14,17
+psa,86,10,"A prayer of David.",14,17
+psa,87,1,"Of the Sons of Korah. A psalm. A song.",1,2
+psa,87,2,"Of the Sons of Korah. A psalm. A song.",1,2
+psa,87,3,"Of the Sons of Korah. A psalm. A song.",3,6
+psa,87,4,"Of the Sons of Korah. A psalm. A song.",3,6
+psa,87,5,"Of the Sons of Korah. A psalm. A song.",7,7
+psa,87,6,"Of the Sons of Korah. A psalm. A song.",7,7
+psa,88,1,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",1,2
+psa,88,2,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",1,2
+psa,88,3,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",3,5
+psa,88,4,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",3,5
+psa,88,5,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",6,9
+psa,88,6,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",6,9
+psa,88,7,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",9,12
+psa,88,8,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",9,12
+psa,88,9,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",13,14
+psa,88,10,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",13,14
+psa,88,11,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",15,18
+psa,88,12,"A song. A psalm of the Sons of Korah. For the director of music. According to mahalath leannoth.[b] A maskil[c] of Heman the Ezrahite.",15,18
+psa,89,1,"A maskil[b] of Ethan the Ezrahite.",1,4
+psa,89,2,"A maskil[b] of Ethan the Ezrahite.",1,4
+psa,89,3,"A maskil[b] of Ethan the Ezrahite.",5,8
+psa,89,4,"A maskil[b] of Ethan the Ezrahite.",5,8
+psa,89,5,"A maskil[b] of Ethan the Ezrahite.",9,13
+psa,89,6,"A maskil[b] of Ethan the Ezrahite.",9,13
+psa,89,7,"A maskil[b] of Ethan the Ezrahite.",14,18
+psa,89,8,"A maskil[b] of Ethan the Ezrahite.",14,18
+psa,89,9,"A maskil[b] of Ethan the Ezrahite.",19,29
+psa,89,10,"A maskil[b] of Ethan the Ezrahite.",19,29
+psa,89,11,"A maskil[b] of Ethan the Ezrahite.",30,37
+psa,89,12,"A maskil[b] of Ethan the Ezrahite.",30,37
+psa,89,13,"A maskil[b] of Ethan the Ezrahite.",38,45
+psa,89,14,"A maskil[b] of Ethan the Ezrahite.",38,45
+psa,89,15,"A maskil[b] of Ethan the Ezrahite.",46,51
+psa,89,16,"A maskil[b] of Ethan the Ezrahite.",46,51
+psa,89,17,"A maskil[b] of Ethan the Ezrahite.",52,52
+psa,89,18,"A maskil[b] of Ethan the Ezrahite.",52,52
+psa,90,1,"A prayer of Moses the man of God.",1,2
+psa,90,2,"A prayer of Moses the man of God.",1,2
+psa,90,3,"A prayer of Moses the man of God.",3,6
+psa,90,4,"A prayer of Moses the man of God.",3,6
+psa,90,5,"A prayer of Moses the man of God.",7,12
+psa,90,6,"A prayer of Moses the man of God.",7,12
+psa,90,7,"A prayer of Moses the man of God.",13,16
+psa,90,8,"A prayer of Moses the man of God.",13,16
+psa,90,9,"A prayer of Moses the man of God.",17,17
+psa,90,10,"A prayer of Moses the man of God.",17,17
 psa,91,1,"Psalm 91",1,2
-psa,91,2,"Psalm 91",3,8
-psa,91,3,"Psalm 91",9,13
-psa,91,4,"Psalm 91",14,16
-psa,92,1,"Psalm 92[a]",1,3
-psa,92,2,"Psalm 92[a]",4,7
-psa,92,3,"Psalm 92[a]",8,8
-psa,92,4,"Psalm 92[a]",9,11
-psa,92,5,"Psalm 92[a]",12,15
+psa,91,2,"Psalm 91",1,2
+psa,91,3,"Psalm 91",3,8
+psa,91,4,"Psalm 91",3,8
+psa,91,5,"Psalm 91",9,13
+psa,91,6,"Psalm 91",9,13
+psa,91,7,"Psalm 91",14,16
+psa,91,8,"Psalm 91",14,16
+psa,92,1,"A psalm. A song. For the Sabbath day.",1,3
+psa,92,2,"A psalm. A song. For the Sabbath day.",1,3
+psa,92,3,"A psalm. A song. For the Sabbath day.",4,7
+psa,92,4,"A psalm. A song. For the Sabbath day.",4,7
+psa,92,5,"A psalm. A song. For the Sabbath day.",8,8
+psa,92,6,"A psalm. A song. For the Sabbath day.",8,8
+psa,92,7,"A psalm. A song. For the Sabbath day.",9,11
+psa,92,8,"A psalm. A song. For the Sabbath day.",9,11
+psa,92,9,"A psalm. A song. For the Sabbath day.",12,15
+psa,92,10,"A psalm. A song. For the Sabbath day.",12,15
 psa,93,1,"Psalm 93",1,2
-psa,93,2,"Psalm 93",3,4
-psa,93,3,"Psalm 93",5,5
+psa,93,2,"Psalm 93",1,2
+psa,93,3,"Psalm 93",3,4
+psa,93,4,"Psalm 93",3,4
+psa,93,5,"Psalm 93",5,5
+psa,93,6,"Psalm 93",5,5
 psa,94,1,"Psalm 94",1,3
-psa,94,2,"Psalm 94",4,7
-psa,94,3,"Psalm 94",8,11
-psa,94,4,"Psalm 94",12,15
-psa,94,5,"Psalm 94",16,19
-psa,94,6,"Psalm 94",20,23
+psa,94,2,"Psalm 94",1,3
+psa,94,3,"Psalm 94",4,7
+psa,94,4,"Psalm 94",4,7
+psa,94,5,"Psalm 94",8,11
+psa,94,6,"Psalm 94",8,11
+psa,94,7,"Psalm 94",12,15
+psa,94,8,"Psalm 94",12,15
+psa,94,9,"Psalm 94",16,19
+psa,94,10,"Psalm 94",16,19
+psa,94,11,"Psalm 94",20,23
+psa,94,12,"Psalm 94",20,23
 psa,95,1,"Psalm 95",1,2
-psa,95,2,"Psalm 95",3,5
-psa,95,3,"Psalm 95",6,7
-psa,95,4,"Psalm 95",7,11
+psa,95,2,"Psalm 95",1,2
+psa,95,3,"Psalm 95",3,5
+psa,95,4,"Psalm 95",3,5
+psa,95,5,"Psalm 95",6,7
+psa,95,6,"Psalm 95",6,7
+psa,95,7,"Psalm 95",7,11
+psa,95,8,"Psalm 95",7,11
 psa,96,1,"Psalm 96(A)",1,3
-psa,96,2,"Psalm 96(A)",4,6
-psa,96,3,"Psalm 96(A)",7,10
-psa,96,4,"Psalm 96(A)",11,13
+psa,96,2,"Psalm 96(A)",1,3
+psa,96,3,"Psalm 96(A)",4,6
+psa,96,4,"Psalm 96(A)",4,6
+psa,96,5,"Psalm 96(A)",7,10
+psa,96,6,"Psalm 96(A)",7,10
+psa,96,7,"Psalm 96(A)",11,13
+psa,96,8,"Psalm 96(A)",11,13
 psa,97,1,"Psalm 97",1,6
-psa,97,2,"Psalm 97",7,7
-psa,97,3,"Psalm 97",8,12
-psa,98,1,"Psalm 98",1,3
-psa,98,2,"Psalm 98",4,6
-psa,98,3,"Psalm 98",7,9
+psa,97,2,"Psalm 97",1,6
+psa,97,3,"Psalm 97",7,7
+psa,97,4,"Psalm 97",7,7
+psa,97,5,"Psalm 97",8,12
+psa,97,6,"Psalm 97",8,12
+psa,98,1,"A psalm.",1,3
+psa,98,2,"A psalm.",1,3
+psa,98,3,"A psalm.",4,6
+psa,98,4,"A psalm.",4,6
+psa,98,5,"A psalm.",7,9
+psa,98,6,"A psalm.",7,9
 psa,99,1,"Psalm 99",1,3
-psa,99,2,"Psalm 99",4,5
-psa,99,3,"Psalm 99",6,7
-psa,99,4,"Psalm 99",8,9
-psa,100,1,"Psalm 100",1,3
-psa,100,2,"Psalm 100",4,5
-psa,101,1,"Psalm 101",1,2
-psa,101,2,"Psalm 101",2,3
-psa,101,3,"Psalm 101",3,4
-psa,101,4,"Psalm 101",5,5
-psa,101,5,"Psalm 101",6,6
-psa,101,6,"Psalm 101",7,7
-psa,101,7,"Psalm 101",8,8
-psa,102,1,"Psalm 102[a]",1,2
-psa,102,2,"Psalm 102[a]",3,11
-psa,102,3,"Psalm 102[a]",12,17
-psa,102,4,"Psalm 102[a]",18,22
-psa,102,5,"Psalm 102[a]",23,28
-psa,103,1,"Psalm 103",1,5
-psa,103,2,"Psalm 103",6,6
-psa,103,3,"Psalm 103",7,12
-psa,103,4,"Psalm 103",13,18
-psa,103,5,"Psalm 103",19,19
-psa,103,6,"Psalm 103",20,22
-psa,103,7,"Psalm 103",22,22
+psa,99,2,"Psalm 99",1,3
+psa,99,3,"Psalm 99",4,5
+psa,99,4,"Psalm 99",4,5
+psa,99,5,"Psalm 99",6,7
+psa,99,6,"Psalm 99",6,7
+psa,99,7,"Psalm 99",8,9
+psa,99,8,"Psalm 99",8,9
+psa,100,1,"A psalm. For giving grateful praise.",1,3
+psa,100,2,"A psalm. For giving grateful praise.",1,3
+psa,100,3,"A psalm. For giving grateful praise.",4,5
+psa,100,4,"A psalm. For giving grateful praise.",4,5
+psa,101,1,"Of David. A psalm.",1,2
+psa,101,2,"Of David. A psalm.",1,2
+psa,101,3,"Of David. A psalm.",2,3
+psa,101,4,"Of David. A psalm.",2,3
+psa,101,5,"Of David. A psalm.",3,4
+psa,101,6,"Of David. A psalm.",3,4
+psa,101,7,"Of David. A psalm.",5,5
+psa,101,8,"Of David. A psalm.",5,5
+psa,101,9,"Of David. A psalm.",6,6
+psa,101,10,"Of David. A psalm.",6,6
+psa,101,11,"Of David. A psalm.",7,7
+psa,101,12,"Of David. A psalm.",7,7
+psa,101,13,"Of David. A psalm.",8,8
+psa,101,14,"Of David. A psalm.",8,8
+psa,102,1,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",1,2
+psa,102,2,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",1,2
+psa,102,3,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",3,11
+psa,102,4,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",3,11
+psa,102,5,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",12,17
+psa,102,6,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",12,17
+psa,102,7,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",18,22
+psa,102,8,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",18,22
+psa,102,9,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",23,28
+psa,102,10,"A prayer of an afflicted person who has grown weak and pours out a lament before the Lord.",23,28
+psa,103,1,"Of David.",1,5
+psa,103,2,"Of David.",1,5
+psa,103,3,"Of David.",6,6
+psa,103,4,"Of David.",6,6
+psa,103,5,"Of David.",7,12
+psa,103,6,"Of David.",7,12
+psa,103,7,"Of David.",13,18
+psa,103,8,"Of David.",13,18
+psa,103,9,"Of David.",19,19
+psa,103,10,"Of David.",19,19
+psa,103,11,"Of David.",20,22
+psa,103,12,"Of David.",20,22
+psa,103,13,"Of David.",22,22
+psa,103,14,"Of David.",22,22
 psa,104,1,"Psalm 104",1,1
 psa,104,2,"Psalm 104",1,1
-psa,104,3,"Psalm 104",2,4
-psa,104,4,"Psalm 104",5,9
-psa,104,5,"Psalm 104",10,18
-psa,104,6,"Psalm 104",19,23
-psa,104,7,"Psalm 104",24,26
-psa,104,8,"Psalm 104",27,30
-psa,104,9,"Psalm 104",31,32
-psa,104,10,"Psalm 104",33,35
-psa,104,11,"Psalm 104",35,35
-psa,104,12,"Psalm 104",35,35
+psa,104,3,"Psalm 104",1,1
+psa,104,4,"Psalm 104",1,1
+psa,104,5,"Psalm 104",2,4
+psa,104,6,"Psalm 104",2,4
+psa,104,7,"Psalm 104",5,9
+psa,104,8,"Psalm 104",5,9
+psa,104,9,"Psalm 104",10,18
+psa,104,10,"Psalm 104",10,18
+psa,104,11,"Psalm 104",19,23
+psa,104,12,"Psalm 104",19,23
+psa,104,13,"Psalm 104",24,26
+psa,104,14,"Psalm 104",24,26
+psa,104,15,"Psalm 104",27,30
+psa,104,16,"Psalm 104",27,30
+psa,104,17,"Psalm 104",31,32
+psa,104,18,"Psalm 104",31,32
+psa,104,19,"Psalm 104",33,35
+psa,104,20,"Psalm 104",33,35
+psa,104,21,"Psalm 104",35,35
+psa,104,22,"Psalm 104",35,35
+psa,104,23,"Psalm 104",35,35
+psa,104,24,"Psalm 104",35,35
 psa,105,1,"Psalm 105(A)",1,4
-psa,105,2,"Psalm 105(A)",5,7
-psa,105,3,"Psalm 105(A)",8,11
-psa,105,4,"Psalm 105(A)",12,15
-psa,105,5,"Psalm 105(A)",16,22
-psa,105,6,"Psalm 105(A)",23,38
-psa,105,7,"Psalm 105(A)",39,41
-psa,105,8,"Psalm 105(A)",42,45
-psa,105,9,"Psalm 105(A)",45,45
+psa,105,2,"Psalm 105(A)",1,4
+psa,105,3,"Psalm 105(A)",5,7
+psa,105,4,"Psalm 105(A)",5,7
+psa,105,5,"Psalm 105(A)",8,11
+psa,105,6,"Psalm 105(A)",8,11
+psa,105,7,"Psalm 105(A)",12,15
+psa,105,8,"Psalm 105(A)",12,15
+psa,105,9,"Psalm 105(A)",16,22
+psa,105,10,"Psalm 105(A)",16,22
+psa,105,11,"Psalm 105(A)",23,38
+psa,105,12,"Psalm 105(A)",23,38
+psa,105,13,"Psalm 105(A)",39,41
+psa,105,14,"Psalm 105(A)",39,41
+psa,105,15,"Psalm 105(A)",42,45
+psa,105,16,"Psalm 105(A)",42,45
+psa,105,17,"Psalm 105(A)",45,45
+psa,105,18,"Psalm 105(A)",45,45
 psa,106,1,"Psalm 106(A)",1,1
 psa,106,2,"Psalm 106(A)",1,1
-psa,106,3,"Psalm 106(A)",2,3
-psa,106,4,"Psalm 106(A)",4,5
-psa,106,5,"Psalm 106(A)",6,12
-psa,106,6,"Psalm 106(A)",13,15
-psa,106,7,"Psalm 106(A)",16,23
-psa,106,8,"Psalm 106(A)",24,27
-psa,106,9,"Psalm 106(A)",28,33
-psa,106,10,"Psalm 106(A)",34,39
-psa,106,11,"Psalm 106(A)",40,46
-psa,106,12,"Psalm 106(A)",47,47
-psa,106,13,"Psalm 106(A)",48,48
-psa,106,14,"Psalm 106(A)",48,48
-psa,106,15,"Psalm 106(A)",48,48
+psa,106,3,"Psalm 106(A)",1,1
+psa,106,4,"Psalm 106(A)",1,1
+psa,106,5,"Psalm 106(A)",2,3
+psa,106,6,"Psalm 106(A)",2,3
+psa,106,7,"Psalm 106(A)",4,5
+psa,106,8,"Psalm 106(A)",4,5
+psa,106,9,"Psalm 106(A)",6,12
+psa,106,10,"Psalm 106(A)",6,12
+psa,106,11,"Psalm 106(A)",13,15
+psa,106,12,"Psalm 106(A)",13,15
+psa,106,13,"Psalm 106(A)",16,23
+psa,106,14,"Psalm 106(A)",16,23
+psa,106,15,"Psalm 106(A)",24,27
+psa,106,16,"Psalm 106(A)",24,27
+psa,106,17,"Psalm 106(A)",28,33
+psa,106,18,"Psalm 106(A)",28,33
+psa,106,19,"Psalm 106(A)",34,39
+psa,106,20,"Psalm 106(A)",34,39
+psa,106,21,"Psalm 106(A)",40,46
+psa,106,22,"Psalm 106(A)",40,46
+psa,106,23,"Psalm 106(A)",47,47
+psa,106,24,"Psalm 106(A)",47,47
+psa,106,25,"Psalm 106(A)",48,48
+psa,106,26,"Psalm 106(A)",48,48
+psa,106,27,"Psalm 106(A)",48,48
+psa,106,28,"Psalm 106(A)",48,48
+psa,106,29,"Psalm 106(A)",48,48
+psa,106,30,"Psalm 106(A)",48,48
 psa,107,1,"Psalm 107",1,1
-psa,107,2,"Psalm 107",2,3
-psa,107,3,"Psalm 107",4,9
-psa,107,4,"Psalm 107",10,16
-psa,107,5,"Psalm 107",17,22
-psa,107,6,"Psalm 107",23,32
-psa,107,7,"Psalm 107",33,38
-psa,107,8,"Psalm 107",39,42
-psa,107,9,"Psalm 107",43,43
-psa,108,1,"Psalm 108[a](A)(B)",1,5
-psa,108,2,"Psalm 108[a](A)(B)",6,9
-psa,108,3,"Psalm 108[a](A)(B)",10,13
-psa,109,1,"Psalm 109",1,5
-psa,109,2,"Psalm 109",6,15
-psa,109,3,"Psalm 109",16,20
-psa,109,4,"Psalm 109",21,25
-psa,109,5,"Psalm 109",26,29
-psa,109,6,"Psalm 109",30,31
-psa,110,1,"Psalm 110",1,1
-psa,110,2,"Psalm 110",1,1
-psa,110,3,"Psalm 110",2,3
-psa,110,4,"Psalm 110",4,4
-psa,110,5,"Psalm 110",5,7
+psa,107,2,"Psalm 107",1,1
+psa,107,3,"Psalm 107",2,3
+psa,107,4,"Psalm 107",2,3
+psa,107,5,"Psalm 107",4,9
+psa,107,6,"Psalm 107",4,9
+psa,107,7,"Psalm 107",10,16
+psa,107,8,"Psalm 107",10,16
+psa,107,9,"Psalm 107",17,22
+psa,107,10,"Psalm 107",17,22
+psa,107,11,"Psalm 107",23,32
+psa,107,12,"Psalm 107",23,32
+psa,107,13,"Psalm 107",33,38
+psa,107,14,"Psalm 107",33,38
+psa,107,15,"Psalm 107",39,42
+psa,107,16,"Psalm 107",39,42
+psa,107,17,"Psalm 107",43,43
+psa,107,18,"Psalm 107",43,43
+psa,108,1,"A song. A psalm of David.",1,5
+psa,108,2,"A song. A psalm of David.",1,5
+psa,108,3,"A song. A psalm of David.",6,9
+psa,108,4,"A song. A psalm of David.",6,9
+psa,108,5,"A song. A psalm of David.",10,13
+psa,108,6,"A song. A psalm of David.",10,13
+psa,109,1,"For the director of music. Of David. A psalm.",1,5
+psa,109,2,"For the director of music. Of David. A psalm.",1,5
+psa,109,3,"For the director of music. Of David. A psalm.",6,15
+psa,109,4,"For the director of music. Of David. A psalm.",6,15
+psa,109,5,"For the director of music. Of David. A psalm.",16,20
+psa,109,6,"For the director of music. Of David. A psalm.",16,20
+psa,109,7,"For the director of music. Of David. A psalm.",21,25
+psa,109,8,"For the director of music. Of David. A psalm.",21,25
+psa,109,9,"For the director of music. Of David. A psalm.",26,29
+psa,109,10,"For the director of music. Of David. A psalm.",26,29
+psa,109,11,"For the director of music. Of David. A psalm.",30,31
+psa,109,12,"For the director of music. Of David. A psalm.",30,31
+psa,110,1,"Of David. A psalm.",1,1
+psa,110,2,"Of David. A psalm.",1,1
+psa,110,3,"Of David. A psalm.",1,1
+psa,110,4,"Of David. A psalm.",1,1
+psa,110,5,"Of David. A psalm.",2,3
+psa,110,6,"Of David. A psalm.",2,3
+psa,110,7,"Of David. A psalm.",4,4
+psa,110,8,"Of David. A psalm.",4,4
+psa,110,9,"Of David. A psalm.",5,7
+psa,110,10,"Of David. A psalm.",5,7
 psa,111,1,"Psalm 111[a]",1,1
 psa,111,2,"Psalm 111[a]",1,1
-psa,111,3,"Psalm 111[a]",2,5
-psa,111,4,"Psalm 111[a]",6,9
-psa,111,5,"Psalm 111[a]",10,10
+psa,111,3,"Psalm 111[a]",1,1
+psa,111,4,"Psalm 111[a]",1,1
+psa,111,5,"Psalm 111[a]",2,5
+psa,111,6,"Psalm 111[a]",2,5
+psa,111,7,"Psalm 111[a]",6,9
+psa,111,8,"Psalm 111[a]",6,9
+psa,111,9,"Psalm 111[a]",10,10
+psa,111,10,"Psalm 111[a]",10,10
 psa,112,1,"Psalm 112[a]",1,1
 psa,112,2,"Psalm 112[a]",1,1
-psa,112,3,"Psalm 112[a]",2,5
-psa,112,4,"Psalm 112[a]",6,9
-psa,112,5,"Psalm 112[a]",10,10
+psa,112,3,"Psalm 112[a]",1,1
+psa,112,4,"Psalm 112[a]",1,1
+psa,112,5,"Psalm 112[a]",2,5
+psa,112,6,"Psalm 112[a]",2,5
+psa,112,7,"Psalm 112[a]",6,9
+psa,112,8,"Psalm 112[a]",6,9
+psa,112,9,"Psalm 112[a]",10,10
+psa,112,10,"Psalm 112[a]",10,10
 psa,113,1,"Psalm 113",1,1
-psa,113,2,"Psalm 113",1,3
-psa,113,3,"Psalm 113",4,6
-psa,113,4,"Psalm 113",7,9
-psa,113,5,"Psalm 113",9,9
+psa,113,2,"Psalm 113",1,1
+psa,113,3,"Psalm 113",1,3
+psa,113,4,"Psalm 113",1,3
+psa,113,5,"Psalm 113",4,6
+psa,113,6,"Psalm 113",4,6
+psa,113,7,"Psalm 113",7,9
+psa,113,8,"Psalm 113",7,9
+psa,113,9,"Psalm 113",9,9
+psa,113,10,"Psalm 113",9,9
 psa,114,1,"Psalm 114",1,2
-psa,114,2,"Psalm 114",3,4
-psa,114,3,"Psalm 114",5,6
-psa,114,4,"Psalm 114",7,8
+psa,114,2,"Psalm 114",1,2
+psa,114,3,"Psalm 114",3,4
+psa,114,4,"Psalm 114",3,4
+psa,114,5,"Psalm 114",5,6
+psa,114,6,"Psalm 114",5,6
+psa,114,7,"Psalm 114",7,8
+psa,114,8,"Psalm 114",7,8
 psa,115,1,"Psalm 115(A)",1,1
-psa,115,2,"Psalm 115(A)",2,8
-psa,115,3,"Psalm 115(A)",9,11
-psa,115,4,"Psalm 115(A)",12,13
-psa,115,5,"Psalm 115(A)",14,15
-psa,115,6,"Psalm 115(A)",16,18
-psa,115,7,"Psalm 115(A)",18,18
+psa,115,2,"Psalm 115(A)",1,1
+psa,115,3,"Psalm 115(A)",2,8
+psa,115,4,"Psalm 115(A)",2,8
+psa,115,5,"Psalm 115(A)",9,11
+psa,115,6,"Psalm 115(A)",9,11
+psa,115,7,"Psalm 115(A)",12,13
+psa,115,8,"Psalm 115(A)",12,13
+psa,115,9,"Psalm 115(A)",14,15
+psa,115,10,"Psalm 115(A)",14,15
+psa,115,11,"Psalm 115(A)",16,18
+psa,115,12,"Psalm 115(A)",16,18
+psa,115,13,"Psalm 115(A)",18,18
+psa,115,14,"Psalm 115(A)",18,18
 psa,116,1,"Psalm 116",1,2
-psa,116,2,"Psalm 116",3,4
-psa,116,3,"Psalm 116",5,6
-psa,116,4,"Psalm 116",7,7
-psa,116,5,"Psalm 116",8,9
-psa,116,6,"Psalm 116",10,11
-psa,116,7,"Psalm 116",12,12
-psa,116,8,"Psalm 116",13,14
-psa,116,9,"Psalm 116",15,16
-psa,116,10,"Psalm 116",17,19
-psa,116,11,"Psalm 116",19,19
+psa,116,2,"Psalm 116",1,2
+psa,116,3,"Psalm 116",3,4
+psa,116,4,"Psalm 116",3,4
+psa,116,5,"Psalm 116",5,6
+psa,116,6,"Psalm 116",5,6
+psa,116,7,"Psalm 116",7,7
+psa,116,8,"Psalm 116",7,7
+psa,116,9,"Psalm 116",8,9
+psa,116,10,"Psalm 116",8,9
+psa,116,11,"Psalm 116",10,11
+psa,116,12,"Psalm 116",10,11
+psa,116,13,"Psalm 116",12,12
+psa,116,14,"Psalm 116",12,12
+psa,116,15,"Psalm 116",13,14
+psa,116,16,"Psalm 116",13,14
+psa,116,17,"Psalm 116",15,16
+psa,116,18,"Psalm 116",15,16
+psa,116,19,"Psalm 116",17,19
+psa,116,20,"Psalm 116",17,19
+psa,116,21,"Psalm 116",19,19
+psa,116,22,"Psalm 116",19,19
 psa,117,1,"Psalm 117",1,2
-psa,117,2,"Psalm 117",2,2
+psa,117,2,"Psalm 117",1,2
+psa,117,3,"Psalm 117",2,2
+psa,117,4,"Psalm 117",2,2
 psa,118,1,"Psalm 118",1,1
-psa,118,2,"Psalm 118",2,4
-psa,118,3,"Psalm 118",5,7
-psa,118,4,"Psalm 118",8,14
-psa,118,5,"Psalm 118",15,21
-psa,118,6,"Psalm 118",22,24
-psa,118,7,"Psalm 118",25,25
-psa,118,8,"Psalm 118",26,27
-psa,118,9,"Psalm 118",28,28
-psa,118,10,"Psalm 118",29,29
-psa,119,1,"Psalm 119[a]",1,8
-psa,119,2,"Psalm 119[a]",9,16
-psa,119,3,"Psalm 119[a]",17,24
-psa,119,4,"Psalm 119[a]",25,32
-psa,119,5,"Psalm 119[a]",33,40
-psa,119,6,"Psalm 119[a]",41,48
-psa,119,7,"Psalm 119[a]",49,56
-psa,119,8,"Psalm 119[a]",57,64
-psa,119,9,"Psalm 119[a]",65,72
-psa,119,10,"Psalm 119[a]",73,80
-psa,119,11,"Psalm 119[a]",81,88
-psa,119,12,"Psalm 119[a]",89,96
-psa,119,13,"Psalm 119[a]",97,104
-psa,119,14,"Psalm 119[a]",105,112
-psa,119,15,"Psalm 119[a]",113,120
-psa,119,16,"Psalm 119[a]",121,128
-psa,119,17,"Psalm 119[a]",129,136
-psa,119,18,"Psalm 119[a]",137,144
-psa,119,19,"Psalm 119[a]",145,152
-psa,119,20,"Psalm 119[a]",153,160
-psa,119,21,"Psalm 119[a]",161,168
-psa,119,22,"Psalm 119[a]",169,176
-psa,120,1,"Psalm 120",1,2
-psa,120,2,"Psalm 120",3,4
-psa,120,3,"Psalm 120",5,7
-psa,121,1,"Psalm 121",1,2
-psa,121,2,"Psalm 121",3,4
-psa,121,3,"Psalm 121",5,6
-psa,121,4,"Psalm 121",7,8
-psa,122,1,"Psalm 122",1,2
-psa,122,2,"Psalm 122",3,5
-psa,122,3,"Psalm 122",6,9
-psa,123,1,"Psalm 123",1,2
-psa,123,2,"Psalm 123",3,4
-psa,124,1,"Psalm 124",1,5
-psa,124,2,"Psalm 124",6,8
-psa,125,1,"Psalm 125",1,2
-psa,125,2,"Psalm 125",3,3
-psa,125,3,"Psalm 125",4,5
-psa,125,4,"Psalm 125",5,5
-psa,126,1,"Psalm 126",1,3
-psa,126,2,"Psalm 126",4,6
-psa,127,1,"Psalm 127",1,2
-psa,127,2,"Psalm 127",3,5
-psa,128,1,"Psalm 128",1,4
-psa,128,2,"Psalm 128",5,6
-psa,129,1,"Psalm 129",1,4
-psa,129,2,"Psalm 129",5,8
-psa,130,1,"Psalm 130",1,2
-psa,130,2,"Psalm 130",3,4
-psa,130,3,"Psalm 130",5,6
-psa,130,4,"Psalm 130",7,8
-psa,131,1,"Psalm 131",1,2
-psa,131,2,"Psalm 131",3,3
-psa,132,1,"Psalm 132(A)",1,1
-psa,132,2,"Psalm 132(A)",2,5
-psa,132,3,"Psalm 132(A)",6,9
-psa,132,4,"Psalm 132(A)",10,10
-psa,132,5,"Psalm 132(A)",11,12
-psa,132,6,"Psalm 132(A)",13,16
-psa,132,7,"Psalm 132(A)",17,18
-psa,133,1,"Psalm 133",1,1
-psa,133,2,"Psalm 133",2,3
-psa,134,1,"Psalm 134",1,2
-psa,134,2,"Psalm 134",3,3
+psa,118,2,"Psalm 118",1,1
+psa,118,3,"Psalm 118",2,4
+psa,118,4,"Psalm 118",2,4
+psa,118,5,"Psalm 118",5,7
+psa,118,6,"Psalm 118",5,7
+psa,118,7,"Psalm 118",8,14
+psa,118,8,"Psalm 118",8,14
+psa,118,9,"Psalm 118",15,21
+psa,118,10,"Psalm 118",15,21
+psa,118,11,"Psalm 118",22,24
+psa,118,12,"Psalm 118",22,24
+psa,118,13,"Psalm 118",25,25
+psa,118,14,"Psalm 118",25,25
+psa,118,15,"Psalm 118",26,27
+psa,118,16,"Psalm 118",26,27
+psa,118,17,"Psalm 118",28,28
+psa,118,18,"Psalm 118",28,28
+psa,118,19,"Psalm 118",29,29
+psa,118,20,"Psalm 118",29,29
+psa,119,1,"א Aleph",1,8
+psa,119,2,"א Aleph",1,8
+psa,119,3,"ב Beth",9,16
+psa,119,4,"ב Beth",9,16
+psa,119,5,"ג Gimel",17,24
+psa,119,6,"ג Gimel",17,24
+psa,119,7,"ד Daleth",25,32
+psa,119,8,"ד Daleth",25,32
+psa,119,9,"ה He",33,40
+psa,119,10,"ה He",33,40
+psa,119,11,"ו Waw",41,48
+psa,119,12,"ו Waw",41,48
+psa,119,13,"ז Zayin",49,56
+psa,119,14,"ז Zayin",49,56
+psa,119,15,"ח Heth",57,64
+psa,119,16,"ח Heth",57,64
+psa,119,17,"ט Teth",65,72
+psa,119,18,"ט Teth",65,72
+psa,119,19,"י Yodh",73,80
+psa,119,20,"י Yodh",73,80
+psa,119,21,"כ Kaph",81,88
+psa,119,22,"כ Kaph",81,88
+psa,119,23,"ל Lamedh",89,96
+psa,119,24,"ל Lamedh",89,96
+psa,119,25,"מ Mem",97,104
+psa,119,26,"מ Mem",97,104
+psa,119,27,"נ Nun",105,112
+psa,119,28,"נ Nun",105,112
+psa,119,29,"ס Samekh",113,120
+psa,119,30,"ס Samekh",113,120
+psa,119,31,"ע Ayin",121,128
+psa,119,32,"ע Ayin",121,128
+psa,119,33,"פ Pe",129,136
+psa,119,34,"פ Pe",129,136
+psa,119,35,"צ Tsadhe",137,144
+psa,119,36,"צ Tsadhe",137,144
+psa,119,37,"ק Qoph",145,152
+psa,119,38,"ק Qoph",145,152
+psa,119,39,"ר Resh",153,160
+psa,119,40,"ר Resh",153,160
+psa,119,41,"ש Sin and Shin",161,168
+psa,119,42,"ש Sin and Shin",161,168
+psa,119,43,"ת Taw",169,176
+psa,119,44,"ת Taw",169,176
+psa,120,1,"A song of ascents.",1,2
+psa,120,2,"A song of ascents.",1,2
+psa,120,3,"A song of ascents.",3,4
+psa,120,4,"A song of ascents.",3,4
+psa,120,5,"A song of ascents.",5,7
+psa,120,6,"A song of ascents.",5,7
+psa,121,1,"A song of ascents.",1,2
+psa,121,2,"A song of ascents.",1,2
+psa,121,3,"A song of ascents.",3,4
+psa,121,4,"A song of ascents.",3,4
+psa,121,5,"A song of ascents.",5,6
+psa,121,6,"A song of ascents.",5,6
+psa,121,7,"A song of ascents.",7,8
+psa,121,8,"A song of ascents.",7,8
+psa,122,1,"A song of ascents. Of David.",1,2
+psa,122,2,"A song of ascents. Of David.",1,2
+psa,122,3,"A song of ascents. Of David.",3,5
+psa,122,4,"A song of ascents. Of David.",3,5
+psa,122,5,"A song of ascents. Of David.",6,9
+psa,122,6,"A song of ascents. Of David.",6,9
+psa,123,1,"A song of ascents.",1,2
+psa,123,2,"A song of ascents.",1,2
+psa,123,3,"A song of ascents.",3,4
+psa,123,4,"A song of ascents.",3,4
+psa,124,1,"A song of ascents. Of David.",1,5
+psa,124,2,"A song of ascents. Of David.",1,5
+psa,124,3,"A song of ascents. Of David.",6,8
+psa,124,4,"A song of ascents. Of David.",6,8
+psa,125,1,"A song of ascents.",1,2
+psa,125,2,"A song of ascents.",1,2
+psa,125,3,"A song of ascents.",3,3
+psa,125,4,"A song of ascents.",3,3
+psa,125,5,"A song of ascents.",4,5
+psa,125,6,"A song of ascents.",4,5
+psa,125,7,"A song of ascents.",5,5
+psa,125,8,"A song of ascents.",5,5
+psa,126,1,"A song of ascents.",1,3
+psa,126,2,"A song of ascents.",1,3
+psa,126,3,"A song of ascents.",4,6
+psa,126,4,"A song of ascents.",4,6
+psa,127,1,"A song of ascents. Of Solomon.",1,2
+psa,127,2,"A song of ascents. Of Solomon.",1,2
+psa,127,3,"A song of ascents. Of Solomon.",3,5
+psa,127,4,"A song of ascents. Of Solomon.",3,5
+psa,128,1,"A song of ascents.",1,4
+psa,128,2,"A song of ascents.",1,4
+psa,128,3,"A song of ascents.",5,6
+psa,128,4,"A song of ascents.",5,6
+psa,129,1,"A song of ascents.",1,4
+psa,129,2,"A song of ascents.",1,4
+psa,129,3,"A song of ascents.",5,8
+psa,129,4,"A song of ascents.",5,8
+psa,130,1,"A song of ascents.",1,2
+psa,130,2,"A song of ascents.",1,2
+psa,130,3,"A song of ascents.",3,4
+psa,130,4,"A song of ascents.",3,4
+psa,130,5,"A song of ascents.",5,6
+psa,130,6,"A song of ascents.",5,6
+psa,130,7,"A song of ascents.",7,8
+psa,130,8,"A song of ascents.",7,8
+psa,131,1,"A song of ascents. Of David.",1,2
+psa,131,2,"A song of ascents. Of David.",1,2
+psa,131,3,"A song of ascents. Of David.",3,3
+psa,131,4,"A song of ascents. Of David.",3,3
+psa,132,1,"A song of ascents.",1,1
+psa,132,2,"A song of ascents.",1,1
+psa,132,3,"A song of ascents.",2,5
+psa,132,4,"A song of ascents.",2,5
+psa,132,5,"A song of ascents.",6,9
+psa,132,6,"A song of ascents.",6,9
+psa,132,7,"A song of ascents.",10,10
+psa,132,8,"A song of ascents.",10,10
+psa,132,9,"A song of ascents.",11,12
+psa,132,10,"A song of ascents.",11,12
+psa,132,11,"A song of ascents.",13,16
+psa,132,12,"A song of ascents.",13,16
+psa,132,13,"A song of ascents.",17,18
+psa,132,14,"A song of ascents.",17,18
+psa,133,1,"A song of ascents. Of David.",1,1
+psa,133,2,"A song of ascents. Of David.",1,1
+psa,133,3,"A song of ascents. Of David.",2,3
+psa,133,4,"A song of ascents. Of David.",2,3
+psa,134,1,"A song of ascents.",1,2
+psa,134,2,"A song of ascents.",1,2
+psa,134,3,"A song of ascents.",3,3
+psa,134,4,"A song of ascents.",3,3
 psa,135,1,"Psalm 135(A)",1,1
-psa,135,2,"Psalm 135(A)",1,2
-psa,135,3,"Psalm 135(A)",3,4
-psa,135,4,"Psalm 135(A)",5,7
-psa,135,5,"Psalm 135(A)",8,12
-psa,135,6,"Psalm 135(A)",13,14
-psa,135,7,"Psalm 135(A)",15,18
-psa,135,8,"Psalm 135(A)",19,21
-psa,135,9,"Psalm 135(A)",21,21
+psa,135,2,"Psalm 135(A)",1,1
+psa,135,3,"Psalm 135(A)",1,2
+psa,135,4,"Psalm 135(A)",1,2
+psa,135,5,"Psalm 135(A)",3,4
+psa,135,6,"Psalm 135(A)",3,4
+psa,135,7,"Psalm 135(A)",5,7
+psa,135,8,"Psalm 135(A)",5,7
+psa,135,9,"Psalm 135(A)",8,12
+psa,135,10,"Psalm 135(A)",8,12
+psa,135,11,"Psalm 135(A)",13,14
+psa,135,12,"Psalm 135(A)",13,14
+psa,135,13,"Psalm 135(A)",15,18
+psa,135,14,"Psalm 135(A)",15,18
+psa,135,15,"Psalm 135(A)",19,21
+psa,135,16,"Psalm 135(A)",19,21
+psa,135,17,"Psalm 135(A)",21,21
+psa,135,18,"Psalm 135(A)",21,21
 psa,136,1,"Psalm 136",1,3
-psa,136,2,"Psalm 136",4,9
-psa,136,3,"Psalm 136",10,12
-psa,136,4,"Psalm 136",13,15
-psa,136,5,"Psalm 136",16,16
-psa,136,6,"Psalm 136",17,22
-psa,136,7,"Psalm 136",23,25
-psa,136,8,"Psalm 136",26,26
+psa,136,2,"Psalm 136",1,3
+psa,136,3,"Psalm 136",4,9
+psa,136,4,"Psalm 136",4,9
+psa,136,5,"Psalm 136",10,12
+psa,136,6,"Psalm 136",10,12
+psa,136,7,"Psalm 136",13,15
+psa,136,8,"Psalm 136",13,15
+psa,136,9,"Psalm 136",16,16
+psa,136,10,"Psalm 136",16,16
+psa,136,11,"Psalm 136",17,22
+psa,136,12,"Psalm 136",17,22
+psa,136,13,"Psalm 136",23,25
+psa,136,14,"Psalm 136",23,25
+psa,136,15,"Psalm 136",26,26
+psa,136,16,"Psalm 136",26,26
 psa,137,1,"Psalm 137",1,3
-psa,137,2,"Psalm 137",4,6
-psa,137,3,"Psalm 137",7,9
-psa,138,1,"Psalm 138",1,3
-psa,138,2,"Psalm 138",4,5
-psa,138,3,"Psalm 138",6,8
-psa,139,1,"Psalm 139",1,6
-psa,139,2,"Psalm 139",7,12
-psa,139,3,"Psalm 139",13,18
-psa,139,4,"Psalm 139",19,24
-psa,140,1,"Psalm 140[a]",1,3
-psa,140,2,"Psalm 140[a]",4,5
-psa,140,3,"Psalm 140[a]",6,8
-psa,140,4,"Psalm 140[a]",9,11
-psa,140,5,"Psalm 140[a]",12,13
-psa,141,1,"Psalm 141",1,2
-psa,141,2,"Psalm 141",3,4
-psa,141,3,"Psalm 141",5,5
-psa,141,4,"Psalm 141",6,7
-psa,141,5,"Psalm 141",8,10
-psa,142,1,"Psalm 142[a]",1,2
-psa,142,2,"Psalm 142[a]",3,4
-psa,142,3,"Psalm 142[a]",5,5
-psa,142,4,"Psalm 142[a]",6,7
-psa,143,1,"Psalm 143",1,6
-psa,143,2,"Psalm 143",7,10
-psa,143,3,"Psalm 143",11,12
-psa,144,1,"Psalm 144",1,2
-psa,144,2,"Psalm 144",3,4
-psa,144,3,"Psalm 144",5,8
-psa,144,4,"Psalm 144",9,10
-psa,144,5,"Psalm 144",10,11
-psa,144,6,"Psalm 144",12,15
-psa,145,1,"Psalm 145[a]",1,2
-psa,145,2,"Psalm 145[a]",3,7
-psa,145,3,"Psalm 145[a]",8,8
-psa,145,4,"Psalm 145[a]",9,13
-psa,145,5,"Psalm 145[a]",13,16
-psa,145,6,"Psalm 145[a]",17,20
-psa,145,7,"Psalm 145[a]",21,21
+psa,137,2,"Psalm 137",1,3
+psa,137,3,"Psalm 137",4,6
+psa,137,4,"Psalm 137",4,6
+psa,137,5,"Psalm 137",7,9
+psa,137,6,"Psalm 137",7,9
+psa,138,1,"Of David.",1,3
+psa,138,2,"Of David.",1,3
+psa,138,3,"Of David.",4,5
+psa,138,4,"Of David.",4,5
+psa,138,5,"Of David.",6,8
+psa,138,6,"Of David.",6,8
+psa,139,1,"For the director of music. Of David. A psalm.",1,6
+psa,139,2,"For the director of music. Of David. A psalm.",1,6
+psa,139,3,"For the director of music. Of David. A psalm.",7,12
+psa,139,4,"For the director of music. Of David. A psalm.",7,12
+psa,139,5,"For the director of music. Of David. A psalm.",13,18
+psa,139,6,"For the director of music. Of David. A psalm.",13,18
+psa,139,7,"For the director of music. Of David. A psalm.",19,24
+psa,139,8,"For the director of music. Of David. A psalm.",19,24
+psa,140,1,"For the director of music. A psalm of David.",1,3
+psa,140,2,"For the director of music. A psalm of David.",1,3
+psa,140,3,"For the director of music. A psalm of David.",4,5
+psa,140,4,"For the director of music. A psalm of David.",4,5
+psa,140,5,"For the director of music. A psalm of David.",6,8
+psa,140,6,"For the director of music. A psalm of David.",6,8
+psa,140,7,"For the director of music. A psalm of David.",9,11
+psa,140,8,"For the director of music. A psalm of David.",9,11
+psa,140,9,"For the director of music. A psalm of David.",12,13
+psa,140,10,"For the director of music. A psalm of David.",12,13
+psa,141,1,"A psalm of David.",1,2
+psa,141,2,"A psalm of David.",1,2
+psa,141,3,"A psalm of David.",3,4
+psa,141,4,"A psalm of David.",3,4
+psa,141,5,"A psalm of David.",5,5
+psa,141,6,"A psalm of David.",5,5
+psa,141,7,"A psalm of David.",6,7
+psa,141,8,"A psalm of David.",6,7
+psa,141,9,"A psalm of David.",8,10
+psa,141,10,"A psalm of David.",8,10
+psa,142,1,"A maskil[b] of David. When he was in the cave.(A) A prayer.",1,2
+psa,142,2,"A maskil[b] of David. When he was in the cave.(A) A prayer.",1,2
+psa,142,3,"A maskil[b] of David. When he was in the cave.(A) A prayer.",3,4
+psa,142,4,"A maskil[b] of David. When he was in the cave.(A) A prayer.",3,4
+psa,142,5,"A maskil[b] of David. When he was in the cave.(A) A prayer.",5,5
+psa,142,6,"A maskil[b] of David. When he was in the cave.(A) A prayer.",5,5
+psa,142,7,"A maskil[b] of David. When he was in the cave.(A) A prayer.",6,7
+psa,142,8,"A maskil[b] of David. When he was in the cave.(A) A prayer.",6,7
+psa,143,1,"A psalm of David.",1,6
+psa,143,2,"A psalm of David.",1,6
+psa,143,3,"A psalm of David.",7,10
+psa,143,4,"A psalm of David.",7,10
+psa,143,5,"A psalm of David.",11,12
+psa,143,6,"A psalm of David.",11,12
+psa,144,1,"Of David.",1,2
+psa,144,2,"Of David.",1,2
+psa,144,3,"Of David.",3,4
+psa,144,4,"Of David.",3,4
+psa,144,5,"Of David.",5,8
+psa,144,6,"Of David.",5,8
+psa,144,7,"Of David.",9,10
+psa,144,8,"Of David.",9,10
+psa,144,9,"Of David.",10,11
+psa,144,10,"Of David.",10,11
+psa,144,11,"Of David.",12,15
+psa,144,12,"Of David.",12,15
+psa,145,1,"A psalm of praise. Of David.",1,2
+psa,145,2,"A psalm of praise. Of David.",1,2
+psa,145,3,"A psalm of praise. Of David.",3,7
+psa,145,4,"A psalm of praise. Of David.",3,7
+psa,145,5,"A psalm of praise. Of David.",8,8
+psa,145,6,"A psalm of praise. Of David.",8,8
+psa,145,7,"A psalm of praise. Of David.",9,13
+psa,145,8,"A psalm of praise. Of David.",9,13
+psa,145,9,"A psalm of praise. Of David.",13,16
+psa,145,10,"A psalm of praise. Of David.",13,16
+psa,145,11,"A psalm of praise. Of David.",17,20
+psa,145,12,"A psalm of praise. Of David.",17,20
+psa,145,13,"A psalm of praise. Of David.",21,21
+psa,145,14,"A psalm of praise. Of David.",21,21
 psa,146,1,"Psalm 146",1,1
 psa,146,2,"Psalm 146",1,1
-psa,146,3,"Psalm 146",2,5
-psa,146,4,"Psalm 146",6,9
-psa,146,5,"Psalm 146",10,10
-psa,146,6,"Psalm 146",10,10
+psa,146,3,"Psalm 146",1,1
+psa,146,4,"Psalm 146",1,1
+psa,146,5,"Psalm 146",2,5
+psa,146,6,"Psalm 146",2,5
+psa,146,7,"Psalm 146",6,9
+psa,146,8,"Psalm 146",6,9
+psa,146,9,"Psalm 146",10,10
+psa,146,10,"Psalm 146",10,10
+psa,146,11,"Psalm 146",10,10
+psa,146,12,"Psalm 146",10,10
 psa,147,1,"Psalm 147",1,1
 psa,147,2,"Psalm 147",1,1
-psa,147,3,"Psalm 147",2,6
-psa,147,4,"Psalm 147",7,7
-psa,147,5,"Psalm 147",8,9
-psa,147,6,"Psalm 147",10,11
-psa,147,7,"Psalm 147",12,12
-psa,147,8,"Psalm 147",13,14
-psa,147,9,"Psalm 147",15,18
-psa,147,10,"Psalm 147",19,20
-psa,147,11,"Psalm 147",20,20
+psa,147,3,"Psalm 147",1,1
+psa,147,4,"Psalm 147",1,1
+psa,147,5,"Psalm 147",2,6
+psa,147,6,"Psalm 147",2,6
+psa,147,7,"Psalm 147",7,7
+psa,147,8,"Psalm 147",7,7
+psa,147,9,"Psalm 147",8,9
+psa,147,10,"Psalm 147",8,9
+psa,147,11,"Psalm 147",10,11
+psa,147,12,"Psalm 147",10,11
+psa,147,13,"Psalm 147",12,12
+psa,147,14,"Psalm 147",12,12
+psa,147,15,"Psalm 147",13,14
+psa,147,16,"Psalm 147",13,14
+psa,147,17,"Psalm 147",15,18
+psa,147,18,"Psalm 147",15,18
+psa,147,19,"Psalm 147",19,20
+psa,147,20,"Psalm 147",19,20
+psa,147,21,"Psalm 147",20,20
+psa,147,22,"Psalm 147",20,20
 psa,148,1,"Psalm 148",1,1
-psa,148,2,"Psalm 148",1,4
-psa,148,3,"Psalm 148",5,6
-psa,148,4,"Psalm 148",7,12
-psa,148,5,"Psalm 148",13,14
-psa,148,6,"Psalm 148",14,14
+psa,148,2,"Psalm 148",1,1
+psa,148,3,"Psalm 148",1,4
+psa,148,4,"Psalm 148",1,4
+psa,148,5,"Psalm 148",5,6
+psa,148,6,"Psalm 148",5,6
+psa,148,7,"Psalm 148",7,12
+psa,148,8,"Psalm 148",7,12
+psa,148,9,"Psalm 148",13,14
+psa,148,10,"Psalm 148",13,14
+psa,148,11,"Psalm 148",14,14
+psa,148,12,"Psalm 148",14,14
 psa,149,1,"Psalm 149",1,1
 psa,149,2,"Psalm 149",1,1
-psa,149,3,"Psalm 149",2,5
-psa,149,4,"Psalm 149",6,9
-psa,149,5,"Psalm 149",9,9
+psa,149,3,"Psalm 149",1,1
+psa,149,4,"Psalm 149",1,1
+psa,149,5,"Psalm 149",2,5
+psa,149,6,"Psalm 149",2,5
+psa,149,7,"Psalm 149",6,9
+psa,149,8,"Psalm 149",6,9
+psa,149,9,"Psalm 149",9,9
+psa,149,10,"Psalm 149",9,9
 psa,150,1,"Psalm 150",1,1
-psa,150,2,"Psalm 150",1,5
-psa,150,3,"Psalm 150",6,6
-psa,150,4,"Psalm 150",6,6
+psa,150,2,"Psalm 150",1,1
+psa,150,3,"Psalm 150",1,5
+psa,150,4,"Psalm 150",1,5
+psa,150,5,"Psalm 150",6,6
+psa,150,6,"Psalm 150",6,6
+psa,150,7,"Psalm 150",6,6
+psa,150,8,"Psalm 150",6,6

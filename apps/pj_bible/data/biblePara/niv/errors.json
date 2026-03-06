@@ -1,7 +1,7 @@
 [
   {
-    "book": "EXO",
-    "chapter": 25,
-    "error": "fetch failed"
+    "book": "PSA",
+    "chapter": 44,
+    "error": "HTTP 504: Gateway Time-out"
   }
 ]
