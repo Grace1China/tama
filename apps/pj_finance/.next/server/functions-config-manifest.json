@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/csv/[category]":{},"/api/csv/indicator":{},"/api/parq/balanceSheet":{},"/api/parq/income1":{},"/api/parq/indicator":{},"/api/tuShare/entries":{},"/api/tuShare/csv":{},"/api/tuShare/parquet":{}}}
+{"version":1,"functions":{"/api/csv/[category]":{},"/api/csv/indicator":{},"/api/parq/balanceSheet":{},"/api/parq/income1":{},"/api/tuShare/csv":{},"/api/parq/indicator":{},"/api/tuShare/entries":{},"/api/tuShare/parquet":{}}}
