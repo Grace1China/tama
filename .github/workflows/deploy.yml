@@ -44,6 +44,7 @@ jobs:
       - name: Save build artifacts
         run: |
           cp -r apps/pj_bible/.next /tmp/pd_bible_build
+          [ -d apps/pj_bible/data ] && cp -r apps/pj_bible/data /tmp/pd_bible_data || true
           cp -r apps/pj_finance/.next /tmp/pd_finance_build
 
       - name: Push pd_bible build to branch pd_bible
@@ -56,7 +57,12 @@ jobs:
           git checkout pd_bible 2>/dev/null || git checkout -B pd_bible
           rm -rf apps/pj_bible/.next
           cp -r /tmp/pd_bible_build apps/pj_bible/.next
+          if [ -d /tmp/pd_bible_data ]; then
+            rm -rf apps/pj_bible/data
+            cp -r /tmp/pd_bible_data apps/pj_bible/data
+          fi
           git add -f apps/pj_bible/.next
+          git add -f apps/pj_bible/data
           git diff --staged --quiet || git commit -m "chore(deploy): pd_bible build $(date -u +%Y%m%d-%H%M%S)"
           git push --force https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git HEAD:pd_bible
           git checkout -
