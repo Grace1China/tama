@@ -108,6 +108,19 @@ jobs:
           GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
           git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
           git push gitee "refs/remotes/origin/pd_bible:refs/heads/pd_bible" --force
+      - name: Push pd_finance to Gitee (含构建产物)
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GITEE_REPO: ${{ vars.GITEE_REPO }}
+          GITEE_USER: ${{ vars.GITEE_USER }}
+        run: |
+          [ -n "${GITEE_TOKEN}" ] || { echo "GITEE_TOKEN not set, skip sync"; exit 0; }
+          [ -n "${GITEE_USER}" ] || { echo "GITEE_USER not set, skip sync (set Variables → GITEE_USER to your Gitee username)"; exit 0; }
+          git config http.postBuffer 524288000
+          GITEE_URL="https://${GITEE_USER}:${GITEE_TOKEN}@gitee.com/${GITEE_REPO}.git"
+          git remote add gitee "${GITEE_URL}" 2>/dev/null || git remote set-url gitee "${GITEE_URL}"
+          git push gitee "refs/remotes/origin/pd_finance:refs/heads/pd_finance" --force
+
       - name: Trigger pd_bible publish (pull from Gitee + pm2 restart on server)
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -116,3 +129,12 @@ jobs:
             -H "x-publish-token: ${PUBLISH_TOKEN}" \
             "http://www.quanyuan.live/publishBook" \
             || echo "Warning: publishBook call failed (server may run script separately)"
+
+      - name: Trigger pd_finance publish (pull from Gitee + pm2 restart on server)
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          curl -sf --max-time 60 \
+            -H "x-publish-token: ${PUBLISH_TOKEN}" \
+            "http://fi.quanyuan.live/publishBook" \
+            || echo "Warning: finance publishBook call failed (server may run script separately)"
