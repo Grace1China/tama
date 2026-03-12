@@ -4,9 +4,9 @@ const nextConfig = {
   basePath: BASE_PATH,
   env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH },
   transpilePackages: ['shared'],
-  experimental: {
-    serverComponentsExternalPackages: ['duckdb'],
-  },
+  // experimental: {
+  //   serverComponentsExternalPackages: ['duckdb'],
+  // },
   eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
     if (isServer) {
