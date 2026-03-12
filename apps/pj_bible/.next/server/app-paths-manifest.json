@@ -1,8 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/bible/route": "app/api/bible/route.js",
   "/api/paragraphs/route": "app/api/paragraphs/route.js",
   "/book/[bookId]/[chapterId]/page": "app/book/[bookId]/[chapterId]/page.js",
+  "/api/bible/route": "app/api/bible/route.js",
   "/page": "app/page.js",
   "/book/[bookId]/page": "app/book/[bookId]/page.js",
   "/book/whole/[bookId]/[chapterId]/[version]/page": "app/book/whole/[bookId]/[chapterId]/[version]/page.js",
