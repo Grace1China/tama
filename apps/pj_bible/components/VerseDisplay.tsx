@@ -38,6 +38,68 @@ export default function VerseDisplay({
 
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [selectedWordResult, setSelectedWordResult] = useState<string | null>(null);
+  const [selectedWordLoading, setSelectedWordLoading] = useState(false);
+  const [selectedWordError, setSelectedWordError] = useState<string | null>(null);
+  const [selectedWordPos, setSelectedWordPos] = useState<{
+    top: number;
+    left: number;
+    placement: 'above' | 'below';
+  } | null>(null);
+  const wordCacheRef = useRef<Map<string, string>>(new Map());
+  const wordPopupRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem('wordLookupCache');
+      if (!raw) return;
+      const obj = JSON.parse(raw) as Record<string, string>;
+      const map = new Map<string, string>();
+      Object.entries(obj).forEach(([k, v]) => {
+        if (typeof v === 'string') {
+          map.set(k, v);
+        }
+      });
+      wordCacheRef.current = map;
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const saveWordCacheToStorage = () => {
+    if (typeof window === 'undefined') return;
+    const obj: Record<string, string> = {};
+    wordCacheRef.current.forEach((v, k) => {
+      obj[k] = v;
+    });
+    try {
+      window.localStorage.setItem('wordLookupCache', JSON.stringify(obj));
+    } catch {
+      // ignore quota or JSON errors
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedWord) return;
+    if (typeof window === 'undefined') return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!wordPopupRef.current) return;
+      const target = event.target as Node | null;
+      if (target && wordPopupRef.current.contains(target)) {
+        return;
+      }
+      setSelectedWord(null);
+      setSelectedWordResult(null);
+      setSelectedWordError(null);
+      setSelectedWordPos(null);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selectedWord]);
 
   // Get chapters from startChapterId onwards - each chapter will start on a new page
   // 去重：避免 book.chapters 有重复时同一章渲染多次
@@ -342,12 +404,78 @@ export default function VerseDisplay({
   // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅响应 scrollToPageRequest 变化，避免因回调引用重复滚动
   }, [scrollToPageRequest]);
 
+  const handleSelectionLookup = async () => {
+    if (typeof window === 'undefined') return;
+    const sel = window.getSelection();
+    if (!sel) return;
+    const text = sel.toString().trim();
+    if (!text) return;
+    const match = text.match(/[A-Za-z']+/);
+    const word = match?.[0];
+    if (!word) return;
+
+    const range = sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+    const rect = range ? range.getBoundingClientRect() : null;
+    if (!rect) return;
+
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const placeBelow = rect.top < viewportHeight / 2;
+    const offset = 8;
+    const margin = 12;
+
+    let top = placeBelow ? rect.bottom + offset : rect.top - offset;
+    let left = rect.left + rect.width / 2;
+
+    if (left < margin) left = margin;
+    if (left > viewportWidth - margin) left = viewportWidth - margin;
+
+    setSelectedWord(word);
+    setSelectedWordPos({
+      top,
+      left,
+      placement: placeBelow ? 'below' : 'above',
+    });
+    setSelectedWordLoading(true);
+    setSelectedWordError(null);
+    setSelectedWordResult(null);
+
+    const cached = wordCacheRef.current.get(word.toLowerCase());
+    if (cached) {
+      setSelectedWordResult(cached);
+      setSelectedWordLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/word-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      const textResult: string = data.text ?? data.meaning ?? '';
+      setSelectedWordResult(textResult);
+      wordCacheRef.current.set(word.toLowerCase(), textResult);
+      saveWordCacheToStorage();
+    } catch (err) {
+      console.error('word lookup error', err);
+      setSelectedWordError('查询失败，请稍后再试');
+    } finally {
+      setSelectedWordLoading(false);
+    }
+  };
+
   return (
     <div className="w-full h-full flex flex-col min-h-0">
       <div
         ref={scrollerRef}
         className="bg-white rounded-lg shadow-sm flex-1 min-h-0 overflow-x-auto overflow-y-hidden scrollbar-hide"
         style={{ scrollSnapType: 'x mandatory',overscrollBehaviorX: 'none' }}
+        onMouseUp={handleSelectionLookup}
       >
         <div
           ref={contentRef}
@@ -362,6 +490,42 @@ export default function VerseDisplay({
           {verseSpans}
         </div>
       </div>
+      {selectedWord && selectedWordPos && (
+        <div
+          ref={wordPopupRef}
+          className="fixed max-w-sm bg-white border border-gray-200 shadow-lg rounded-lg p-3 text-sm z-50"
+          style={{
+            top: selectedWordPos.top,
+            left: selectedWordPos.left,
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <div className="flex justify-between items-center mb-1">
+            <span className="font-semibold text-gray-800">{selectedWord}</span>
+            <button
+              type="button"
+              className="ml-2 text-gray-400 hover:text-gray-700"
+              onClick={() => {
+                setSelectedWord(null);
+                setSelectedWordResult(null);
+                setSelectedWordError(null);
+                setSelectedWordPos(null);
+              }}
+            >
+              ×
+            </button>
+          </div>
+          {selectedWordLoading && <div className="text-gray-500">查询中...</div>}
+          {!selectedWordLoading && selectedWordError && (
+            <div className="text-red-500">{selectedWordError}</div>
+          )}
+          {!selectedWordLoading && !selectedWordError && (
+            <div className="text-gray-800 whitespace-pre-wrap">
+              {selectedWordResult || '没有返回结果'}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

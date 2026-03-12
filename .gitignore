@@ -5,9 +5,10 @@ node_modules
 /.pnp
 .pnp.js
 
-# Build
-.next
+# Build（忽略根目录和 apps 下的 .next）
 /.next/
+/apps/pj_bible/.next/
+/apps/pj_finance/.next/
 out
 /out/
 dist
