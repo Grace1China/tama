@@ -19,7 +19,7 @@
       "static/chunks/196-c706cd93f697ae54.js",
       "static/chunks/app/layout-d9876a4447b25842.js"
     ],
-    "/fiIndicator/page": [
+    "/balanceSheet/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
       "static/chunks/fd9d1056-4b908a5312199cb5.js",
       "static/chunks/23-8a7a02c9a1465494.js",
@@ -29,8 +29,10 @@
       "static/chunks/cff6e2ba-e10f49081344c30d.js",
       "static/chunks/576-745aef4112f33122.js",
       "static/chunks/876-3683341a965ed8bd.js",
+      "static/chunks/295-6fec928b07dfa236.js",
       "static/chunks/674-b4fe7656aad94d1e.js",
-      "static/chunks/app/fiIndicator/page-84232c4bb4f3f8b9.js"
+      "static/chunks/263-d0922b1286c0bd1a.js",
+      "static/chunks/app/balanceSheet/page-b258138788e2711e.js"
     ],
     "/income1/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
@@ -50,7 +52,7 @@
       "static/chunks/263-d0922b1286c0bd1a.js",
       "static/chunks/app/income1/page-a470a225851ee2d3.js"
     ],
-    "/balanceSheet/page": [
+    "/fiIndicator/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
       "static/chunks/fd9d1056-4b908a5312199cb5.js",
       "static/chunks/23-8a7a02c9a1465494.js",
@@ -60,10 +62,8 @@
       "static/chunks/cff6e2ba-e10f49081344c30d.js",
       "static/chunks/576-745aef4112f33122.js",
       "static/chunks/876-3683341a965ed8bd.js",
-      "static/chunks/295-6fec928b07dfa236.js",
       "static/chunks/674-b4fe7656aad94d1e.js",
-      "static/chunks/263-d0922b1286c0bd1a.js",
-      "static/chunks/app/balanceSheet/page-b258138788e2711e.js"
+      "static/chunks/app/fiIndicator/page-84232c4bb4f3f8b9.js"
     ],
     "/indicator/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
@@ -80,6 +80,13 @@
       "static/chunks/263-d0922b1286c0bd1a.js",
       "static/chunks/app/indicator/page-4570b098870e8827.js"
     ],
+    "/multiDims/page": [
+      "static/chunks/webpack-e9a0a25433ab8d5b.js",
+      "static/chunks/fd9d1056-4b908a5312199cb5.js",
+      "static/chunks/23-8a7a02c9a1465494.js",
+      "static/chunks/main-app-40c05c8f9f059715.js",
+      "static/chunks/app/multiDims/page-4cb754ca8ca4760f.js"
+    ],
     "/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
       "static/chunks/fd9d1056-4b908a5312199cb5.js",
@@ -87,13 +94,6 @@
       "static/chunks/main-app-40c05c8f9f059715.js",
       "static/chunks/231-843362798b26497f.js",
       "static/chunks/app/page-4b7b3942058ed312.js"
-    ],
-    "/multiDims/page": [
-      "static/chunks/webpack-e9a0a25433ab8d5b.js",
-      "static/chunks/fd9d1056-4b908a5312199cb5.js",
-      "static/chunks/23-8a7a02c9a1465494.js",
-      "static/chunks/main-app-40c05c8f9f059715.js",
-      "static/chunks/app/multiDims/page-4cb754ca8ca4760f.js"
     ],
     "/profit/page": [
       "static/chunks/webpack-e9a0a25433ab8d5b.js",
