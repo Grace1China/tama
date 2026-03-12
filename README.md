@@ -71,4 +71,7 @@ import { greet, sharedVersion } from 'shared';
 
 - `npm run lint`：在所有子项目中执行 lint
 - `npm run clean`：删除各项目中的 `.next` 和 `node_modules`
+
+ 
+  
   
