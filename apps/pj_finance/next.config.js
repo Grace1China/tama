@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
-const BASE_PATH = '/finance';
 const nextConfig = {
-  basePath: BASE_PATH,
-  env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH },
   transpilePackages: ['shared'],
-  // experimental: {
-  //   serverComponentsExternalPackages: ['duckdb'],
-  // },
+  serverExternalPackages: ['duckdb'],
   eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
     if (isServer) {
