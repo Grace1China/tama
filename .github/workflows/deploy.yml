@@ -16,12 +16,14 @@ jobs:
     name: Build & push to pd_bible / pd_finance
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write   # read + write，用于 checkout 与 push 分支
     steps:
+      # 私有仓库或出现 "could not read Username" 时，请在 Settings → Secrets 添加 DEPLOY_TOKEN（PAT，scope: repo）
       - name: Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.DEPLOY_TOKEN || secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
