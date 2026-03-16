@@ -57,6 +57,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const [paragraphInfo, setParagraphInfo] = useState<ParagraphInfo[] | null>(null);
   const [pageInfo, setPageInfo] = useState({ currentPage: 0, totalPages: 1 });
   const [scrollToPageRequest, setScrollToPageRequest] = useState<number | null>(null);
+  const [showVerseNumbers, setShowVerseNumbers] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   /** 用户点击 TOC 的 section，以点击为准高亮；滚动导致可见段变化时清除，改用滚动首可见 */
   const [lastClickedSectionId, setLastClickedSectionId] = useState<string | null>(null);
@@ -337,6 +338,25 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             </button>
           </div>
         )}
+        {/* 显示节号开关 */}
+        <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none ml-2">
+          <span className="text-gray-600">显示节号</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showVerseNumbers}
+            onClick={() => setShowVerseNumbers((v) => !v)}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+              showVerseNumbers ? 'bg-blue-600' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                showVerseNumbers ? 'translate-x-4.5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </label>
       </div>
         {/* 书本内容 */}
       <div className="flex-1 min-h-0 flex gap-4">
@@ -351,6 +371,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             onActiveSectionId={handleActiveSectionId}
             paragraphInfo={paragraphInfo}
             wholeBook={wholeBook}
+            showVerseNumbers={showVerseNumbers}
           />
         </div>
         {tocSections.length > 0 && (

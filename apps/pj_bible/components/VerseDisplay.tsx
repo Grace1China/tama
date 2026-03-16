@@ -18,6 +18,8 @@ interface VerseDisplayProps {
   paragraphInfo?: ParagraphInfo[] | null;
   /** 全本模式：章节不换页 */
   wholeBook?: boolean;
+  /** 是否显示每节经文编号 */
+  showVerseNumbers?: boolean;
 }
 
 export default function VerseDisplay({
@@ -30,6 +32,7 @@ export default function VerseDisplay({
   onActiveSectionId,
   paragraphInfo,
   wholeBook,
+  showVerseNumbers,
 }: VerseDisplayProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -195,7 +198,9 @@ export default function VerseDisplay({
 
   const renderVerse = (verse: Verse) => (
     <span key={verse.id} className="inline break-inside-avoid mr-3">
-      {/* <span className="font-semibold text-blue-600 mr-2">{verse.id}</span> */}
+      {showVerseNumbers && (
+        <sup className="font-semibold text-blue-600 mr-1 text-xs">{verse.id}</sup>
+      )}
       <span className="text-gray-900">{verse.text}</span>
     </span>
   );
@@ -284,7 +289,7 @@ export default function VerseDisplay({
         </div>
       );
     });
-  }, [chaptersToShow, paragraphInfo, wholeBook]);
+  }, [chaptersToShow, paragraphInfo, wholeBook, showVerseNumbers]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -497,7 +502,10 @@ export default function VerseDisplay({
           style={{
             top: selectedWordPos.top,
             left: selectedWordPos.left,
-            transform: 'translateX(-50%)',
+            transform:
+              selectedWordPos.placement === 'above'
+                ? 'translate(-50%, -100%)'
+                : 'translateX(-50%)',
           }}
         >
           <div className="flex justify-between items-center mb-1">
