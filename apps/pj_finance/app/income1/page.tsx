@@ -4,14 +4,15 @@ import { useState, useRef, useEffect } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
 import { Input } from '@/components/ui/input';
-import { apiBase } from '@/lib/apiBase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import RGL from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
-const ResponsiveGridLayout = RGL.WidthProvider(RGL.Responsive);
-type Layout = RGL.Layout;
+interface StockInfo {
+  name: string;
+  area: string;
+  industry: string;
+}
 
 function useContainerWidth() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,16 +34,73 @@ function useContainerWidth() {
 
 export default function Income1Page() {
   const [selectedTsCode, setSelectedTsCode] = useState<string>('');
+  const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
   const { width, containerRef, mounted } = useContainerWidth();
 
-  const layout = [
-    { i: 'price-chart', x: 0, y: 0, w: 12, h: 6, minW: 6, minH: 4 },
-  ];
-
-  const onLayoutChange = (newLayout: Layout[]) => {
-    // 可以在这里保存布局到本地存储或后端
-    console.log('Layout changed:', newLayout);
+  const INCOME1_VALUE_MAPPINGS: Record<string, Record<string, string>> = {
+    comp_type: {
+      '1': '1-一般工商业',
+      '2': '2-银行',
+      '3': '3-保险',
+      '4': '4-证券',
+    },
+    end_type: {
+      '1': '1-一季报',
+      '2': '2-半年报',
+      '3': '3-三季报',
+      '4': '4-年报',
+    },
+    report_type: {
+      '1': '1-合并报表',
+      '2': '2-单季合并',
+      '3': '3-调整单季合并表',
+      '4': '4-调整合并报表',
+      '5': '5-调整前合并报表',
+      '6': '6-母公司报表',
+      '7': '7-母公司单季表',
+      '8': '8-母公司调整单季表',
+      '9': '9-母公司调整表',
+      '10': '10-母公司调整前报表',
+      '11': '11-母公司调整前合并报表',
+      '12': '12-母公司调整前报表',
+    },
   };
+
+  const INCOME1_YI_FIELDS = new Set(['total_revenue', 'q_total_revenue']);
+
+  useEffect(() => {
+    if (!selectedTsCode.trim()) {
+      setStockInfo(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchStockInfo = async () => {
+      try {
+        const res = await fetch(
+          `/api/csv/stockList?ts_code=${encodeURIComponent(selectedTsCode.trim())}`,
+        );
+        if (!res.ok || cancelled) return;
+        const json = await res.json();
+        if (cancelled) return;
+        const row = json.data?.[0];
+        if (row) {
+          setStockInfo({
+            name: String(row.name ?? '').trim() || '—',
+            area: String(row.area ?? '').trim() || '—',
+            industry: String(row.industry ?? '').trim() || '—',
+          });
+        } else {
+          setStockInfo(null);
+        }
+      } catch {
+        if (!cancelled) setStockInfo(null);
+      }
+    };
+    fetchStockInfo();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTsCode]);
 
   return (
     <div className="space-y-6">
@@ -61,56 +119,64 @@ export default function Income1Page() {
             className="w-40"
           />
         </div>
-        <div className="text-sm text-gray-600">
-          图表显示：柱状图（营业总收入，左侧Y轴）和折线图（总市值，右侧Y轴）
-        </div>
+
+        {stockInfo && (
+          <div className="flex flex-wrap items-center gap-3 ml-2 pl-4 border-l border-gray-200">
+            <span className="inline-flex items-center gap-1.5 text-sm text-gray-700">
+              <span className="font-medium text-gray-500">名称</span>
+              <span className="font-medium text-gray-900">{stockInfo.name}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-sm text-gray-700">
+              <span className="font-medium text-gray-500">所在地</span>
+              <span className="text-gray-800">{stockInfo.area}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-sm text-gray-700">
+              <span className="font-medium text-gray-500">行业</span>
+              <span className="rounded bg-gray-100 px-2 py-0.5 text-gray-800">{stockInfo.industry}</span>
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* 可拖拽布局区域 */}
-      <div ref={containerRef as any} className="bg-gray-50 p-4 rounded-lg w-full" style={{ width: '100%' }}>
+      <div
+        ref={containerRef as any}
+        className="bg-gray-50 p-4 rounded-lg w-full mt-0"
+        style={{ width: '100%' ,marginTop:0}}
+      >
         {mounted && width > 0 && (
-          <ResponsiveGridLayout
-            className="layout"
-            width={width}
-            layouts={{ lg: layout }}
-            onLayoutChange={(layout, layouts) => onLayoutChange(layout)}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-            rowHeight={30}
-            margin={[10, 10]}
-            containerPadding={[10, 10]}
-          >
-          <div key="price-chart" className="bg-white border border-gray-200 rounded-lg overflow-hidden h-full">
-            <div className="drag-handle bg-gray-100 px-4 py-2 border-b border-gray-200 cursor-move flex items-center">
-              <span className="text-sm font-medium text-gray-700">📊 数据走势图</span>
-              <span className="text-xs text-gray-500 ml-2">(可拖拽调整大小)</span>
-            </div>
-            <div className="p-4 h-[calc(100%-50px)] overflow-auto">
-              {selectedTsCode ? (
-                <PriceChart
-                  tsCode={selectedTsCode}
-                  leftData1={{
-                    barField: "total_revenue",
-                    barFieldLabel: "营业总收入",
-                    barApiPath: `${apiBase}/api/parq/income1`,
-                    barDateField: "end_date"
-                  }}
-                  rightData1={{
-                    lineField: "total_mv",
-                    lineFieldLabel: "总市值（万元）",
-                    lineApiPath: `${apiBase}/api/csv/indicator`,
-                    lineDateField: "trade_date",
-                    lineSource: "csv"
-                  }}
-                />
-              ) : (
-                <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
-                  <p className="text-gray-500">请选择股票代码查看数据走势</p>
-                </div>
-              )}
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="p-4">
+              <Tabs defaultValue="rev_mv" className="w-full">
+                <TabsList className="mb-3">
+                  <TabsTrigger value="rev_mv">营收和市值</TabsTrigger>
+                </TabsList>
+                <TabsContent value="rev_mv">
+                  {selectedTsCode ? (
+                    <PriceChart
+                      tsCode={selectedTsCode}
+                      leftData1={{
+                        barField: 'q_total_revenue',
+                        barFieldLabel: '单季营业总收入',
+                        barApiPath: '/api/parq/income1',
+                        barDateField: 'end_date',
+                      }}
+                      rightData1={{
+                        lineField: 'total_mv',
+                        lineFieldLabel: '总市值（万元）',
+                        lineApiPath: '/api/csv/indicator',
+                        lineDateField: 'trade_date',
+                        lineSource: 'csv',
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
-          </ResponsiveGridLayout>
         )}
       </div>
 
@@ -125,8 +191,10 @@ export default function Income1Page() {
             category="income1"
             title="利润表1"
             useServerPagination={true}
-            apiPath={`${apiBase}/api/parq/income1`}
+            apiPath={"/api/parq/income1"}
             extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
+            valueMappings={INCOME1_VALUE_MAPPINGS}
+            yiFields={INCOME1_YI_FIELDS}
           />
         </TabsContent>
         <TabsContent value="daily_indicators">
@@ -135,7 +203,7 @@ export default function Income1Page() {
               category="indicator"
               title="每日指标（按季度分组）"
               useServerPagination={true}
-              apiPath={`${apiBase}/api/csv/indicator`}
+              apiPath={"/api/csv/indicator"}
               extraQueryParams={{ ts_code: selectedTsCode, source: 'csv' }}
             />
           ) : (

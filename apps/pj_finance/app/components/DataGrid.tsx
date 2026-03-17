@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { apiBase } from '@/lib/apiBase';
 import { AgGridReact } from 'ag-grid-react';
 import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -30,6 +29,22 @@ interface DataGridProps {
   extraQueryParams?: Record<string, string | boolean>;
   // 将指定列放到某列后面，如 { anchor: 'end_date', field: 'total_revenue' }
   columnAfter?: { anchor: string; field: string };
+  /** 指定列顺序（英文字段名数组），未列出的列追加到末尾；为空则按 API 返回顺序 */
+  columnOrder?: string[];
+  /** 英文字段名 → 中文标签 映射，覆盖 API 返回的中文列名 */
+  fieldLabelMap?: Record<string, string>;
+  /** 默认隐藏的列（英文字段名集合），用户可通过列选择器切换 */
+  defaultHiddenFields?: Set<string>;
+  /** 页签标识，用于分页签缓存列显示状态；如 "breakdown" 则使用 key colVisibility_${category}_breakdown */
+  tabId?: string;
+  /** 字段值映射：field → { rawValue → 显示文本 }，用于把数字编码显示为中文 */
+  valueMappings?: Record<string, Record<string, string>>;
+  /** 需要用「亿」为单位格式化的字段集合 */
+  yiFields?: Set<string>;
+}
+
+function getColVisibilityKey(category: string, tabId?: string): string {
+  return `colVisibility_${category}${tabId ? `_${tabId}` : ''}`;
 }
 
 export default function DataGrid({ 
@@ -39,12 +54,49 @@ export default function DataGrid({
   apiPath,
   extraQueryParams = {},
   columnAfter,
+  columnOrder,
+  fieldLabelMap,
+  defaultHiddenFields,
+  tabId,
+  valueMappings,
+  yiFields,
 }: DataGridProps) {
   const [csvData, setCsvData] = useState<CSVData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState(50);
   const [exporting, setExporting] = useState(false);
+  const [colSelectorOpen, setColSelectorOpen] = useState(false);
+  const storageKey = getColVisibilityKey(category, tabId);
+  const [hiddenFields, setHiddenFields] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return defaultHiddenFields ?? new Set();
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const arr = JSON.parse(raw) as string[];
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch { /* ignore */ }
+    return defaultHiddenFields ?? new Set();
+  });
+
+  // 切换页签或 category 时，从该页签的缓存恢复列显示状态
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const arr = JSON.parse(raw) as string[];
+        if (Array.isArray(arr)) {
+          setHiddenFields(new Set(arr));
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+    setHiddenFields(defaultHiddenFields ?? new Set());
+  }, [storageKey, defaultHiddenFields]);
+  const [colSearchText, setColSearchText] = useState('');
+  const colSelectorRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<AgGridReactType>(null);
   const sortModelRef = useRef<any[]>([]);
   const filterModelRef = useRef<any>({});
@@ -56,7 +108,7 @@ export default function DataGrid({
   }, [extraQueryParams]);
 
   const getApiUrl = useCallback((page: number, size: number, sortQuery = '', filterQuery = '') => {
-    const basePath = apiBase + (apiPath || `/api/csv/${category}`);
+    const basePath = apiPath || `/api/csv/${category}`;
     let extraParams = '';
     const currentExtraParams = extraQueryParamsRef.current;
     if (Object.keys(currentExtraParams).length > 0) {
@@ -80,7 +132,7 @@ export default function DataGrid({
     setLoading(true);
     setError(null);
     try {
-      const basePath = apiBase + (apiPath || `/api/csv/${category}`);
+      const basePath = apiPath || `/api/csv/${category}`;
       let extraParams = '';
       const currentExtraParams = extraQueryParamsRef.current;
       if (Object.keys(currentExtraParams).length > 0) {
@@ -104,7 +156,59 @@ export default function DataGrid({
 
       const response = await fetch(url);
       const data = await response.json();
-      setCsvData(data);
+
+      // 若结果中包含 update_flag / end_type 等字段，则做资产负债表相关的清洗：
+      // 1) 根据 end_date 推导缺失的 end_type（1,2,3,4）
+      // 2) 按 ts_code + end_date + report_type 去重：若存在 update_flag=1，则丢弃 0
+      let processed = data;
+      try {
+        const rows: any[] | undefined = Array.isArray(data?.data) ? data.data : undefined;
+        if (rows && rows.length > 0 && rows[0]) {
+          // 1) 填充缺失的 end_type（如果有该字段）
+          rows.forEach((r) => {
+            if (
+              Object.prototype.hasOwnProperty.call(r, 'end_type') &&
+              (r.end_type === null || r.end_type === undefined || r.end_type === '' || r.end_type === '-')
+            ) {
+              const raw = String(r.end_date ?? '');
+              let month = 0;
+              if (raw) {
+                const d = new Date(raw.replace(/-/g, '/'));
+                if (!isNaN(d.getTime())) {
+                  month = d.getMonth() + 1; // 1-12
+                }
+              }
+              let code = '';
+              if (month >= 1 && month <= 3) code = '1';
+              else if (month >= 4 && month <= 6) code = '2';
+              else if (month >= 7 && month <= 9) code = '3';
+              else if (month >= 10 && month <= 12) code = '4';
+              if (code) r.end_type = code;
+            }
+          });
+
+          // 2) 若存在 update_flag 字段，则按 ts_code + end_date + report_type 去重
+          if (Object.prototype.hasOwnProperty.call(rows[0], 'update_flag')) {
+            const hasUpdated = new Set<string>();
+            const key = (r: any) =>
+              `${r.ts_code ?? ''}_${r.end_date ?? ''}_${r.report_type ?? ''}`;
+            for (const r of rows) {
+              if (Number(r.update_flag) === 1) {
+                hasUpdated.add(key(r));
+              }
+            }
+            const deduped = rows.filter((r) => {
+              if (Number(r.update_flag) === 0 && hasUpdated.has(key(r))) return false;
+              return true;
+            });
+            processed = { ...data, data: deduped };
+          }
+        }
+      } catch (e) {
+        console.warn('balanceSheet cleanup (end_type/update_flag) failed, fallback to raw data:', e);
+      }
+
+      setCsvData(processed);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : '加载数据失败');
@@ -227,38 +331,125 @@ export default function DataGrid({
     return Math.max(width + 60, 120);
   };
 
+  const [colDirty, setColDirty] = useState(false);
+
+  const saveColVisibility = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify([...hiddenFields]));
+      setColDirty(false);
+    } catch { /* ignore quota errors */ }
+  }, [hiddenFields, storageKey]);
+
+  useEffect(() => {
+    if (!colSelectorOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (colSelectorRef.current && !colSelectorRef.current.contains(e.target as Node)) {
+        setColSelectorOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [colSelectorOpen]);
+
+  const toggleFieldVisibility = useCallback((field: string) => {
+    setHiddenFields((prev) => {
+      const next = new Set(prev);
+      if (next.has(field)) next.delete(field);
+      else next.add(field);
+      return next;
+    });
+    setColDirty(true);
+  }, []);
+
+  const showAllFields = useCallback(() => { setHiddenFields(new Set()); setColDirty(true); }, []);
+  const hideAllFields = useCallback(() => {
+    if (!csvData) return;
+    const allFields = csvData.originalHeaders || csvData.headers;
+    setHiddenFields(new Set(allFields));
+    setColDirty(true);
+  }, [csvData]);
+  const resetToDefault = useCallback(() => { setHiddenFields(defaultHiddenFields ?? new Set()); setColDirty(true); }, [defaultHiddenFields]);
+
   // 生成AG Grid的列定义
   const columnDefs = useMemo(() => {
     if (!csvData || !csvData.headers || csvData.headers.length === 0) return [];
     const originalHeaders = csvData.originalHeaders || csvData.headers;
-    let defs = csvData.headers.map((chineseHeader, index) => {
-      const calculatedWidth = calculateColumnWidth(chineseHeader);
-      const field = originalHeaders[index];
+
+    const fieldToChineseFromApi = new Map<string, string>();
+    originalHeaders.forEach((field, i) => {
+      fieldToChineseFromApi.set(field, csvData.headers[i] ?? field);
+    });
+
+    const makeDef = (field: string) => {
+      const chineseLabel = fieldLabelMap?.[field] ?? fieldToChineseFromApi.get(field) ?? field;
+      const headerText = chineseLabel !== field ? `${chineseLabel}\n${field}` : field;
+      const calculatedWidth = calculateColumnWidth(chineseLabel.length > field.length ? chineseLabel : field);
       const isNumeric = isNumericColumn(field, csvData.data);
       const isDate = isDateColumn(field);
-      
+      const mapping = valueMappings?.[field];
+      const useYi = yiFields?.has(field);
+
+      let formatterProps: Record<string, any> = {};
+      if (mapping) {
+        formatterProps = {
+          valueFormatter: (params: any) => {
+            const raw = params.value;
+            if (raw == null || raw === '') return '-';
+            const key = String(Math.floor(Number(raw)));
+            return mapping[key] ?? mapping[String(raw)] ?? String(raw);
+          },
+        };
+      } else if (isDate) {
+        formatterProps = {
+          valueFormatter: (params: any) => formatDate(params.value),
+        };
+      } else if (useYi) {
+        formatterProps = {
+          valueFormatter: (params: any) => {
+            if (params.value == null || params.value === '') return '-';
+            const n = Number(params.value);
+            if (isNaN(n)) return String(params.value);
+            return (n / 1e8).toFixed(2) + ' 亿';
+          },
+          cellStyle: { textAlign: 'right' },
+        };
+      } else if (isNumeric) {
+        formatterProps = {
+          valueFormatter: (params: any) => formatNumber(params.value, field),
+          cellStyle: { textAlign: 'right' },
+        };
+      }
+
       return {
-        field: field,
-        headerName: chineseHeader,
+        field,
+        headerName: headerText,
         sortable: true,
         filter: true,
         resizable: true,
         minWidth: calculatedWidth,
         width: calculatedWidth,
-        ...(isDate && {
-          valueFormatter: (params: any) => formatDate(params.value),
-        }),
-        ...(isNumeric && !isDate && {
-          valueFormatter: (params: any) => formatNumber(params.value, field),
-          cellStyle: { textAlign: 'right' },
-        }),
+        headerClass: 'ag-header-cell-wrap',
+        hide: hiddenFields.has(field),
+        ...formatterProps,
       };
-    });
+    };
 
-    // 将指定列放到 anchor 列后面
+    let orderedFields: string[];
+    if (columnOrder && columnOrder.length > 0) {
+      const present = new Set(originalHeaders);
+      const ordered = columnOrder.filter((f) => present.has(f));
+      const rest = originalHeaders.filter((f) => !columnOrder.includes(f));
+      orderedFields = [...ordered, ...rest];
+    } else {
+      orderedFields = [...originalHeaders];
+    }
+
+    let defs = orderedFields.map(makeDef);
+
     if (columnAfter?.anchor && columnAfter?.field && columnAfter.anchor !== columnAfter.field) {
-      const anchorIdx = defs.findIndex((c: { field: string }) => c.field === columnAfter.anchor);
-      const fieldIdx = defs.findIndex((c: { field: string }) => c.field === columnAfter.field);
+      const anchorIdx = defs.findIndex((c) => c.field === columnAfter.anchor);
+      const fieldIdx = defs.findIndex((c) => c.field === columnAfter.field);
       if (anchorIdx !== -1 && fieldIdx !== -1) {
         const [moved] = defs.splice(fieldIdx, 1);
         const insertAt = fieldIdx < anchorIdx ? anchorIdx : anchorIdx + 1;
@@ -267,7 +458,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter]);
+  }, [csvData, columnAfter, columnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({
@@ -483,7 +674,7 @@ export default function DataGrid({
           
           try {
             console.log(`Fetching page ${page} for rows ${startRow} (${category})`);
-            const basePath = apiBase + (apiPath || `/api/csv/${category}`);
+            const basePath = apiPath || `/api/csv/${category}`;
             let extraParams = '';
             const currentExtraParams = extraQueryParamsRef.current;
             if (Object.keys(currentExtraParams).length > 0) {
@@ -546,7 +737,71 @@ export default function DataGrid({
             </div>
           </div> */}
 
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-end items-center gap-2">
+            <div className="relative" ref={colSelectorRef}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setColSelectorOpen((v) => !v)}
+              >
+                列筛选 ({columnDefs.filter((c: any) => !c.hide).length}/{columnDefs.length})
+              </Button>
+              {colSelectorOpen && (
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-72 max-h-96 flex flex-col">
+                  <div className="p-2 border-b border-gray-100 flex gap-1">
+                    <input
+                      type="text"
+                      placeholder="搜索列名..."
+                      value={colSearchText}
+                      onChange={(e) => setColSearchText(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded px-2 py-1 text-xs"
+                    />
+                  </div>
+                  <div className="p-2 border-b border-gray-100 flex items-center gap-2 text-xs">
+                    <button type="button" onClick={showAllFields} className="text-blue-600 hover:underline">全选</button>
+                    <button type="button" onClick={hideAllFields} className="text-blue-600 hover:underline">全清</button>
+                    {defaultHiddenFields && (
+                      <button type="button" onClick={resetToDefault} className="text-blue-600 hover:underline">恢复默认</button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={saveColVisibility}
+                      className={`ml-auto px-2 py-0.5 rounded text-white text-xs ${
+                        colDirty ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-default'
+                      }`}
+                      disabled={!colDirty}
+                    >
+                      保存
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto flex-1 p-1">
+                    {columnDefs
+                      .filter((col: any) => {
+                        if (!colSearchText.trim()) return true;
+                        const q = colSearchText.trim().toLowerCase();
+                        return col.field.toLowerCase().includes(q) || col.headerName.toLowerCase().includes(q);
+                      })
+                      .map((col: any) => (
+                        <label
+                          key={col.field}
+                          className="flex items-center gap-2 px-2 py-1 text-xs hover:bg-gray-50 rounded cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={!hiddenFields.has(col.field)}
+                            onChange={() => toggleFieldVisibility(col.field)}
+                            className="h-3.5 w-3.5 rounded border-gray-300"
+                          />
+                          <span className="truncate">
+                            {(fieldLabelMap?.[col.field] || col.headerName.split('\n')[0])}
+                            <span className="text-gray-400 ml-1">{col.field}</span>
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               onClick={handleExportCSV}
               disabled={exporting}

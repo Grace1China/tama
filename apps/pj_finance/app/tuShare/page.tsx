@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { apiBase } from '@/lib/apiBase';
 import CsvTableView from '../components/CsvTableView';
 import type { CsvTableData, FetchPageFn } from '../components/CsvTableView';
 import { FolderOpen, FileSpreadsheet, ChevronRight, Home } from 'lucide-react';
@@ -25,7 +24,7 @@ export default function TuSharePage() {
     setError(null);
     try {
       const pathParam = currentPath ? `?path=${encodeURIComponent(currentPath)}` : '';
-      const res = await fetch(`${apiBase}/api/tuShare/entries${pathParam}`);
+      const res = await fetch(`/api/tuShare/entries${pathParam}`);
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       setEntries({ dirs: json.dirs || [], files: json.files || [] });
@@ -58,9 +57,10 @@ export default function TuSharePage() {
     setError(null);
     try {
       const url = isParquet
-        ? `${apiBase}${apiPath}?path=${encodeURIComponent(filePath)}&page=1&size=${pageSize}`
-        : `${apiBase}${apiPath}?path=${encodeURIComponent(filePath)}`;
+        ? `${apiPath}?path=${encodeURIComponent(filePath)}&page=1&size=${pageSize}`
+        : `${apiPath}?path=${encodeURIComponent(filePath)}`;
       const res = await fetch(url);
+      console.log(url,res)
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
       setSelectedFilePath(filePath);
@@ -88,7 +88,7 @@ export default function TuSharePage() {
         });
         if (sortField) params.set('sortField', sortField);
         if (sortDir) params.set('sortDir', sortDir);
-        const res = await fetch(`${apiBase}/api/tuShare/parquet?${params.toString()}`);
+        const res = await fetch(`/api/tuShare/parquet?${params.toString()}`);
         if (!res.ok) throw new Error(await res.text());
         const json = await res.json();
         return { data: json.data || [], totalRows: json.totalRows ?? 0 };

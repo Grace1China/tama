@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiBase } from '@/lib/apiBase';
 import {
   ComposedChart,
   Bar,
@@ -15,7 +14,7 @@ import {
 } from 'recharts';
 
 interface PriceData {
-  [key: string]: string | number;
+  [key: string]: string | number | null;
 }
 
 interface BestMatch {
@@ -64,7 +63,7 @@ interface PriceChartProps {
 
 export default function PriceChart({ 
   tsCode, 
-  apiPath = `${apiBase}/api/parq/indicator`,
+  apiPath = '/api/parq/indicator',
   dateField = 'end_date',
   leftData1,
   barField,
@@ -78,6 +77,7 @@ export default function PriceChart({
   const [data, setData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const MIN_DISPLAY_DATE = 20140101; // 仅显示近10年：从 2014-01-01 起
 
   // 优先使用 leftData1，否则使用向后兼容的单独参数
   const effectiveBarField = leftData1?.barField || barField;
@@ -99,25 +99,19 @@ export default function PriceChart({
   // 标准化日期格式为 YYYYMMDD
   const normalizeDate = (dateStr: string): string => {
     if (!dateStr) return '';
-     if (/^\d{8}$/.test(dateStr)) {
-      dateStr = dateStr.substring(0,4)+'-'+dateStr.substring(4,6)+'-'+dateStr.substring(6,8)
-    }
+    const raw = String(dateStr).trim();
+    if (!raw) return '';
 
-    let dt = new Date(dateStr)
-    return `${dt.getFullYear()}${('0'+dt.getMonth()).substring(0,2)}${('0'+dt.getDay()).substring(0,2)}`
-    // new Date(dateStr).getFullYear()
-    // // 如果是 YYYYMMDD 格式，直接返回
-   
-    // // 如果是 YYYY-MM-DD 格式，转换为 YYYYMMDD
-    // if (dateStr.includes('-')) {
-    //   return dateStr.replace(/-/g, '');
-    // }
-    // // 如果是其他格式，尝试提取日期部分
-    // const match = dateStr.match(/(\d{4})[-\/]?(\d{2})[-\/]?(\d{2})/);
-    // if (match) {
-    //   return `${match[1]}${match[2]}${match[3]}`;
-    // }
-    // return dateStr;
+    // YYYYMMDD -> YYYY-MM-DD
+    const m = raw.match(/^(\d{4})(\d{2})(\d{2})$/);
+    const normalized = m ? `${m[1]}-${m[2]}-${m[3]}` : raw;
+
+    const dt = new Date(normalized.replace(/-/g, '/'));
+    if (Number.isNaN(dt.getTime())) return '';
+    const y = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    return `${y}${mm}${dd}`;
   };
 
   useEffect(() => {
@@ -204,24 +198,16 @@ export default function PriceChart({
         const minDate = Math.min(...allDates);
         const maxDate = Math.max(...allDates);
         
-        // 生成季度初日期列表
+        // 生成季度初日期列表（每年固定 4 个季度：0101/0401/0701/1001）
         const quarterDates: string[] = [];
         const minYear = Math.floor(minDate / 10000);
-        const minMonth = Math.floor((minDate % 10000) / 100);
         const maxYear = Math.floor(maxDate / 10000);
-        const maxMonth = Math.floor((maxDate % 10000) / 100);
-        console.log(minYear,minMonth,maxYear,maxMonth)
-        // 从最小日期的季度初开始，到最大日期的季度初
         for (let year = minYear; year <= maxYear; year++) {
-          const startMonth = year === minYear ? Math.floor((minMonth - 1) / 3) * 3 + 1 : 1;
-          const endMonth = year === maxYear ? Math.floor((maxMonth - 1) / 3) * 3 + 1 : 10;
-          
-          for (let month = startMonth; month <= endMonth; month += 3) {
+          for (const month of [1, 4, 7, 10]) {
             const quarterStartDate = `${year}${String(month).padStart(2, '0')}01`;
-            quarterDates.push(quarterStartDate);
+            if (parseInt(quarterStartDate) >= MIN_DISPLAY_DATE) quarterDates.push(quarterStartDate);
           }
         }
-        console.log(quarterDates)
 
         
         // 构建数据映射：bar数据按end_date索引，line数据按trade_date索引
@@ -260,13 +246,12 @@ export default function PriceChart({
             [unifiedDateField]: quarterDate,
           };
           
-          // 计算季度末日期
+          // 计算季度末日期（季度末月最后一天）
           const quarterYear = parseInt(quarterDate.slice(0, 4));
           const quarterMonth = parseInt(quarterDate.slice(4, 6));
           const quarterEndMonth = quarterMonth + 2;
-          const quarterEndDate = quarterEndMonth === 3 || quarterEndMonth === 6 || quarterEndMonth === 9 || quarterEndMonth === 12
-            ? `${quarterYear}${String(quarterEndMonth).padStart(2, '0')}${quarterEndMonth === 3 || quarterEndMonth === 12 ? '31' : '30'}`
-            : `${quarterYear}${String(quarterEndMonth).padStart(2, '0')}30`;
+          const lastDay = new Date(quarterYear, quarterEndMonth, 0).getDate();
+          const quarterEndDate = `${quarterYear}${String(quarterEndMonth).padStart(2, '0')}${String(lastDay).padStart(2, '0')}`;
           
           const quarterStartNum = parseInt(quarterDate);
           const quarterEndNum = parseInt(quarterEndDate);
@@ -297,19 +282,10 @@ export default function PriceChart({
             }
           });
           
-          if (effectiveBarField && barValue !== undefined) {
-            dataPoint[effectiveBarField] = barValue;
-          }
-          if (effectiveLineField && lineValue !== undefined) {
-            dataPoint[effectiveLineField] = lineValue;
-          }
+          if (effectiveBarField) dataPoint[effectiveBarField] = barValue ?? null;
+          if (effectiveLineField) dataPoint[effectiveLineField] = lineValue ?? null;
           
           return dataPoint;
-        }).filter(item => {
-          // 至少需要一个有效数值
-          const hasBarValue = effectiveBarField && !isNaN(Number(item[effectiveBarField]));
-          const hasLineValue = effectiveLineField && !isNaN(Number(item[effectiveLineField]));
-          return hasBarValue || hasLineValue;
         });
         console.log(chartData)
         setData(chartData);
@@ -362,6 +338,12 @@ export default function PriceChart({
     }
   };
 
+  // 右轴（如 total_mv，单位通常为「万元」）统一显示为「亿」
+  const formatRightAxisValue = (value: number) => {
+    // 1 亿 = 10000 万
+    return `${(value / 10000).toFixed(2)}亿`;
+  };
+
   if (!tsCode) {
     return (
       <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
@@ -408,14 +390,14 @@ export default function PriceChart({
   const lineLabel = effectiveLineLabel || effectiveLineField || '';
 
   return (
-    <div className="w-full h-96 border border-gray-200 rounded-lg p-4 bg-white">
+    <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 bg-white">
       <h3 className="text-lg font-semibold mb-4">
         数据走势图 - {tsCode}
         {effectiveBarField && ` (柱状图: ${barLabel})`}
         {effectiveLineField && ` (折线图: ${lineLabel})`}
       </h3>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 28 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey={xAxisDataKey}
@@ -440,17 +422,20 @@ export default function PriceChart({
               yAxisId="right"
               orientation="right"
               domain={['auto', 'auto']}
-              tickFormatter={formatValue}
+              tickFormatter={formatRightAxisValue}
             />
           )}
           <Tooltip
-            formatter={(value: any, name?: string | number) => {
+            formatter={(value: any, name?: string | number, props?: any) => {
               const numValue = typeof value === 'number' ? value : Number(value);
-              return isNaN(numValue) ? '' : formatValue(numValue);
+              if (isNaN(numValue)) return '';
+              const key = props?.dataKey as string | undefined;
+              if (key && effectiveLineField && key === effectiveLineField) return formatRightAxisValue(numValue);
+              return formatValue(numValue);
             }}
             labelFormatter={(label) => `日期: ${formatDate(String(label))}`}
           />
-          <Legend />
+          <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
           {/* 柱状图 - 左侧Y轴 */}
           {effectiveBarField && (
             <Bar

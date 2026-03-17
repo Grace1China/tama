@@ -18,6 +18,24 @@ export const dynamic = 'force-dynamic';
 
 const gzip = promisify(zlib.gzip);
 
+function formatDateZhCN(value: unknown): string {
+  if (value == null) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+
+  // Support YYYYMMDD (common in Tushare exports)
+  const m = raw.match(/^(\d{4})(\d{2})(\d{2})$/);
+  const normalized = m ? `${m[1]}-${m[2]}-${m[3]}` : raw;
+
+  try {
+    const dt = new Date(normalized.replace(/-/g, '/'));
+    if (Number.isNaN(dt.getTime())) return raw;
+    return Intl.DateTimeFormat('zh-CN').format(dt);
+  } catch {
+    return raw;
+  }
+}
+
 /**
  * 使用DuckDB查询parquet文件
  * @param parquetPath parquet文件路径
@@ -41,6 +59,7 @@ async function queryParquetFile(
 
   // 将路径转换为绝对路径，并处理Windows路径分隔符
   const absolutePath = path.resolve(parquetPath).replace(/\\/g, '/');
+  console.log('absolutePath',absolutePath)
 
   // 解析查询参数
   const params = new URLSearchParams(query.startsWith('?') ? query.slice(1) : query);
@@ -131,12 +150,57 @@ async function queryParquetFile(
       const limitOffsetClause = `LIMIT ${safeSize} OFFSET ${offset}`;
 
       // 构建查询SQL
-      const countSql = `SELECT COUNT(*) AS cnt ${fromClause} ${whereClause}`;
+      // 去重：同一 ts_code + end_date (+ report_type) 若存在 update_flag=1，则过滤 update_flag=0
+      const dedupedFromClause = `FROM (
+        SELECT *
+        FROM (
+          SELECT
+            *,
+            ROW_NUMBER() OVER (
+              PARTITION BY ts_code, end_date, report_type
+              ORDER BY COALESCE(CAST(update_flag AS INTEGER), 0) DESC
+            ) AS __rn
+          ${fromClause} ${whereClause}
+        )
+        WHERE __rn = 1
+      ) AS t`;
+
+      const countSql = `SELECT COUNT(*) AS cnt ${dedupedFromClause}`;
+      // 新增：单季营业总收入（q_total_revenue），由当期累计 total_revenue 减去上期累计得到
+      const calcFromClause = `FROM (
+        SELECT
+          *,
+         CASE
+            -- 1季度(0331)：第一季度累计即单季
+            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0331' 
+              THEN TRY_CAST(total_revenue AS DOUBLE)
+            
+            -- 2季度(0630)：必须确保上一条是本年的 0331，才安全相减
+            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0630' 
+             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0331' 
+              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              
+            -- 3季度(0930)：必须确保上一条是本年的 0630
+            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0930' 
+             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0630' 
+              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              
+            -- 4季度(1231)：必须确保上一条是本年的 0930
+            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '1231' 
+             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0930' 
+              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              
+            -- 兜底：如果缺失紧邻的上一个季度数据，强行减会得出错误数值，此时返回 NULL 更为严谨
+            ELSE NULL 
+          END AS q_total_revenue
+        ${dedupedFromClause}
+      ) AS calc`;
+
       const dataSql = `SELECT * REPLACE (
         CAST(ann_date AS VARCHAR) AS ann_date,
         CAST(end_date AS VARCHAR) AS end_date,
         CAST(f_ann_date AS VARCHAR) AS f_ann_date
-      ) ${fromClause} ${whereClause} ${orderByClause} ${limitOffsetClause}`;
+      ) ${calcFromClause} ${orderByClause} ${limitOffsetClause}`;
       
       console.log(`[Parquet API] 执行count查询: ${countSql}`);
       console.log(`[Parquet API] 执行分页查询(page=${safePage}, size=${safeSize}): ${dataSql}`);
@@ -180,8 +244,8 @@ async function queryParquetFile(
           const data = rows.map(row => {
             const record: Record<string, any> = {};
             originalHeaders.forEach(header => {
-              if (header === 'end_date' || header === 'ann_date') {
-                record[header] = Intl.DateTimeFormat("zh-CN").format(new Date(row[header]));
+              if (header === 'end_date' || header === 'ann_date' || header === 'f_ann_date') {
+                record[header] = formatDateZhCN(row[header]);
               } else {
                 record[header] = row[header];
               }
@@ -217,7 +281,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     
     // 构建parquet文件路径
-    const parquetPath = path.join(process.cwd(), 'temp/tuShare/income_vip2.parquet');
+    const parquetPath = path.join(process.cwd(), 'temp/tuShare/income_vip_ss.parquet');
 
     // 获取分页参数
     const page = Number(url.searchParams.get('page') ?? '1');

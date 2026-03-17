@@ -101,6 +101,15 @@ a {
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
+.ag-header-cell-wrap .ag-header-cell-text {
+  white-space: pre-line;
+  line-height: 1.3;
+  text-align: center;
+}
+.ag-header-cell-wrap {
+  --ag-header-height: 52px;
+}
+
 .loading {
   text-align: center;
   padding: 40px;

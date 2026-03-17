@@ -341,6 +341,7 @@ const income1FieldMap: Record<string, string> = {
     "basic_eps": "基本每股收益",
     "diluted_eps": "稀释每股收益",
     "total_revenue": "营业总收入",
+    "q_total_revenue": "单季营业总收入",
     "revenue": "营业收入",
     "int_income": "利息收入",
     "prem_earned": "已赚保费",
@@ -680,6 +681,39 @@ async function ths_index_handler(category: string, supportsGzip: boolean) {
   return await wrapResponse(path.join(process.cwd(), `temp/tuShare/${category}/ths_index.csv`), category, supportsGzip);
 }
 
+/** 股票列表按 ts_code 查询单条：返回 { name, area, industry, ... } */
+async function stockList_handler(request: NextRequest, supportsGzip: boolean) {
+  const url = new URL(request.url);
+  const tsCode = url.searchParams.get('ts_code')?.trim();
+  const filePath = path.join(process.cwd(), 'temp', 'ts_a_stock_list.csv');
+
+  if (!fs.existsSync(filePath)) {
+    return NextResponse.json({ error: 'File not found' }, { status: 404 });
+  }
+
+  const fileContent = fs.readFileSync(filePath, 'utf-8');
+  const parsed = Papa.parse(fileContent, { header: true, skipEmptyLines: true });
+  const originalHeaders = parsed.meta.fields || [];
+  const rows = (parsed.data || []) as Record<string, string>[];
+
+  if (tsCode) {
+    const row = rows.find((r) => String(r['ts_code'] ?? '').trim() === tsCode);
+    const data = row ? [row] : [];
+    const chineseHeaders = mapHeadersToChinese(originalHeaders, 'stockList');
+    const response = {
+      category: 'stockList',
+      filename: path.basename(filePath),
+      headers: chineseHeaders,
+      originalHeaders,
+      data,
+      totalRows: data.length,
+    };
+    return NextResponse.json(response);
+  }
+
+  return await wrapResponse(filePath, 'stockList', supportsGzip);
+}
+
 const wrapResponse = async (filePath: string, category: string, supportsGzip: boolean) => {
     // 性能测量开始
     const startTime = performance.now();
@@ -779,10 +813,11 @@ export async function GET(
 
     let filePath: string;
 
-    // 股票列表是单独的文件
+    // 股票列表：支持 ts_code 单条查询
     if (category === 'stockList') {
-      filePath = path.join(process.cwd(), 'temp', 'ts_a_stock_list.csv');
-    } else if(category === 'fiIndicator') {
+      return await stockList_handler(request, supportsGzip);
+    }
+    if (category === 'fiIndicator') {
       return await query_handler(category, supportsGzip, request)
     } else if(category === 'indicator') {
       return await indicator_handler(category, supportsGzip);
