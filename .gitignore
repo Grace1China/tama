@@ -45,6 +45,10 @@ next-env.d.ts
 # Misc
 *.pem
 
+# Cache
+.cache/
+/.cache/
+
 # Data (generated)
 /data/bible.json
 
