@@ -1,8 +1,8 @@
-// File: /home/runner/work/tama/tama/apps/pj_finance/app/profit/page.tsx
-import * as entry from '../../../../app/profit/page.js'
+// File: /home/runner/work/tama/tama/apps/pj_finance/app/cashflowStatement/page.tsx
+import * as entry from '../../../../app/cashflowStatement/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../app/profit/page.js')
+type TEntry = typeof import('../../../../app/cashflowStatement/page.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{
