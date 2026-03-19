@@ -30,9 +30,9 @@ const categories = [
   { id: 'stockList', name: '股票列表', path: '/stockList', icon: List },
   { id: 'fiIndicator', name: '财务指标', path: '/fiIndicator', icon: Calculator },
   { id: 'indicator', name: '交易指标', path: '/indicator', icon: TrendingUp },
-  { id: 'profit', name: '利润表', path: '/profit', icon: FileText },
-  { id: 'income1', name: '利润表1', path: '/income1', icon: FileText },
+  { id: 'income1', name: '利润表', path: '/income1', icon: FileText },
   { id: 'balanceSheet', name: '资产负债表', path: '/balanceSheet', icon: FileSpreadsheet },
+  { id: 'cashflowStatement', name: '现金流量表', path: '/cashflowStatement', icon: FileText },
   { id: 'ths_index', name: '同花顺指数', path: '/ths_index', icon: BarChart3 },
   { id: 'tuShare', name: 'TuShare 目录', path: '/tuShare', icon: FolderTree },
 ];

@@ -32,9 +32,15 @@ function useContainerWidth() {
   return { width, containerRef, mounted };
 }
 
+// 当选中"营收和现金流"页签时，DataGrid 默认隐藏的字段
+const CASHFLOW_TAB_DEFAULT_HIDDEN = new Set([
+  'report_type', 'comp_type', 'q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a',
+]);
+
 export default function Income1Page() {
   const [selectedTsCode, setSelectedTsCode] = useState<string>('');
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
+  const [chartTab, setChartTab] = useState<string>('rev_mv');
   const { width, containerRef, mounted } = useContainerWidth();
 
   const INCOME1_VALUE_MAPPINGS: Record<string, Record<string, string>> = {
@@ -146,9 +152,10 @@ export default function Income1Page() {
         {mounted && width > 0 && (
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
             <div className="p-4">
-              <Tabs defaultValue="rev_mv" className="w-full">
+              <Tabs value={chartTab} onValueChange={setChartTab} className="w-full">
                 <TabsList className="mb-3">
                   <TabsTrigger value="rev_mv">营收和市值</TabsTrigger>
+                  <TabsTrigger value="rev_cashflow">营收和现金流</TabsTrigger>
                 </TabsList>
                 <TabsContent value="rev_mv">
                   {selectedTsCode ? (
@@ -174,6 +181,25 @@ export default function Income1Page() {
                     </div>
                   )}
                 </TabsContent>
+                <TabsContent value="rev_cashflow">
+                  {selectedTsCode ? (
+                    <PriceChart
+                      tsCode={selectedTsCode}
+                      dualLineData={{
+                        line1Field: 'ttm_total_revenue',
+                        line1Label: '滚动总营收',
+                        line2Field: 'ttm_c_inf_fr_operate_a',
+                        line2Label: '滚动经营现金流入',
+                        apiPath: '/api/parq/cashflowIncome',
+                        dateField: 'end_date',
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -181,38 +207,52 @@ export default function Income1Page() {
       </div>
 
       {/* 数据表格 */}
-      <Tabs defaultValue="income1" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="income1">利润表1</TabsTrigger>
-          <TabsTrigger value="daily_indicators">每日指标</TabsTrigger>
-        </TabsList>
-        <TabsContent value="income1">
+      {chartTab === 'rev_cashflow' ? (
+        <div className="w-full">
           <DataGrid
-            category="income1"
-            title="利润表1"
+            category="cashflowIncome"
+            title="滚动营收与现金流"
             useServerPagination={true}
-            apiPath={"/api/parq/income1"}
+            apiPath="/api/parq/cashflowIncome"
             extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
-            valueMappings={INCOME1_VALUE_MAPPINGS}
-            yiFields={INCOME1_YI_FIELDS}
+            defaultHiddenFields={CASHFLOW_TAB_DEFAULT_HIDDEN}
+            yiFields={new Set(['q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a', 'ttm_total_revenue', 'ttm_n_income', 'ttm_c_inf_fr_operate_a'])}
           />
-        </TabsContent>
-        <TabsContent value="daily_indicators">
-          {selectedTsCode ? (
+        </div>
+      ) : (
+        <Tabs defaultValue="income1" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="income1">利润表</TabsTrigger>
+            <TabsTrigger value="daily_indicators">每日指标</TabsTrigger>
+          </TabsList>
+          <TabsContent value="income1">
             <DataGrid
-              category="indicator"
-              title="每日指标（按季度分组）"
+              category="income1"
+              title="利润表"
               useServerPagination={true}
-              apiPath={"/api/csv/indicator"}
-              extraQueryParams={{ ts_code: selectedTsCode, source: 'csv' }}
+              apiPath={"/api/parq/income1"}
+              extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
+              valueMappings={INCOME1_VALUE_MAPPINGS}
+              yiFields={INCOME1_YI_FIELDS}
             />
-          ) : (
-            <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
-              <p className="text-gray-500">请先输入股票代码</p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+          <TabsContent value="daily_indicators">
+            {selectedTsCode ? (
+              <DataGrid
+                category="indicator"
+                title="每日指标（按季度分组）"
+                useServerPagination={true}
+                apiPath={"/api/csv/indicator"}
+                extraQueryParams={{ ts_code: selectedTsCode, source: 'csv' }}
+              />
+            ) : (
+              <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                <p className="text-gray-500">请先输入股票代码</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }

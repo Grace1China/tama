@@ -38,6 +38,15 @@ interface RightData1 {
   lineSource?: string; // 数据源类型（如 'csv', 'parquet'）
 }
 
+interface DualLineData {
+  line1Field: string;
+  line1Label: string;
+  line2Field: string;
+  line2Label: string;
+  apiPath: string;
+  dateField: string;
+}
+
 interface PriceChartProps {
   tsCode?: string;
   apiPath?: string;
@@ -59,6 +68,8 @@ interface PriceChartProps {
   lineFieldLabel?: string;
   lineApiPath?: string;
   lineDateField?: string;
+  // 双曲线模式：两条线共用一个Y轴
+  dualLineData?: DualLineData;
 }
 
 export default function PriceChart({ 
@@ -73,28 +84,32 @@ export default function PriceChart({
   valueField,
   valueFieldLabel,
   rightData1,
+  dualLineData,
 }: PriceChartProps) {
   const [data, setData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const MIN_DISPLAY_DATE = 20140101; // 仅显示近10年：从 2014-01-01 起
 
+  // 双曲线模式
+  const isDualLineMode = !!dualLineData;
+
   // 优先使用 leftData1，否则使用向后兼容的单独参数
-  const effectiveBarField = leftData1?.barField || barField;
-  const effectiveBarLabel = leftData1?.barFieldLabel || barFieldLabel;
-  const effectiveBarApiPath = leftData1?.barApiPath || barApiPath || apiPath;
-  const effectiveBarDateField = leftData1?.barDateField || barDateField || dateField;
-  const effectiveBarSource = leftData1?.barSource;
+  const effectiveBarField = isDualLineMode ? undefined : (leftData1?.barField || barField);
+  const effectiveBarLabel = isDualLineMode ? undefined : (leftData1?.barFieldLabel || barFieldLabel);
+  const effectiveBarApiPath = isDualLineMode ? undefined : (leftData1?.barApiPath || barApiPath || apiPath);
+  const effectiveBarDateField = isDualLineMode ? dualLineData?.dateField : (leftData1?.barDateField || barDateField || dateField);
+  const effectiveBarSource = isDualLineMode ? undefined : leftData1?.barSource;
 
   // 优先使用 rightData1，否则使用向后兼容的单独参数，最后使用 valueField
-  const effectiveLineField = rightData1?.lineField
-  const effectiveLineLabel = rightData1?.lineFieldLabel
-  const effectiveLineApiPath = rightData1?.lineApiPath
-  const effectiveLineDateField = rightData1?.lineDateField 
-  const effectiveLineSource = rightData1?.lineSource;
+  const effectiveLineField = isDualLineMode ? undefined : rightData1?.lineField;
+  const effectiveLineLabel = isDualLineMode ? undefined : rightData1?.lineFieldLabel;
+  const effectiveLineApiPath = isDualLineMode ? undefined : rightData1?.lineApiPath;
+  const effectiveLineDateField = isDualLineMode ? undefined : rightData1?.lineDateField;
+  const effectiveLineSource = isDualLineMode ? undefined : rightData1?.lineSource;
   
   // 统一的日期字段（用于 X 轴）
-  const unifiedDateField = effectiveBarDateField;
+  const unifiedDateField = isDualLineMode ? dualLineData?.dateField : effectiveBarDateField;
 
   // 标准化日期格式为 YYYYMMDD
   const normalizeDate = (dateStr: string): string => {
@@ -115,6 +130,125 @@ export default function PriceChart({
   };
 
   useEffect(() => {
+    // 双曲线模式
+    if (isDualLineMode && dualLineData) {
+      if (!tsCode) {
+        setData([]);
+        return;
+      }
+      const fetchDualLineData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const url = `${dualLineData.apiPath}?ts_code=${encodeURIComponent(tsCode)}&page=1&size=10000&sortField=${dualLineData.dateField}&sortDir=asc`;
+          const res = await fetch(url);
+          const result = await res.json();
+          const rawData = result.data || [];
+          
+          if (rawData.length === 0) {
+            setData([]);
+            return;
+          }
+          
+          // 收集所有日期
+          const allDates: number[] = [];
+          rawData.forEach((item: any) => {
+            const dateValue = item[dualLineData.dateField];
+            const normalizedDate = normalizeDate(dateValue);
+            if (normalizedDate) {
+              allDates.push(parseInt(normalizedDate));
+            }
+          });
+          
+          if (allDates.length === 0) {
+            setData([]);
+            return;
+          }
+          
+          const minDate = Math.min(...allDates);
+          const maxDate = Math.max(...allDates);
+          
+          // 生成季度初日期列表
+          const quarterDates: string[] = [];
+          const minYear = Math.floor(minDate / 10000);
+          const maxYear = Math.floor(maxDate / 10000);
+          for (let year = minYear; year <= maxYear; year++) {
+            for (const month of [1, 4, 7, 10]) {
+              const quarterStartDate = `${year}${String(month).padStart(2, '0')}01`;
+              if (parseInt(quarterStartDate) >= MIN_DISPLAY_DATE) quarterDates.push(quarterStartDate);
+            }
+          }
+          
+          // 构建数据映射
+          const line1Map = new Map<string, number>();
+          const line2Map = new Map<string, number>();
+          rawData.forEach((item: any) => {
+            const dateValue = item[dualLineData.dateField];
+            const normalizedDate = normalizeDate(dateValue);
+            if (normalizedDate) {
+              const value1 = Number(item[dualLineData.line1Field]);
+              const value2 = Number(item[dualLineData.line2Field]);
+              if (!isNaN(value1)) line1Map.set(normalizedDate, value1);
+              if (!isNaN(value2)) line2Map.set(normalizedDate, value2);
+            }
+          });
+          
+          // 为每个季度初日期查找对应的数据
+          const chartData: PriceData[] = quarterDates.map(quarterDate => {
+            const dataPoint: PriceData = {
+              [dualLineData.dateField]: quarterDate,
+            };
+            
+            const quarterYear = parseInt(quarterDate.slice(0, 4));
+            const quarterMonth = parseInt(quarterDate.slice(4, 6));
+            const quarterEndMonth = quarterMonth + 2;
+            const lastDay = new Date(quarterYear, quarterEndMonth, 0).getDate();
+            const quarterEndDate = `${quarterYear}${String(quarterEndMonth).padStart(2, '0')}${String(lastDay).padStart(2, '0')}`;
+            
+            const quarterStartNum = parseInt(quarterDate);
+            const quarterEndNum = parseInt(quarterEndDate);
+            
+            // 查找该季度内的数据（两条线使用同一日期）
+            let line1Value: number | undefined;
+            let line2Value: number | undefined;
+            let foundDate: string | undefined;
+            
+            // 先找到该季度内最晚的日期
+            Array.from(line1Map.keys()).forEach((date) => {
+              const dateNum = parseInt(date);
+              if (dateNum >= quarterStartNum && dateNum <= quarterEndNum) {
+                if (!foundDate || dateNum > parseInt(foundDate)) {
+                  foundDate = date;
+                }
+              }
+            });
+            
+            // 使用找到的日期获取两条线的值
+            if (foundDate) {
+              line1Value = line1Map.get(foundDate);
+              line2Value = line2Map.get(foundDate);
+            }
+            
+            dataPoint[dualLineData.line1Field] = line1Value ?? null;
+            dataPoint[dualLineData.line2Field] = line2Value ?? null;
+            
+            return dataPoint;
+          });
+          
+          setData(chartData);
+        } catch (err) {
+          console.error('获取数据失败:', err);
+          setError(err instanceof Error ? err.message : '获取数据失败');
+          setData([]);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDualLineData();
+      return;
+    }
+
+    // 原有的 bar+line 模式
     if (!tsCode || (!effectiveBarField && !effectiveLineField)) {
       setData([]);
       return;
@@ -238,7 +372,6 @@ export default function PriceChart({
             }
           });
         }
-        console.log('quarterDates')
         
         // 为每个季度初日期查找对应的数据
         const chartData: PriceData[] = quarterDates.map(quarterDate => {
@@ -287,7 +420,6 @@ export default function PriceChart({
           
           return dataPoint;
         });
-        console.log(chartData)
         setData(chartData);
       } catch (err) {
         console.error('获取数据失败:', err);
@@ -299,31 +431,38 @@ export default function PriceChart({
     };
 
     fetchPriceData();
-  }, [tsCode, apiPath, dateField, effectiveBarField, effectiveBarApiPath, effectiveBarDateField, effectiveBarSource, effectiveLineField, effectiveLineApiPath, effectiveLineDateField, effectiveLineSource, unifiedDateField]);
+  }, [tsCode, apiPath, dateField, effectiveBarField, effectiveBarApiPath, effectiveBarDateField, effectiveBarSource, effectiveLineField, effectiveLineApiPath, effectiveLineDateField, effectiveLineSource, unifiedDateField, isDualLineMode, dualLineData]);
 
-  // 格式化日期显示 - 只显示年份后两位
+  // 格式化日期显示：统一显示为 YY-MM 格式
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     let year = '';
+    let month = '';
     // 如果是 YYYYMMDD 格式
     if (/^\d{8}$/.test(dateStr)) {
-      year = dateStr.slice(2, 8); // 取年份后两位
+      year = dateStr.slice(2, 4); // 取年份后两位
+      month = dateStr.slice(4, 6);
     }
     // 如果是 YYYY-MM-DD 格式
     else if (dateStr.includes('-')) {
       const parts = dateStr.split('-');
-      if (parts.length >= 1 && parts[0].length === 4) {
-        year = parts[0].slice(2, 8); // 取年份后两位
+      if (parts.length >= 2) {
+        year = parts[0].slice(2, 4); // 取年份后两位
+        month = parts[1];
       }
     }
     // 尝试解析其他格式
     else {
-      const match = dateStr.match(/(\d{4})/);
+      const match = dateStr.match(/(\d{4})[-\/]?(\d{2})/);
       if (match) {
-        year = match[1].slice(2, 8);
+        year = match[1].slice(2, 4);
+        month = match[2];
       }
     }
-    return year || dateStr;
+    if (year && month) {
+      return `${year}-${month}`;
+    }
+    return dateStr;
   };
 
   // 格式化数值显示
@@ -352,7 +491,7 @@ export default function PriceChart({
     );
   }
 
-  if (!effectiveBarField && !effectiveLineField) {
+  if (!isDualLineMode && !effectiveBarField && !effectiveLineField) {
     return (
       <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
         <p className="text-gray-500">请选择要展示的列</p>
@@ -385,12 +524,73 @@ export default function PriceChart({
   }
 
   // 确保使用正确的日期字段
-  const xAxisDataKey = unifiedDateField || dateField || 'end_date';
+  const xAxisDataKey = isDualLineMode ? (dualLineData?.dateField || 'end_date') : (unifiedDateField || dateField || 'end_date');
   const barLabel = effectiveBarLabel || effectiveBarField || '';
   const lineLabel = effectiveLineLabel || effectiveLineField || '';
 
+  // 双曲线模式渲染
+  if (isDualLineMode && dualLineData) {
+    return (
+      <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
+        <h3 className="text-lg font-semibold mb-4">
+          数据走势图 - {tsCode} ({dualLineData.line1Label} / {dualLineData.line2Label})
+        </h3>
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 28 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey={xAxisDataKey}
+              tickFormatter={formatDate}
+              angle={-90}
+              textAnchor="end"
+              height={60}
+              interval={0}
+              tick={{ fontSize: 11 }}
+            />
+            <YAxis
+              yAxisId="left"
+              orientation="left"
+              domain={['auto', 'auto']}
+              tickFormatter={formatValue}
+            />
+            <Tooltip
+              formatter={(value: any) => {
+                const numValue = typeof value === 'number' ? value : Number(value);
+                if (isNaN(numValue)) return '';
+                return formatValue(numValue);
+              }}
+              labelFormatter={(label) => `日期: ${formatDate(String(label))}`}
+            />
+            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey={dualLineData.line1Field}
+              stroke="#8884d8"
+              strokeWidth={2}
+              dot={{ r: 3, fill: '#8884d8' }}
+              activeDot={{ r: 5 }}
+              name={dualLineData.line1Label}
+            />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey={dualLineData.line2Field}
+              stroke="#82ca9d"
+              strokeWidth={2}
+              dot={{ r: 3, fill: '#82ca9d' }}
+              activeDot={{ r: 5 }}
+              name={dualLineData.line2Label}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  // 原有的 bar+line 模式渲染
   return (
-    <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 bg-white">
+    <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
       <h3 className="text-lg font-semibold mb-4">
         数据走势图 - {tsCode}
         {effectiveBarField && ` (柱状图: ${barLabel})`}
@@ -402,10 +602,11 @@ export default function PriceChart({
           <XAxis
             dataKey={xAxisDataKey}
             tickFormatter={formatDate}
-            angle={-45}
+            angle={-90}
             textAnchor="end"
-            height={80}
-            interval="preserveStartEnd"
+            height={60}
+            interval={0}
+            tick={{ fontSize: 11 }}
           />
           {/* 左侧Y轴 - 柱状图 */}
           {effectiveBarField && (
