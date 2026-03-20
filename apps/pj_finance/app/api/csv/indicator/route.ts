@@ -596,29 +596,18 @@ export async function GET(request: NextRequest) {
       totalRows: number;
     };
 
-    if (source === 'csv') {
-      // CSV 处理方式：需要 ts_code 参数
-      const tsCode = url.searchParams.get('ts_code');
-      if (!tsCode) {
-        return NextResponse.json(
-          { error: 'ts_code parameter is required when source=csv' },
-          { status: 400 }
-        );
-      }
-      queryData = await processIndicatorCSV(tsCode, pageCfg);
-    } else {
-      // Parquet 处理方式（默认）
-      const parquetPath = path.join(process.cwd(), 'temp/tuShare/daily_indicators.parquet');
-      
-      // 构建查询字符串（去掉分页和source参数）
-      const q = new URLSearchParams(url.searchParams);
-      q.delete('page');
-      q.delete('size');
-      q.delete('source');
-      const queryString = q.toString() ? `?${q.toString()}` : '';
+  
+    // Parquet 处理方式（默认）
+    const parquetPath = path.join(process.cwd(), 'temp/tuShare/daily_indicators.parquet');
+    
+    // 构建查询字符串（去掉分页和source参数）
+    const q = new URLSearchParams(url.searchParams);
+    q.delete('page');
+    q.delete('size');
+    q.delete('source');
+    const queryString = q.toString() ? `?${q.toString()}` : '';
 
-      queryData = await queryParquetFile(parquetPath, queryString, pageCfg);
-    }
+    queryData = await queryParquetFile(parquetPath, queryString, pageCfg);
 
     // 构建响应
     const response = {

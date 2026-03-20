@@ -7,12 +7,32 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 
 interface StockInfo {
   name: string;
   area: string;
   industry: string;
 }
+
+type ValuationPoint = {
+  end_date?: string;
+  trade_date?: string;
+  ps_ttm: number | null;
+  ps: number | null;
+  pe_ttm?: number | null;
+  pe?: number | null;
+  pb?: number | null;
+};
 
 function useContainerWidth() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,11 +57,120 @@ const CASHFLOW_TAB_DEFAULT_HIDDEN = new Set([
   'report_type', 'comp_type', 'q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a',
 ]);
 
+function formatDateYYMM(value: unknown): string {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  // support YYYYMMDD and YYYY-MM-DD
+  if (/^\d{8}$/.test(raw)) {
+    const dd = raw.slice(6, 8);
+    return dd === '01'
+      ? `${raw.slice(2, 4)}-${raw.slice(4, 6)}`
+      : `${raw.slice(2, 4)}-${raw.slice(4, 6)}-${dd}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    const dd = raw.slice(8, 10);
+    return dd === '01'
+      ? `${raw.slice(2, 4)}-${raw.slice(5, 7)}`
+      : `${raw.slice(2, 4)}-${raw.slice(5, 7)}-${dd}`;
+  }
+  if (/^\d{4}\/\d{1,2}\/\d{1,2}/.test(raw)) {
+    const parts = raw.split(/[\/\s]/).filter(Boolean);
+    const yy = parts[0]?.slice(2, 4) ?? '';
+    const mm = String(parts[1] ?? '').padStart(2, '0');
+    if (yy && mm) return `${yy}-${mm}`;
+  }
+  return raw;
+}
+
+function calcMeanStd(values: number[]): { mean: number; std: number } | null {
+  if (!values.length) return null;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance =
+    values.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / values.length;
+  return { mean, std: Math.sqrt(variance) };
+}
+
+function normalizeDateToNumber(value: unknown): number {
+  const raw = String(value ?? '').trim();
+  if (!raw) return NaN;
+  // YYYYMMDD
+  if (/^\d{8}$/.test(raw)) return Number(raw);
+  // YYYY-MM-DD...
+  const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return Number(`${m[1]}${m[2]}${m[3]}`);
+  // YYYY/M/D...
+  const s = raw.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})/);
+  if (s) {
+    const mm = String(s[2]).padStart(2, '0');
+    const dd = String(s[3]).padStart(2, '0');
+    return Number(`${s[1]}${mm}${dd}`);
+  }
+  // fallback: try Date parsing
+  const dt = new Date(raw.replace(/-/g, '/'));
+  if (!Number.isNaN(dt.getTime())) {
+    const y = dt.getFullYear();
+    const mm = String(dt.getMonth() + 1).padStart(2, '0');
+    const dd = String(dt.getDate()).padStart(2, '0');
+    return Number(`${y}${mm}${dd}`);
+  }
+  const asNum = Number(raw);
+  return Number.isFinite(asNum) ? asNum : NaN;
+}
+
+function quarterStartDates(minDateNum: number, maxDateNum: number, minDisplayDateNum: number): string[] {
+  if (!Number.isFinite(minDateNum) || !Number.isFinite(maxDateNum)) return [];
+  const minYear = Math.floor(minDateNum / 10000);
+  const maxYear = Math.floor(maxDateNum / 10000);
+  const dates: string[] = [];
+  for (let year = minYear; year <= maxYear; year++) {
+    for (const month of [1, 4, 7, 10]) {
+      const d = `${year}${String(month).padStart(2, '0')}01`;
+      const n = Number(d);
+      if (Number.isFinite(n) && n >= minDisplayDateNum) dates.push(d);
+    }
+  }
+  // ensure within actual max range (keep last quarterStart even if after max? trim)
+  return dates.filter((d) => Number(d) <= maxDateNum);
+}
+
+function quarterEndDateNum(quarterStart: string): number {
+  const y = Number(quarterStart.slice(0, 4));
+  const m = Number(quarterStart.slice(4, 6));
+  const endMonth = m + 2;
+  const lastDay = new Date(y, endMonth, 0).getDate();
+  return Number(`${y}${String(endMonth).padStart(2, '0')}${String(lastDay).padStart(2, '0')}`);
+}
+
 export default function Income1Page() {
   const [selectedTsCode, setSelectedTsCode] = useState<string>('');
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
   const [chartTab, setChartTab] = useState<string>('rev_mv');
   const { width, containerRef, mounted } = useContainerWidth();
+  const [psData, setPsData] = useState<Array<Record<string, any>>>([]);
+  const [psLoading, setPsLoading] = useState(false);
+  const [psError, setPsError] = useState<string | null>(null);
+  const [psStats, setPsStats] = useState<{ mean: number; std: number } | null>(null);
+  const [finaMeta, setFinaMeta] = useState<Array<{ name: string; defaultShow: boolean; desc: string }>>([]);
+  const [finaMetaError, setFinaMetaError] = useState<string | null>(null);
+  const isValuationTab = chartTab === 'ps_valuation' || chartTab === 'pe_valuation' || chartTab === 'pb_valuation';
+  const valuationCfg =
+    chartTab === 'pe_valuation'
+      ? {
+          key: 'pe',
+          title: '滚动市盈率估值',
+          seriesLabel: '滚动市盈率(PE_TTM/PE)',
+        }
+      : chartTab === 'pb_valuation'
+        ? {
+            key: 'pb',
+            title: '市净率估值',
+            seriesLabel: '市净率(PB)',
+          }
+        : {
+            key: 'ps',
+            title: '市销率估值',
+            seriesLabel: '市销率(PS/PS_TTM)',
+          };
 
   const INCOME1_VALUE_MAPPINGS: Record<string, Record<string, string>> = {
     comp_type: {
@@ -72,7 +201,7 @@ export default function Income1Page() {
     },
   };
 
-  const INCOME1_YI_FIELDS = new Set(['total_revenue', 'q_total_revenue']);
+  const INCOME1_YI_FIELDS = new Set(['total_revenue', 'q_total_revenue', 'ttm_total_revenue', 'q_compr_inc_attr_p', 'ttm_compr_inc_attr_p']);
 
   useEffect(() => {
     if (!selectedTsCode.trim()) {
@@ -107,6 +236,184 @@ export default function Income1Page() {
       cancelled = true;
     };
   }, [selectedTsCode]);
+
+  useEffect(() => {
+    if (!isValuationTab) return;
+    if (!selectedTsCode.trim()) {
+      setPsData([]);
+      setPsStats(null);
+      setPsError(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchPs = async () => {
+      setPsLoading(true);
+      setPsError(null);
+      try {
+        const url = `/api/parq/daily_basic?ts_code=${encodeURIComponent(selectedTsCode.trim())}&page=1&size=1000000&sortField=trade_date&sortDir=asc&getAllDates=true&start_date=20140101`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`indicator api failed: ${res.status}`);
+        const json = await res.json();
+        if (cancelled) return;
+        const rows: ValuationPoint[] = Array.isArray(json?.data) ? json.data : [];
+        const points = rows
+          .map((r) => {
+            const psTtm = r?.ps_ttm == null ? null : Number(r.ps_ttm);
+            const ps = r?.ps == null ? null : Number(r.ps);
+            const peTtm = r?.pe_ttm == null ? null : Number(r.pe_ttm);
+            const pe = r?.pe == null ? null : Number(r.pe);
+            const pb = r?.pb == null ? null : Number(r.pb);
+            const v =
+              valuationCfg.key === 'pe'
+                ? (Number.isFinite(peTtm) ? peTtm : Number.isFinite(pe) ? pe : null)
+                : valuationCfg.key === 'pb'
+                  ? (Number.isFinite(pb) ? pb : null)
+                  : (Number.isFinite(psTtm) ? psTtm : Number.isFinite(ps) ? ps : null);
+            const dNum = normalizeDateToNumber((r as any)?.trade_date);
+            return {
+              trade_date: String((r as any)?.trade_date ?? ''),
+              __dateNum: dNum,
+              __valuation_value: v,
+            };
+          })
+          .filter((p: any) => p.trade_date && Number.isFinite(p.__dateNum) && p.__dateNum >= 20140101)
+          .sort((a, b) => a.__dateNum - b.__dateNum);
+
+        const allDates = points.map((p) => p.__dateNum);
+        const minDate = Math.min(...allDates);
+        const maxDate = Math.max(...allDates);
+        const quarterStarts = quarterStartDates(minDate, maxDate, 20140101);
+
+        // dateNum -> values[]（一个季度内用所有市销率取均值）
+        const valueMap = new Map<number, number[]>();
+        for (const p of points) {
+          if (typeof p.__valuation_value === 'number' && Number.isFinite(p.__valuation_value)) {
+            const arr = valueMap.get(p.__dateNum) ?? [];
+            arr.push(p.__valuation_value);
+            valueMap.set(p.__dateNum, arr);
+          }
+        }
+
+        // 第一步：每个季度起始点，先用该季度内全部市销率均值
+        const quarterSeries = quarterStarts.map((qs) => {
+          const startNum = Number(qs);
+          const endNum = quarterEndDateNum(qs);
+          const quarterValues: number[] = [];
+          for (const [d, vals] of valueMap.entries()) {
+            if (d >= startNum && d <= endNum) {
+              quarterValues.push(...vals);
+            }
+          }
+          const v =
+            quarterValues.length > 0
+              ? quarterValues.reduce((a, b) => a + b, 0) / quarterValues.length
+              : null;
+          return {
+            trade_date: qs,
+            __valuation_value: v,
+          };
+        });
+
+        // 第二步：基于季度均值做第一轮估值
+        const quarterValuesRaw = quarterSeries
+          .map((p) => p.__valuation_value)
+          .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+        const firstStats = calcMeanStd(quarterValuesRaw);
+        const firstHigh = firstStats ? firstStats.mean + firstStats.std : null;
+        const firstLow = firstStats ? firstStats.mean - firstStats.std : null;
+
+        // 第三步：超过第一轮高低估值线 1 个单位以上的值做截断，再做第二轮估值并显示
+        const upperCap = firstHigh != null ? firstHigh + 1 : null;
+        const lowerCap = firstLow != null ? firstLow - 1 : null;
+        const normalizedQuarterSeries = quarterSeries.map((p) => {
+          const v = p.__valuation_value;
+          if (v == null || !Number.isFinite(v) || upperCap == null || lowerCap == null) return p;
+          return {
+            ...p,
+            __valuation_value: Math.max(lowerCap, Math.min(upperCap, v)),
+          };
+        });
+
+        const quarterValuesNormalized = normalizedQuarterSeries
+          .map((p) => p.__valuation_value)
+          .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+        const stats = calcMeanStd(quarterValuesNormalized);
+        setPsStats(stats);
+        const mean = stats?.mean ?? null;
+        const high = stats ? stats.mean + stats.std : null;
+        const low = stats ? stats.mean - stats.std : null;
+
+        const chartData = normalizedQuarterSeries.map((p) => ({
+          ...p,
+          mean,
+          high,
+          low,
+        }));
+
+        // 在季度序列最后追加一个「最新日期」点（最新日频市销率）
+        const latestPoint = points.reduce<null | { dateNum: number; value: number }>((acc, p) => {
+          if (typeof p.__valuation_value !== 'number' || !Number.isFinite(p.__valuation_value)) return acc;
+          if (!Number.isFinite(p.__dateNum)) return acc;
+          if (!acc || p.__dateNum > acc.dateNum) {
+            return { dateNum: p.__dateNum, value: p.__valuation_value };
+          }
+          return acc;
+        }, null);
+
+        if (latestPoint) {
+          const latestValue = latestPoint.value;
+          const latestDate = String(latestPoint.dateNum);
+          if (!chartData.length || chartData[chartData.length - 1]?.trade_date !== latestDate) {
+            chartData.push({
+              trade_date: latestDate,
+              __valuation_value: latestValue,
+              mean,
+              high,
+              low,
+            });
+          }
+        }
+
+        setPsData(chartData);
+      } catch (e) {
+        if (!cancelled) {
+          setPsError(e instanceof Error ? e.message : String(e));
+          setPsData([]);
+          setPsStats(null);
+        }
+      } finally {
+        if (!cancelled) setPsLoading(false);
+      }
+    };
+    fetchPs();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode, isValuationTab, valuationCfg.key]);
+
+  // 拉取财务指标元数据（用于列顺序/默认显示/中文名）
+  useEffect(() => {
+    let cancelled = false;
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch('/api/meta/finaIndicator');
+        const json = await res.json();
+        if (cancelled) return;
+        const rows = Array.isArray(json?.rows) ? json.rows : [];
+        setFinaMeta(rows);
+        setFinaMetaError(null);
+      } catch (e) {
+        if (!cancelled) {
+          setFinaMeta([]);
+          setFinaMetaError(e instanceof Error ? e.message : String(e));
+        }
+      }
+    };
+    fetchMeta();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -156,24 +463,31 @@ export default function Income1Page() {
                 <TabsList className="mb-3">
                   <TabsTrigger value="rev_mv">营收和市值</TabsTrigger>
                   <TabsTrigger value="rev_cashflow">营收和现金流</TabsTrigger>
+                  <TabsTrigger value="ps_valuation">市销率估值</TabsTrigger>
+                  <TabsTrigger value="pe_valuation">滚动市盈率估值</TabsTrigger>
+                  <TabsTrigger value="pb_valuation">市净率估值</TabsTrigger>
                 </TabsList>
                 <TabsContent value="rev_mv">
                   {selectedTsCode ? (
                     <PriceChart
                       tsCode={selectedTsCode}
                       leftData1={{
-                        barField: 'q_total_revenue',
-                        barFieldLabel: '单季营业总收入',
+                        barField: 'ttm_total_revenue',
+                        barFieldLabel: 'TTM滚动总营收',
+                        barField2: 'ttm_compr_inc_attr_p',
+                        barField2Label: 'TTM滚动归母综合收益总额',
+                        barField2Color: '#ef4444',
                         barApiPath: '/api/parq/income1',
                         barDateField: 'end_date',
                       }}
                       rightData1={{
                         lineField: 'total_mv',
                         lineFieldLabel: '总市值（万元）',
-                        lineApiPath: '/api/csv/indicator',
+                        lineApiPath: '/api/parq/daily_basic',
                         lineDateField: 'trade_date',
-                        lineSource: 'csv',
+                        lineSource: 'parquet',
                       }}
+                      swapYAxes={true}
                     />
                   ) : (
                     <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
@@ -200,6 +514,276 @@ export default function Income1Page() {
                     </div>
                   )}
                 </TabsContent>
+                <TabsContent value="ps_valuation">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : psLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : psError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {psError}</p>
+                    </div>
+                  ) : psData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
+                        <h3 className="text-lg font-semibold mb-1">
+                          {valuationCfg.title} - {selectedTsCode}
+                        </h3>
+                        <div className="text-xs text-gray-500 mb-3">
+                          使用全样本均值与标准差：均值 {psStats ? psStats.mean.toFixed(3) : '—'}，
+                          标准差 {psStats ? psStats.std.toFixed(3) : '—'}（高估线=均值+1σ，低估线=均值-1σ）
+                        </div>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={psData} margin={{ top: 5, right: 30, left: 20, bottom: 44 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              dataKey="trade_date"
+                              tickFormatter={formatDateYYMM}
+                              angle={-90}
+                              textAnchor="end"
+                              height={78}
+                              interval={0}
+                              tickMargin={6}
+                              minTickGap={0}
+                              tick={{ fontSize: 10 }}
+                            />
+                            <YAxis
+                              domain={['auto', 'auto']}
+                              tickFormatter={(v) => Number(v).toFixed(2)}
+                            />
+                            <Tooltip
+                              labelFormatter={(l) => `日期: ${formatDateYYMM(l)}`}
+                              formatter={(value: any, name?: string | number, props?: any) => {
+                                const key = props?.dataKey as string | undefined;
+                                const num = typeof value === 'number' ? value : Number(value);
+                                if (!Number.isFinite(num)) return ['—', name];
+                                const label =
+                                  key === '__valuation_value'
+                                    ? valuationCfg.seriesLabel
+                                    : key === 'mean'
+                                      ? '均值'
+                                      : key === 'high'
+                                        ? '高估线(均值+1σ)'
+                                        : key === 'low'
+                                          ? '低估线(均值-1σ)'
+                                          : String(name ?? key ?? '');
+                                return [num.toFixed(3), label];
+                              }}
+                            />
+                            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
+                            <Line
+                              type="monotone"
+                              dataKey="__valuation_value"
+                              stroke="#2563eb"
+                              strokeWidth={2}
+                              dot={{ r: 2, fill: '#2563eb' }}
+                              activeDot={{ r: 4 }}
+                              name={valuationCfg.seriesLabel}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="mean"
+                              stroke="#facc15"
+                              strokeWidth={2}
+                              dot={false}
+                              name="均值"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="high"
+                              stroke="#ef4444"
+                              strokeWidth={2}
+                              dot={false}
+                              name="高估线(均值+1σ)"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="low"
+                              stroke="#111827"
+                              strokeWidth={2}
+                              dot={false}
+                              name="低估线(均值-1σ)"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="pe_valuation">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : psLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : psError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {psError}</p>
+                    </div>
+                  ) : psData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
+                        <h3 className="text-lg font-semibold mb-1">
+                          {valuationCfg.title} - {selectedTsCode}
+                        </h3>
+                        <div className="text-xs text-gray-500 mb-3">
+                          使用全样本均值与标准差：均值 {psStats ? psStats.mean.toFixed(3) : '—'}，
+                          标准差 {psStats ? psStats.std.toFixed(3) : '—'}（高估线=均值+1σ，低估线=均值-1σ）
+                        </div>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={psData} margin={{ top: 5, right: 30, left: 20, bottom: 44 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="trade_date" tickFormatter={formatDateYYMM} angle={-90} textAnchor="end" height={78} interval={0} tickMargin={6} minTickGap={0} tick={{ fontSize: 10 }} />
+                            <YAxis domain={['auto', 'auto']} tickFormatter={(v) => Number(v).toFixed(2)} />
+                            <Tooltip
+                              labelFormatter={(l) => `日期: ${formatDateYYMM(l)}`}
+                              formatter={(value: any, name?: string | number, props?: any) => {
+                                const key = props?.dataKey as string | undefined;
+                                const num = typeof value === 'number' ? value : Number(value);
+                                if (!Number.isFinite(num)) return ['—', name];
+                                const label =
+                                  key === '__valuation_value'
+                                    ? valuationCfg.seriesLabel
+                                    : key === 'mean'
+                                      ? '均值'
+                                      : key === 'high'
+                                        ? '高估线(均值+1σ)'
+                                        : key === 'low'
+                                          ? '低估线(均值-1σ)'
+                                          : String(name ?? key ?? '');
+                                return [num.toFixed(3), label];
+                              }}
+                            />
+                            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
+                            <Line type="monotone" dataKey="__valuation_value" stroke="#2563eb" strokeWidth={2} dot={{ r: 2, fill: '#2563eb' }} activeDot={{ r: 4 }} name={valuationCfg.seriesLabel} />
+                            <Line type="monotone" dataKey="mean" stroke="#facc15" strokeWidth={2} dot={false} name="均值" />
+                            <Line type="monotone" dataKey="high" stroke="#ef4444" strokeWidth={2} dot={false} name="高估线(均值+1σ)" />
+                            <Line type="monotone" dataKey="low" stroke="#111827" strokeWidth={2} dot={false} name="低估线(均值-1σ)" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="pb_valuation">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : psLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : psError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {psError}</p>
+                    </div>
+                  ) : psData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
+                        <h3 className="text-lg font-semibold mb-1">
+                          {valuationCfg.title} - {selectedTsCode}
+                        </h3>
+                        <div className="text-xs text-gray-500 mb-3">
+                          使用全样本均值与标准差：均值 {psStats ? psStats.mean.toFixed(3) : '—'}，
+                          标准差 {psStats ? psStats.std.toFixed(3) : '—'}（高估线=均值+1σ，低估线=均值-1σ）
+                        </div>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={psData} margin={{ top: 5, right: 30, left: 20, bottom: 44 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              dataKey="trade_date"
+                              tickFormatter={formatDateYYMM}
+                              angle={-90}
+                              textAnchor="end"
+                              height={78}
+                              interval={0}
+                              tickMargin={6}
+                              minTickGap={0}
+                              tick={{ fontSize: 10 }}
+                            />
+                            <YAxis
+                              domain={['auto', 'auto']}
+                              tickFormatter={(v) => Number(v).toFixed(2)}
+                            />
+                            <Tooltip
+                              labelFormatter={(l) => `日期: ${formatDateYYMM(l)}`}
+                              formatter={(value: any, name?: string | number, props?: any) => {
+                                const key = props?.dataKey as string | undefined;
+                                const num = typeof value === 'number' ? value : Number(value);
+                                if (!Number.isFinite(num)) return ['—', name];
+                                const label =
+                                  key === '__valuation_value'
+                                    ? valuationCfg.seriesLabel
+                                    : key === 'mean'
+                                      ? '均值'
+                                      : key === 'high'
+                                        ? '高估线(均值+1σ)'
+                                        : key === 'low'
+                                          ? '低估线(均值-1σ)'
+                                          : String(name ?? key ?? '');
+                                return [num.toFixed(3), label];
+                              }}
+                            />
+                            <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
+                            <Line
+                              type="monotone"
+                              dataKey="__valuation_value"
+                              stroke="#2563eb"
+                              strokeWidth={2}
+                              dot={{ r: 2, fill: '#2563eb' }}
+                              activeDot={{ r: 4 }}
+                              name={valuationCfg.seriesLabel}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="mean"
+                              stroke="#facc15"
+                              strokeWidth={2}
+                              dot={false}
+                              name="均值"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="high"
+                              stroke="#ef4444"
+                              strokeWidth={2}
+                              dot={false}
+                              name="高估线(均值+1σ)"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="low"
+                              stroke="#111827"
+                              strokeWidth={2}
+                              dot={false}
+                              name="低估线(均值-1σ)"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -221,9 +805,10 @@ export default function Income1Page() {
         </div>
       ) : (
         <Tabs defaultValue="income1" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="income1">利润表</TabsTrigger>
             <TabsTrigger value="daily_indicators">每日指标</TabsTrigger>
+            <TabsTrigger value="fina_indicators">财务指标</TabsTrigger>
           </TabsList>
           <TabsContent value="income1">
             <DataGrid
@@ -239,12 +824,52 @@ export default function Income1Page() {
           <TabsContent value="daily_indicators">
             {selectedTsCode ? (
               <DataGrid
-                category="indicator"
+                category="daily_basic"
+                tabId="income1_daily"
                 title="每日指标（按季度分组）"
                 useServerPagination={true}
-                apiPath={"/api/csv/indicator"}
-                extraQueryParams={{ ts_code: selectedTsCode, source: 'csv' }}
+                apiPath={"/api/parq/daily_basic"}
+                extraQueryParams={{ ts_code: selectedTsCode, start_date: '20140101' }}
+                columnOrder={['trade_date', 'ps_ttm', 'ps', 'total_mv', 'close', 'pe_ttm', 'pb']}
+                fieldLabelMap={{
+                  ps_ttm: '市销率(PS_TTM)',
+                  ps: '市销率(PS)',
+                }}
               />
+            ) : (
+              <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                <p className="text-gray-500">请先输入股票代码</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="fina_indicators">
+            {selectedTsCode ? (
+              finaMetaError ? (
+                <div className="w-full h-48 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                  <p className="text-red-500">元数据加载失败: {finaMetaError}</p>
+                </div>
+              ) : (
+                <DataGrid
+                  category="finaIndicator"
+                  tabId="income1_fina"
+                  title="财务指标"
+                  useServerPagination={true}
+                  apiPath={"/api/parq/finaIndicator"}
+                  extraQueryParams={{ ts_code: selectedTsCode, start_date: '20140101' }}
+                  columnOrder={finaMeta.length ? finaMeta.map((r) => r.name) : undefined}
+                  fieldLabelMap={
+                    finaMeta.length
+                      ? Object.fromEntries(finaMeta.map((r) => [r.name, r.desc]))
+                      : undefined
+                  }
+                  defaultHiddenFields={
+                    finaMeta.length
+                      ? new Set(finaMeta.filter((r) => !r.defaultShow).map((r) => r.name))
+                      : undefined
+                  }
+                />
+              )
             ) : (
               <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
                 <p className="text-gray-500">请先输入股票代码</p>

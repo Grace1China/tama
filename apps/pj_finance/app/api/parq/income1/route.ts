@@ -166,34 +166,114 @@ async function queryParquetFile(
       ) AS t`;
 
       const countSql = `SELECT COUNT(*) AS cnt ${dedupedFromClause}`;
-      // 新增：单季营业总收入（q_total_revenue），由当期累计 total_revenue 减去上期累计得到
+      // 新增：
+      // - 单季营业总收入（q_total_revenue）：当期累计 total_revenue 减去上期累计得到
+      // - TTM滚动总营收（ttm_total_revenue）：最近4个季度 q_total_revenue 之和（不足4个季度则为 NULL）
       const calcFromClause = `FROM (
+        WITH calc_base AS (
+          SELECT
+            *,
+            CASE
+              -- 1季度(0331)：第一季度累计即单季
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0331'
+                THEN TRY_CAST(total_revenue AS DOUBLE)
+
+              -- 2季度(0630)：必须确保上一条是本年的 0331，才安全相减
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0630'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0331'
+                THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+
+              -- 3季度(0930)：必须确保上一条是本年的 0630
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0930'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0630'
+                THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+
+              -- 4季度(1231)：必须确保上一条是本年的 0930
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '1231'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0930'
+                THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+
+              -- 兜底：如果缺失紧邻的上一个季度数据，强行减会得出错误数值，此时返回 NULL 更为严谨
+              ELSE NULL
+            END AS q_total_revenue
+            ,
+            CASE
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0331'
+                THEN TRY_CAST(compr_inc_attr_p AS DOUBLE)
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0630'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0331'
+                THEN TRY_CAST(compr_inc_attr_p AS DOUBLE) - LAG(TRY_CAST(compr_inc_attr_p AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0930'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0630'
+                THEN TRY_CAST(compr_inc_attr_p AS DOUBLE) - LAG(TRY_CAST(compr_inc_attr_p AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '1231'
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                ) = '0930'
+                THEN TRY_CAST(compr_inc_attr_p AS DOUBLE) - LAG(TRY_CAST(compr_inc_attr_p AS DOUBLE)) OVER (
+                  PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4)
+                  ORDER BY CAST(end_date AS VARCHAR)
+                )
+              ELSE NULL
+            END AS q_compr_inc_attr_p
+          ${dedupedFromClause}
+        ),
+        ttm_calc AS (
+          SELECT
+            *,
+            SUM(q_total_revenue) OVER (
+              PARTITION BY ts_code, report_type, comp_type
+              ORDER BY end_date
+              ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+            ) AS __ttm_total_revenue,
+            SUM(q_compr_inc_attr_p) OVER (
+              PARTITION BY ts_code, report_type, comp_type
+              ORDER BY end_date
+              ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+            ) AS __ttm_compr_inc_attr_p,
+            COUNT(q_total_revenue) OVER (
+              PARTITION BY ts_code, report_type, comp_type
+              ORDER BY end_date
+              ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+            ) AS __window_count
+          FROM calc_base
+        )
         SELECT
-          *,
-         CASE
-            -- 1季度(0331)：第一季度累计即单季
-            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0331' 
-              THEN TRY_CAST(total_revenue AS DOUBLE)
-            
-            -- 2季度(0630)：必须确保上一条是本年的 0331，才安全相减
-            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0630' 
-             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0331' 
-              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
-              
-            -- 3季度(0930)：必须确保上一条是本年的 0630
-            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0930' 
-             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0630' 
-              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
-              
-            -- 4季度(1231)：必须确保上一条是本年的 0930
-            WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '1231' 
-             AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0930' 
-              THEN TRY_CAST(total_revenue AS DOUBLE) - LAG(TRY_CAST(total_revenue AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
-              
-            -- 兜底：如果缺失紧邻的上一个季度数据，强行减会得出错误数值，此时返回 NULL 更为严谨
-            ELSE NULL 
-          END AS q_total_revenue
-        ${dedupedFromClause}
+          * EXCLUDE (__ttm_total_revenue, __ttm_compr_inc_attr_p, __window_count),
+          CASE WHEN __window_count >= 4 THEN __ttm_total_revenue ELSE NULL END AS ttm_total_revenue,
+          CASE WHEN __window_count >= 4 THEN __ttm_compr_inc_attr_p ELSE NULL END AS ttm_compr_inc_attr_p
+        FROM ttm_calc
       ) AS calc`;
 
       const dataSql = `SELECT * REPLACE (

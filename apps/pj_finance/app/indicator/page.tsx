@@ -46,7 +46,7 @@ export default function IndicatorPage() {
 
       {/* 股价走势图 */}
       {selectedTsCode && (
-        <PriceChart tsCode={selectedTsCode} apiPath={"/api/parq/indicator"} />
+        <PriceChart tsCode={selectedTsCode} apiPath={"/api/parq/daily_pro_bar"} />
       )}
 
       {/* 数据表格 */}
@@ -54,7 +54,7 @@ export default function IndicatorPage() {
         category="indicator" 
         title="交易指标"
         useServerPagination={true}
-        apiPath={"/api/parq/indicator"}
+        apiPath={"/api/parq/daily_pro_bar"}
         extraQueryParams={groupByQuarter ? { groupByQuarter: true } : {}}
       />
     </div>

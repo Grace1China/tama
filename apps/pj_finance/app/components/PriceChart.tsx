@@ -28,6 +28,10 @@ interface LeftData1 {
   barApiPath: string; // 柱状图数据源的 API 路径
   barDateField: string; // 柱状图数据源的日期字段
   barSource?: string; // 数据源类型（如 'csv', 'parquet'）
+  // 可选第二柱图（与 barField 使用同一数据源和日期轴）
+  barField2?: string;
+  barField2Label?: string;
+  barField2Color?: string;
 }
 
 interface RightData1 {
@@ -70,11 +74,13 @@ interface PriceChartProps {
   lineDateField?: string;
   // 双曲线模式：两条线共用一个Y轴
   dualLineData?: DualLineData;
+  // 交换Y轴：柱状图在右、折线图在左
+  swapYAxes?: boolean;
 }
 
 export default function PriceChart({ 
   tsCode, 
-  apiPath = '/api/parq/indicator',
+  apiPath = '/api/parq/daily_pro_bar',
   dateField = 'end_date',
   leftData1,
   barField,
@@ -85,6 +91,7 @@ export default function PriceChart({
   valueFieldLabel,
   rightData1,
   dualLineData,
+  swapYAxes = false,
 }: PriceChartProps) {
   const [data, setData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -100,6 +107,9 @@ export default function PriceChart({
   const effectiveBarApiPath = isDualLineMode ? undefined : (leftData1?.barApiPath || barApiPath || apiPath);
   const effectiveBarDateField = isDualLineMode ? dualLineData?.dateField : (leftData1?.barDateField || barDateField || dateField);
   const effectiveBarSource = isDualLineMode ? undefined : leftData1?.barSource;
+  const effectiveBarField2 = isDualLineMode ? undefined : leftData1?.barField2;
+  const effectiveBarLabel2 = isDualLineMode ? undefined : leftData1?.barField2Label;
+  const effectiveBarColor2 = isDualLineMode ? undefined : leftData1?.barField2Color;
 
   // 优先使用 rightData1，否则使用向后兼容的单独参数，最后使用 valueField
   const effectiveLineField = isDualLineMode ? undefined : rightData1?.lineField;
@@ -249,7 +259,7 @@ export default function PriceChart({
     }
 
     // 原有的 bar+line 模式
-    if (!tsCode || (!effectiveBarField && !effectiveLineField)) {
+    if (!tsCode || (!effectiveBarField && !effectiveBarField2 && !effectiveLineField)) {
       setData([]);
       return;
     }
@@ -350,11 +360,23 @@ export default function PriceChart({
           barData.data.forEach((item: any) => {
             const dateValue = item[barData.dateField];
             const normalizedDate = normalizeDate(dateValue);
-            if (normalizedDate && effectiveBarField) {
-              const value = Number(item[effectiveBarField]);
-              if (!isNaN(value)) {
-                barMap.set(normalizedDate, value);
+            if (normalizedDate) {
+              if (effectiveBarField) {
+                const value = Number(item[effectiveBarField]);
+                if (!isNaN(value)) barMap.set(normalizedDate, value);
               }
+            }
+          });
+        }
+        
+        const bar2Map = new Map<string, number>();
+        if (barData && effectiveBarField2) {
+          barData.data.forEach((item: any) => {
+            const dateValue = item[barData.dateField];
+            const normalizedDate = normalizeDate(dateValue);
+            if (normalizedDate) {
+              const value2 = Number(item[effectiveBarField2]);
+              if (!isNaN(value2)) bar2Map.set(normalizedDate, value2);
             }
           });
         }
@@ -401,6 +423,18 @@ export default function PriceChart({
               }
             }
           });
+
+          let barValue2: number | undefined;
+          let barDate2: string | undefined;
+          Array.from(bar2Map.entries()).forEach(([date, value]) => {
+            const dateNum = parseInt(date);
+            if (dateNum >= quarterStartNum && dateNum <= quarterEndNum) {
+              if (!barDate2 || dateNum > parseInt(barDate2)) {
+                barDate2 = date;
+                barValue2 = value;
+              }
+            }
+          });
           
           // 查找该季度内最近的line数据（trade_date <= 季度末）
           let lineValue: number | undefined;
@@ -416,6 +450,7 @@ export default function PriceChart({
           });
           
           if (effectiveBarField) dataPoint[effectiveBarField] = barValue ?? null;
+          if (effectiveBarField2) dataPoint[effectiveBarField2] = barValue2 ?? null;
           if (effectiveLineField) dataPoint[effectiveLineField] = lineValue ?? null;
           
           return dataPoint;
@@ -491,7 +526,7 @@ export default function PriceChart({
     );
   }
 
-  if (!isDualLineMode && !effectiveBarField && !effectiveLineField) {
+  if (!isDualLineMode && !effectiveBarField && !effectiveBarField2 && !effectiveLineField) {
     return (
       <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
         <p className="text-gray-500">请选择要展示的列</p>
@@ -608,20 +643,20 @@ export default function PriceChart({
             interval={0}
             tick={{ fontSize: 11 }}
           />
-          {/* 左侧Y轴 - 柱状图 */}
-          {effectiveBarField && (
+          {/* Y轴 - 柱状图 */}
+          {(effectiveBarField || effectiveBarField2) && (
             <YAxis
-              yAxisId="left"
-              orientation="left"
+              yAxisId="bar"
+              orientation={swapYAxes ? 'right' : 'left'}
               domain={['auto', 'auto']}
               tickFormatter={formatValue}
             />
           )}
-          {/* 右侧Y轴 - 折线图 */}
+          {/* Y轴 - 折线图 */}
           {effectiveLineField && (
             <YAxis
-              yAxisId="right"
-              orientation="right"
+              yAxisId="line"
+              orientation={swapYAxes ? 'left' : 'right'}
               domain={['auto', 'auto']}
               tickFormatter={formatRightAxisValue}
             />
@@ -637,19 +672,27 @@ export default function PriceChart({
             labelFormatter={(label) => `日期: ${formatDate(String(label))}`}
           />
           <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
-          {/* 柱状图 - 左侧Y轴 */}
+          {/* 柱状图 */}
           {effectiveBarField && (
             <Bar
-              yAxisId="left"
+              yAxisId="bar"
               dataKey={effectiveBarField}
               fill="#8884d8"
               name={barLabel}
             />
           )}
-          {/* 折线图 - 右侧Y轴 */}
+          {effectiveBarField2 && (
+            <Bar
+              yAxisId="bar"
+              dataKey={effectiveBarField2}
+              fill={effectiveBarColor2 || '#ef4444'}
+              name={effectiveBarLabel2 || effectiveBarField2}
+            />
+          )}
+          {/* 折线图 */}
           {effectiveLineField && (
             <Line
-              yAxisId="right"
+              yAxisId="line"
               type="monotone"
               dataKey={effectiveLineField}
               stroke="#82ca9d"

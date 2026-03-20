@@ -4,7 +4,6 @@ import path from 'path';
 import Papa from 'papaparse';
 import zlib from 'zlib';
 import { promisify } from 'util';
-import { processIndicatorFiles, processIndicatorFilesDuckDb } from '../indicator';
 import { readCSV } from '../fileFunc';
 
 export const dynamic = 'force-dynamic';
@@ -36,6 +35,7 @@ const stockListFieldMap: Record<string, string> = {
 const indicatorFieldMap: Record<string, string> = {
   'ts_code': 'TS股票代码',
   'trade_date': '交易日期',
+  'end_date': '报告期',
   'close': '当日收盘价',
   'turnover_rate': '换手率（%）',
   'turnover_rate_f': '换手率（自由流通股）',
@@ -342,6 +342,9 @@ const income1FieldMap: Record<string, string> = {
     "diluted_eps": "稀释每股收益",
     "total_revenue": "营业总收入",
     "q_total_revenue": "单季营业总收入",
+    "ttm_total_revenue": "TTM滚动总营收",
+    "q_compr_inc_attr_p": "单季归母综合收益总额",
+    "ttm_compr_inc_attr_p": "TTM滚动归母综合收益总额",
     "revenue": "营业收入",
     "int_income": "利息收入",
     "prem_earned": "已赚保费",
@@ -658,126 +661,25 @@ export function mapHeadersToChinese(headers: string[], category: string): string
   return headers;
 }
 async function query_handler(category: string, supportsGzip: boolean, request: NextRequest) {
-  let validCategories = ['fiIndicator',  'profit'];
-  if(!validCategories.includes(category)) {
-    return NextResponse.json(
-      { error: 'Invalid category' },
-      { status: 400 }
-    );
-  }
-
-  let queryData: {
-    headers: string[];
-    originalHeaders: string[];
-    data: Record<string, any>[];
-    totalRows: number;
-    processedFiles?: any;
-  } = {
-    headers: [],
-    originalHeaders: [],
-    data: [],
-    totalRows: 0
-  };
-
-  const url = new URL(request.url);
-  const page = Number(url.searchParams.get('page') ?? '1');
-  const size = Number(url.searchParams.get('size') ?? '50');
-  const pageCfg = { page, size };
-
-  // 传给 DuckDB 的查询条件（去掉分页参数）
-  const q = new URLSearchParams(url.searchParams);
-  q.delete('page');
-  q.delete('size');
-  const queryString = q.toString() ? `?${q.toString()}` : '';
-
-  if(category === 'fiIndicator') {
-    queryData = await processIndicatorFilesDuckDb(queryString, pageCfg);
-  }
-  if(category === 'profit') {
-    queryData =  await processIndicatorFilesDuckDb(queryString, pageCfg);
-  }
-  if(category === 'indicator') {
-    queryData =  await processIndicatorFilesDuckDb(queryString, pageCfg);
-  }
-  const chineseHeaders = mapHeadersToChinese(queryData.headers, category);
-
-   // 构建响应
-   const response = {
-    category,
-    filename: `${category}`,
-    headers: chineseHeaders, // 显示中文列名
-    originalHeaders: queryData.originalHeaders, // 保留原始列名用于数据访问
-    data: queryData.data,
-    totalRows: queryData.totalRows,
-    processedFiles: queryData.processedFiles,
-  };
-  // 4. 压缩响应（如果客户端支持）
-  const jsonString = JSON.stringify(response);
-  const originalSize = Buffer.byteLength(jsonString, 'utf8');
-  if (supportsGzip && originalSize > 1024) { // 只压缩大于1KB的数据
-    const compressStartTime = performance.now();
-    const compressedData = await gzip(jsonString);
-    const compressedSize = compressedData.length;
-    const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(1);
-    const compressEndTime = performance.now();
-    const compressDuration = compressEndTime - compressStartTime;
-    console.log(`[Performance] 压缩耗时: ${compressDuration.toFixed(2)}ms`);
-    console.log(`[Performance] 原始大小: ${(originalSize / 1024).toFixed(2)}KB, 压缩后: ${(compressedSize / 1024).toFixed(2)}KB, 压缩率: ${compressionRatio}%`);
-
-    // 返回压缩后的响应
-    return new NextResponse(compressedData, {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Encoding': 'gzip',
-            'Content-Length': compressedSize.toString(),
-        },
-    });
-  } else {
-    return NextResponse.json(response);
-  }
+  return NextResponse.json(
+    {
+      error: 'This endpoint is deprecated',
+      message: 'Please use parquet APIs (e.g. /api/parq/daily_pro_bar) instead of /api/csv/* for this category.',
+      category,
+    },
+    { status: 410 }
+  );
 }
 
-async function indicator_handler(category: string, supportsGzip: boolean) {
-  // 使用专门的indicator处理函数
-  const indicatorDir = path.join(process.cwd(), `temp/tuShare/${category}`);
-  const indicatorData = await processIndicatorFiles(indicatorDir);
-
-  // 将headers转换为中文
-  const chineseHeaders = mapHeadersToChinese(indicatorData.headers, category);
-
-  // 构建响应
-  const response = {
-    category,
-    filename: `${category}_latest_${indicatorData.processedFiles}_files`,
-    headers: chineseHeaders, // 显示中文列名
-    originalHeaders: indicatorData.originalHeaders, // 保留原始列名用于数据访问
-    data: indicatorData.data,
-    totalRows: indicatorData.totalRows,
-    processedFiles: indicatorData.processedFiles,
-    failedFiles: indicatorData.failedFiles,
-    fromCache: indicatorData.fromCache,
-    cacheTTL: indicatorData.cacheTTL,
-  };
-
-  // 压缩响应（如果客户端支持）
-  const jsonString = JSON.stringify(response);
-  const originalSize = Buffer.byteLength(jsonString, 'utf8');
-
-  if (supportsGzip && originalSize > 1024) {
-    const compressedData = await gzip(jsonString);
-    const compressedSize = compressedData.length;
-    return new NextResponse(compressedData, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Encoding': 'gzip',
-        'Content-Length': compressedSize.toString(),
-      },
-    });
-  } else {
-    return NextResponse.json(response);
-  }
+async function indicator_handler(category: string, supportsGzip: boolean, request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'This endpoint is deprecated',
+      message: 'Please use /api/parq/daily_pro_bar instead.',
+      category,
+    },
+    { status: 410 }
+  );
 }
 
 async function ths_index_handler(category: string, supportsGzip: boolean) {
@@ -923,9 +825,9 @@ export async function GET(
     if (category === 'fiIndicator') {
       return await query_handler(category, supportsGzip, request)
     } else if(category === 'indicator') {
-      return await indicator_handler(category, supportsGzip);
+      return await indicator_handler(category, supportsGzip, request);
     } else if(category === 'profit') {
-      return await indicator_handler(category, supportsGzip)
+      return await indicator_handler(category, supportsGzip, request)
     } else if(category === 'ths_index') {
       return await ths_index_handler(category, supportsGzip)
     } else {
