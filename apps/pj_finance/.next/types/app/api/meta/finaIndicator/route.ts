@@ -1,8 +1,8 @@
-// File: /home/runner/work/tama/tama/apps/pj_finance/app/api/parq/indicator/route.ts
-import * as entry from '../../../../../../app/api/parq/indicator/route.js'
+// File: /home/runner/work/tama/tama/apps/pj_finance/app/api/meta/finaIndicator/route.ts
+import * as entry from '../../../../../../app/api/meta/finaIndicator/route.js'
 import type { NextRequest } from 'next/server.js'
 
-type TEntry = typeof import('../../../../../../app/api/parq/indicator/route.js')
+type TEntry = typeof import('../../../../../../app/api/meta/finaIndicator/route.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{
