@@ -58,6 +58,8 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const [pageInfo, setPageInfo] = useState({ currentPage: 0, totalPages: 1 });
   const [scrollToPageRequest, setScrollToPageRequest] = useState<number | null>(null);
   const [showVerseNumbers, setShowVerseNumbers] = useState(false);
+  /** 右侧小标题目录显隐（有目录数据时显示切换按钮） */
+  const [showTitleList, setShowTitleList] = useState(true);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   /** 用户点击 TOC 的 section，以点击为准高亮；滚动导致可见段变化时清除，改用滚动首可见 */
   const [lastClickedSectionId, setLastClickedSectionId] = useState<string | null>(null);
@@ -178,7 +180,9 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
 
   return (
     <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col px-2">
-      <div className="flex-shrink-0 pt-2 pb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+      <div className="flex-shrink-0 pt-2 pb-2 flex flex-col gap-y-2">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
         {allBooks ? (
           <>
             <Link
@@ -314,6 +318,20 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             </div>
           )}
         </div>
+          </div>
+          {tocSections.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowTitleList((v) => !v)}
+              className="flex-shrink-0 text-sm font-medium text-blue-600 hover:text-blue-800 px-2 py-0.5 rounded border border-blue-200 hover:bg-blue-50"
+              aria-expanded={showTitleList}
+              aria-controls="chapter-toc"
+            >
+              {showTitleList ? '收起目录' : '显示目录'}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {/* 换页面组件 */}
         {pageInfo.totalPages > 1 && (
           <div className=" flex items-center gap-3 text-sm">
@@ -357,6 +375,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             />
           </button>
         </label>
+        </div>
       </div>
         {/* 书本内容 */}
       <div className="flex-1 min-h-0 flex gap-4">
@@ -374,8 +393,11 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             showVerseNumbers={showVerseNumbers}
           />
         </div>
-        {tocSections.length > 0 && (
-          <aside className="flex-shrink-0 w-48 pt-2 overflow-y-auto max-h-full">
+        {showTitleList && tocSections.length > 0 && (
+          <aside
+            id="chapter-toc"
+            className="flex-shrink-0 w-48 pt-2 overflow-y-auto max-h-full"
+          >
             <nav className="text-sm" aria-label="章节与段落目录">
               <ul className="space-y-1">
                 {tocSections.map((item, i) => {
