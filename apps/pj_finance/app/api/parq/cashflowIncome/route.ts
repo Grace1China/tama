@@ -82,7 +82,22 @@ async function queryTTMData(
 
       const limitOffsetClause = `LIMIT ${safeSize} OFFSET ${offset}`;
 
-      const ttmSql = `
+      const schemaSql = `DESCRIBE SELECT * FROM read_parquet('${incomeAbsPath.replace(/'/g, "''")}')`;
+      conn.all(schemaSql, (schemaErr: Error | null, schemaRows: any[]) => {
+        if (schemaErr) {
+          conn.close();
+          db.close();
+          reject(new Error(`DuckDB schema query error: ${schemaErr.message}`));
+          return;
+        }
+
+        const hasNetAfterNrLpCorrect = (schemaRows || []).some((r: any) => {
+          const col = String(r?.column_name ?? r?.name ?? Object.values(r || {})[0] ?? '').toLowerCase();
+          return col === 'net_after_nr_lp_correct';
+        });
+        const netAfterFieldExpr = hasNetAfterNrLpCorrect ? 'net_after_nr_lp_correct' : 'NULL';
+
+        const ttmSql = `
         WITH income_dedup AS (
           SELECT *
           FROM (
@@ -126,7 +141,21 @@ async function queryTTMData(
                 AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0930' 
                 THEN TRY_CAST(n_income AS DOUBLE) - LAG(TRY_CAST(n_income AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
               ELSE NULL 
-            END AS q_n_income
+            END AS q_n_income,
+            CASE
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0331' 
+                THEN TRY_CAST(${netAfterFieldExpr} AS DOUBLE)
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0630' 
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0331' 
+                THEN TRY_CAST(${netAfterFieldExpr} AS DOUBLE) - LAG(TRY_CAST(${netAfterFieldExpr} AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '0930' 
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0630' 
+                THEN TRY_CAST(${netAfterFieldExpr} AS DOUBLE) - LAG(TRY_CAST(${netAfterFieldExpr} AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              WHEN RIGHT(CAST(end_date AS VARCHAR), 4) = '1231' 
+                AND LAG(RIGHT(CAST(end_date AS VARCHAR), 4)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR)) = '0930' 
+                THEN TRY_CAST(${netAfterFieldExpr} AS DOUBLE) - LAG(TRY_CAST(${netAfterFieldExpr} AS DOUBLE)) OVER (PARTITION BY ts_code, report_type, comp_type, LEFT(CAST(end_date AS VARCHAR), 4) ORDER BY CAST(end_date AS VARCHAR))
+              ELSE NULL 
+            END AS q_net_after_nr_lp_correct
           FROM income_dedup
         ),
         cashflow_dedup AS (
@@ -169,6 +198,7 @@ async function queryTTMData(
             i.comp_type,
             i.q_total_revenue,
             i.q_n_income,
+            i.q_net_after_nr_lp_correct,
             c.q_c_inf_fr_operate_a
           FROM income_single_quarter i
           LEFT JOIN cashflow_single_quarter c
@@ -184,6 +214,7 @@ async function queryTTMData(
             comp_type,
             q_total_revenue,
             q_n_income,
+            q_net_after_nr_lp_correct,
             q_c_inf_fr_operate_a,
             SUM(q_total_revenue) OVER (
               PARTITION BY ts_code, report_type
@@ -195,6 +226,11 @@ async function queryTTMData(
               ORDER BY end_date
               ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
             ) AS ttm_n_income,
+            SUM(q_net_after_nr_lp_correct) OVER (
+              PARTITION BY ts_code, report_type
+              ORDER BY end_date
+              ROWS BETWEEN 3 PRECEDING AND CURRENT ROW
+            ) AS ttm_net_after_nr_lp_correct,
             SUM(q_c_inf_fr_operate_a) OVER (
               PARTITION BY ts_code, report_type
               ORDER BY end_date
@@ -214,18 +250,20 @@ async function queryTTMData(
           comp_type,
           q_total_revenue,
           q_n_income,
+          q_net_after_nr_lp_correct,
           q_c_inf_fr_operate_a,
           CASE WHEN window_count >= 4 THEN ttm_total_revenue ELSE NULL END AS ttm_total_revenue,
           CASE WHEN window_count >= 4 THEN ttm_n_income ELSE NULL END AS ttm_n_income,
+          CASE WHEN window_count >= 4 THEN ttm_net_after_nr_lp_correct ELSE NULL END AS ttm_net_after_nr_lp_correct,
           CASE WHEN window_count >= 4 THEN ttm_c_inf_fr_operate_a ELSE NULL END AS ttm_c_inf_fr_operate_a
         FROM ttm_calc
-      `;
+        `;
 
-      const countSql = `SELECT COUNT(*) AS cnt FROM (${ttmSql}) AS t`;
-      const dataSql = `SELECT * FROM (${ttmSql}) AS t ${orderByClause} ${limitOffsetClause}`;
+        const countSql = `SELECT COUNT(*) AS cnt FROM (${ttmSql}) AS t`;
+        const dataSql = `SELECT * FROM (${ttmSql}) AS t ${orderByClause} ${limitOffsetClause}`;
 
-      console.log(`[CashflowIncome TTM API] Executing count query`);
-      conn.all(countSql, (countErr: Error | null, countRows: any[]) => {
+        console.log(`[CashflowIncome TTM API] Executing count query`);
+        conn.all(countSql, (countErr: Error | null, countRows: any[]) => {
         if (countErr) {
           conn.close();
           db.close();
@@ -263,9 +301,11 @@ async function queryTTMData(
             comp_type: '公司类型',
             q_total_revenue: '单季营业总收入',
             q_n_income: '单季净利润',
+            q_net_after_nr_lp_correct: '单季扣非后净利润',
             q_c_inf_fr_operate_a: '单季经营现金流入',
             ttm_total_revenue: '滚动总营收',
             ttm_n_income: '滚动净利润',
+            ttm_net_after_nr_lp_correct: '滚动扣非后净利润',
             ttm_c_inf_fr_operate_a: '滚动经营现金流入',
           };
           const chineseHeaders = originalHeaders.map(h => headerMap[h] || h);
@@ -294,6 +334,7 @@ async function queryTTMData(
             totalRows,
           });
         });
+      });
       });
     } catch (error) {
       reject(new Error(`Failed to initialize DuckDB: ${error instanceof Error ? error.message : String(error)}`));

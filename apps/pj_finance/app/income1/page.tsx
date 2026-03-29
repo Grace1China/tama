@@ -16,6 +16,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ComposedChart,
+  Bar,
 } from 'recharts';
 
 interface StockInfo {
@@ -34,6 +36,12 @@ type ValuationPoint = {
   pb?: number | null;
 };
 
+type MainBizRow = {
+  end_date?: string;
+  bz_item?: string;
+  bz_sales?: number | string | null;
+};
+
 function useContainerWidth() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -49,6 +57,7 @@ function useContainerWidth() {
     setWidth(Math.round(el.getBoundingClientRect().width));
     return () => ro.disconnect();
   }, []);
+
   return { width, containerRef, mounted };
 }
 
@@ -141,6 +150,23 @@ function quarterEndDateNum(quarterStart: string): number {
   return Number(`${y}${String(endMonth).padStart(2, '0')}${String(lastDay).padStart(2, '0')}`);
 }
 
+/** 利润表接口返回的 end_date 可能为中文本地化，用于排序 */
+function parseReportDateKey(value: unknown): number {
+  const raw = String(value ?? '').trim();
+  if (!raw) return NaN;
+  const n = normalizeDateToNumber(raw);
+  if (Number.isFinite(n)) return n;
+  const zh = raw.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})/);
+  if (zh) {
+    return Number(`${zh[1]}${String(zh[2]).padStart(2, '0')}${String(zh[3]).padStart(2, '0')}`);
+  }
+  const slash = raw.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (slash) {
+    return Number(`${slash[1]}${String(slash[2]).padStart(2, '0')}${String(slash[3]).padStart(2, '0')}`);
+  }
+  return NaN;
+}
+
 export default function Income1Page() {
   const [selectedTsCode, setSelectedTsCode] = useState<string>('');
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
@@ -152,6 +178,15 @@ export default function Income1Page() {
   const [psStats, setPsStats] = useState<{ mean: number; std: number } | null>(null);
   const [finaMeta, setFinaMeta] = useState<Array<{ name: string; defaultShow: boolean; desc: string }>>([]);
   const [finaMetaError, setFinaMetaError] = useState<string | null>(null);
+  const [mainbzMeta, setMainbzMeta] = useState<Array<{ name: string; defaultShow: boolean; desc: string }>>([]);
+  const [mainbzMetaError, setMainbzMetaError] = useState<string | null>(null);
+  const [mainbzChartData, setMainbzChartData] = useState<Array<Record<string, any>>>([]);
+  const [mainbzSeriesKeys, setMainbzSeriesKeys] = useState<string[]>([]);
+  const [mainbzLoading, setMainbzLoading] = useState(false);
+  const [mainbzError, setMainbzError] = useState<string | null>(null);
+  const [costMarginData, setCostMarginData] = useState<Array<Record<string, any>>>([]);
+  const [costMarginLoading, setCostMarginLoading] = useState(false);
+  const [costMarginError, setCostMarginError] = useState<string | null>(null);
   const isValuationTab = chartTab === 'ps_valuation' || chartTab === 'pe_valuation' || chartTab === 'pb_valuation';
   const valuationCfg =
     chartTab === 'pe_valuation'
@@ -415,6 +450,174 @@ export default function Income1Page() {
     };
   }, []);
 
+  // 拉取主营业务构成元数据
+  useEffect(() => {
+    let cancelled = false;
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch('/api/meta/finaMainbzVip');
+        const json = await res.json();
+        if (cancelled) return;
+        const rows = Array.isArray(json?.rows) ? json.rows : [];
+        setMainbzMeta(rows);
+        setMainbzMetaError(null);
+      } catch (e) {
+        if (!cancelled) {
+          setMainbzMeta([]);
+          setMainbzMetaError(e instanceof Error ? e.message : String(e));
+        }
+      }
+    };
+    fetchMeta();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 拉取主营业务构成图数据（按 end_date + bz_item 聚合）
+  useEffect(() => {
+    if (chartTab !== 'biz_comp') return;
+    if (!selectedTsCode.trim()) {
+      setMainbzChartData([]);
+      setMainbzSeriesKeys([]);
+      setMainbzError(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchMainbz = async () => {
+      setMainbzLoading(true);
+      setMainbzError(null);
+      try {
+        const url = `/api/parq/finaMainbzVip?ts_code=${encodeURIComponent(selectedTsCode.trim())}&page=1&size=1000000&sortField=end_date&sortDir=asc&start_date=20140101`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`mainbiz api failed: ${res.status}`);
+        const json = await res.json();
+        if (cancelled) return;
+        const rows: MainBizRow[] = Array.isArray(json?.data) ? json.data : [];
+
+        const dateItemMap = new Map<string, Map<string, number>>();
+        const latestItemSales = new Map<string, number>();
+        let latestDateNum = -Infinity;
+        let latestDate = '';
+
+        for (const row of rows) {
+          const dateRaw = String(row?.end_date ?? '').trim();
+          const item = String(row?.bz_item ?? '').trim();
+          const salesNum = Number(row?.bz_sales ?? NaN);
+          if (!dateRaw || !item || !Number.isFinite(salesNum)) continue;
+          const dateNum = normalizeDateToNumber(dateRaw);
+          if (!Number.isFinite(dateNum)) continue;
+          if (!dateItemMap.has(dateRaw)) dateItemMap.set(dateRaw, new Map<string, number>());
+          const itemMap = dateItemMap.get(dateRaw)!;
+          itemMap.set(item, (itemMap.get(item) ?? 0) + salesNum);
+
+          if (dateNum > latestDateNum) {
+            latestDateNum = dateNum;
+            latestDate = dateRaw;
+          }
+        }
+
+        const latestMap = latestDate ? dateItemMap.get(latestDate) : undefined;
+        if (latestMap) {
+          for (const [k, v] of latestMap.entries()) latestItemSales.set(k, v);
+        }
+
+        const topItems = [...latestItemSales.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6)
+          .map(([k]) => k);
+
+        const dates = [...dateItemMap.keys()].sort((a, b) => normalizeDateToNumber(a) - normalizeDateToNumber(b));
+        const chartRows = dates.map((d) => {
+          const row: Record<string, any> = { end_date: d };
+          const itemMap = dateItemMap.get(d);
+          for (const item of topItems) {
+            const sales = itemMap?.get(item) ?? null;
+            row[item] = typeof sales === 'number' ? sales / 1e8 : null;
+          }
+          return row;
+        });
+
+        setMainbzSeriesKeys(topItems);
+        setMainbzChartData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setMainbzError(e instanceof Error ? e.message : String(e));
+          setMainbzSeriesKeys([]);
+          setMainbzChartData([]);
+        }
+      } finally {
+        if (!cancelled) setMainbzLoading(false);
+      }
+    };
+    fetchMainbz();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
+  // 成本与毛利率：指标 API — total_revenue_ttm / oper_cost_ttm / grossMargin_ttm（滚动四季度单季之和）
+  useEffect(() => {
+    if (chartTab !== 'cost_margin') return;
+    if (!selectedTsCode.trim()) {
+      setCostMarginData([]);
+      setCostMarginError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setCostMarginLoading(true);
+      setCostMarginError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'total_revenue_ttm,oper_cost_ttm,grossMargin_ttm',
+          from: '2014Q1',
+          to: '2025Q3',
+        });
+        const url = `/api/metrics?${qs.toString()}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(
+            typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`
+          );
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const chartRows = points.map((p) => {
+          const periodKey = String(p?.period ?? '');
+          const tr = Number(p?.total_revenue_ttm);
+          const oc = Number(p?.oper_cost_ttm);
+          const gm = p?.grossMargin_ttm;
+          const rev = Number.isFinite(tr) ? tr : NaN;
+          const operCost = Number.isFinite(oc) ? oc : NaN;
+          const gmNum = gm == null ? NaN : Number(gm);
+          const grossMarginPct =
+            Number.isFinite(gmNum) ? gmNum * 100 : null;
+          return {
+            period: periodKey,
+            total_revenue_yi: Number.isFinite(rev) ? rev / 1e8 : null,
+            oper_cost_yi: Number.isFinite(operCost) ? operCost / 1e8 : null,
+            gross_margin_pct: grossMarginPct,
+          };
+        });
+        setCostMarginData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setCostMarginError(e instanceof Error ? e.message : String(e));
+          setCostMarginData([]);
+        }
+      } finally {
+        if (!cancelled) setCostMarginLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
   return (
     <div className="space-y-6">
       {/* 控制面板 */}
@@ -463,6 +666,8 @@ export default function Income1Page() {
                 <TabsList className="mb-3">
                   <TabsTrigger value="rev_mv">营收和市值</TabsTrigger>
                   <TabsTrigger value="rev_cashflow">营收和现金流</TabsTrigger>
+                  <TabsTrigger value="cost_margin">成本与毛利率</TabsTrigger>
+                  <TabsTrigger value="biz_comp">业务构成</TabsTrigger>
                   <TabsTrigger value="ps_valuation">市销率估值</TabsTrigger>
                   <TabsTrigger value="pe_valuation">滚动市盈率估值</TabsTrigger>
                   <TabsTrigger value="pb_valuation">市净率估值</TabsTrigger>
@@ -504,6 +709,8 @@ export default function Income1Page() {
                         line1Label: '滚动总营收',
                         line2Field: 'ttm_c_inf_fr_operate_a',
                         line2Label: '滚动经营现金流入',
+                        line3Field: 'ttm_n_income',
+                        line3Label: '滚动净利润',
                         apiPath: '/api/parq/cashflowIncome',
                         dateField: 'end_date',
                       }}
@@ -511,6 +718,173 @@ export default function Income1Page() {
                   ) : (
                     <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
                       <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="cost_margin">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : costMarginLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : costMarginError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {costMarginError}</p>
+                    </div>
+                  ) : costMarginData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无利润表数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-slate-700 rounded-lg p-4 pb-8 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">
+                        成本与毛利率分析 - {selectedTsCode}
+                      </h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        横轴：报告期（YYYYQn）；左轴：营业总收入 TTM / 营业成本 TTM（亿元，oper_cost 单季滚动四季度之和）；右轴：毛利率 TTM（%）= (营收 TTM − 营业成本 TTM) ÷ 营收 TTM（/api/metrics）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={costMarginData}
+                          margin={{ top: 8, right: 36, left: 8, bottom: 52 }}
+                          barCategoryGap="18%"
+                          barGap={4}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="period"
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#94a3b8', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '亿元', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toFixed(1)}%`}
+                            label={{ value: '毛利率 TTM', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                            formatter={(value: any, name?: string | number) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              const label = String(name ?? '');
+                              if (!Number.isFinite(n)) return ['—', label];
+                              if (label.includes('毛利率')) return [`${n.toFixed(2)}%`, label];
+                              return [`${n.toFixed(2)} 亿`, label];
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: 12 }}
+                            formatter={(value) => <span className="text-slate-300 text-sm">{value}</span>}
+                          />
+                          <Bar
+                            yAxisId="left"
+                            dataKey="total_revenue_yi"
+                            name="营业总收入 TTM"
+                            fill="#3b82f6"
+                            radius={[2, 2, 0, 0]}
+                            maxBarSize={28}
+                          />
+                          <Bar
+                            yAxisId="left"
+                            dataKey="oper_cost_yi"
+                            name="营业成本 TTM"
+                            fill="#f97316"
+                            radius={[2, 2, 0, 0]}
+                            maxBarSize={28}
+                          />
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="gross_margin_pct"
+                            name="毛利率 TTM"
+                            stroke="#f8fafc"
+                            strokeWidth={2}
+                            dot={{ r: 2, fill: '#f8fafc' }}
+                            activeDot={{ r: 4 }}
+                            connectNulls
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="biz_comp">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : mainbzLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : mainbzError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {mainbzError}</p>
+                    </div>
+                  ) : mainbzChartData.length === 0 || mainbzSeriesKeys.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无主营业务构成数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
+                      <h3 className="text-lg font-semibold mb-3">主营业务构成趋势 - {selectedTsCode}</h3>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={mainbzChartData} margin={{ top: 5, right: 30, left: 20, bottom: 44 }}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis
+                            dataKey="end_date"
+                            tickFormatter={formatDateYYMM}
+                            angle={-90}
+                            textAnchor="end"
+                            height={78}
+                            interval={0}
+                            tickMargin={6}
+                            minTickGap={0}
+                            tick={{ fontSize: 10 }}
+                          />
+                          <YAxis tickFormatter={(v) => Number(v).toFixed(2)} />
+                          <Tooltip
+                            labelFormatter={(l) => `报告期: ${formatDateYYMM(l)}`}
+                            formatter={(value: any, name?: string | number) => {
+                              const num = typeof value === 'number' ? value : Number(value);
+                              if (!Number.isFinite(num)) return ['—', name];
+                              return [num.toFixed(2), `${String(name ?? '')}(亿元)`];
+                            }}
+                          />
+                          <Legend verticalAlign="bottom" height={24} wrapperStyle={{ paddingTop: 8 }} />
+                          {mainbzSeriesKeys.map((k, idx) => (
+                            <Line
+                              key={k}
+                              type="monotone"
+                              dataKey={k}
+                              stroke={['#eab308', '#06b6d4', '#ef4444', '#2563eb', '#10b981', '#a855f7'][idx % 6]}
+                              strokeWidth={2}
+                              dot={{ r: 2 }}
+                              activeDot={{ r: 4 }}
+                              connectNulls={true}
+                              name={k}
+                            />
+                          ))}
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </TabsContent>
@@ -791,24 +1165,14 @@ export default function Income1Page() {
       </div>
 
       {/* 数据表格 */}
-      {chartTab === 'rev_cashflow' ? (
-        <div className="w-full">
-          <DataGrid
-            category="cashflowIncome"
-            title="滚动营收与现金流"
-            useServerPagination={true}
-            apiPath="/api/parq/cashflowIncome"
-            extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
-            defaultHiddenFields={CASHFLOW_TAB_DEFAULT_HIDDEN}
-            yiFields={new Set(['q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a', 'ttm_total_revenue', 'ttm_n_income', 'ttm_c_inf_fr_operate_a'])}
-          />
-        </div>
-      ) : (
+      { (
         <Tabs defaultValue="income1" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="mb-3 flex flex-wrap">
             <TabsTrigger value="income1">利润表</TabsTrigger>
             <TabsTrigger value="daily_indicators">每日指标</TabsTrigger>
             <TabsTrigger value="fina_indicators">财务指标</TabsTrigger>
+            <TabsTrigger value="rev_cashflow">滚动营收与现金流</TabsTrigger>
+            <TabsTrigger value="biz_comp">主营业务构成</TabsTrigger>
           </TabsList>
           <TabsContent value="income1">
             <DataGrid
@@ -875,6 +1239,39 @@ export default function Income1Page() {
                 <p className="text-gray-500">请先输入股票代码</p>
               </div>
             )}
+          </TabsContent>
+          <TabsContent value="rev_cashflow">
+            <DataGrid
+              category="cashflowIncome"
+              title="滚动营收与现金流"
+              useServerPagination={true}
+              apiPath="/api/parq/cashflowIncome"
+              extraQueryParams={selectedTsCode ? { ts_code: selectedTsCode } : {}}
+              defaultHiddenFields={CASHFLOW_TAB_DEFAULT_HIDDEN}
+              yiFields={new Set(['q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a', 'ttm_total_revenue', 'ttm_n_income', 'ttm_c_inf_fr_operate_a'])}
+            />
+          </TabsContent>
+          <TabsContent value="biz_comp">
+          <DataGrid
+                category="finaMainbzVip"
+                tabId="income1_mainbz"
+                title="主营业务构成"
+                useServerPagination={true}
+                apiPath={"/api/parq/finaMainbzVip"}
+                extraQueryParams={{ ts_code: selectedTsCode, start_date: '20140101' }}
+                columnOrder={mainbzMeta.length ? mainbzMeta.map((r) => r.name) : undefined}
+                fieldLabelMap={
+                  mainbzMeta.length
+                    ? Object.fromEntries(mainbzMeta.map((r) => [r.name, r.desc]))
+                    : undefined
+                }
+                defaultHiddenFields={
+                  mainbzMeta.length
+                    ? new Set(mainbzMeta.filter((r) => !r.defaultShow).map((r) => r.name))
+                    : undefined
+                }
+                yiFields={new Set(['bz_sales', 'bz_profit', 'bz_cost'])}
+              />
           </TabsContent>
         </Tabs>
       )}

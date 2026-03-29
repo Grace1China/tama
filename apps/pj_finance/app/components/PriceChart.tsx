@@ -47,6 +47,8 @@ interface DualLineData {
   line1Label: string;
   line2Field: string;
   line2Label: string;
+  line3Field?: string;
+  line3Label?: string;
   apiPath: string;
   dateField: string;
 }
@@ -192,14 +194,17 @@ export default function PriceChart({
           // 构建数据映射
           const line1Map = new Map<string, number>();
           const line2Map = new Map<string, number>();
+          const line3Map = new Map<string, number>();
           rawData.forEach((item: any) => {
             const dateValue = item[dualLineData.dateField];
             const normalizedDate = normalizeDate(dateValue);
             if (normalizedDate) {
               const value1 = Number(item[dualLineData.line1Field]);
               const value2 = Number(item[dualLineData.line2Field]);
+              const value3 = dualLineData.line3Field ? Number(item[dualLineData.line3Field]) : NaN;
               if (!isNaN(value1)) line1Map.set(normalizedDate, value1);
               if (!isNaN(value2)) line2Map.set(normalizedDate, value2);
+              if (dualLineData.line3Field && !isNaN(value3)) line3Map.set(normalizedDate, value3);
             }
           });
           
@@ -221,6 +226,7 @@ export default function PriceChart({
             // 查找该季度内的数据（两条线使用同一日期）
             let line1Value: number | undefined;
             let line2Value: number | undefined;
+            let line3Value: number | undefined;
             let foundDate: string | undefined;
             
             // 先找到该季度内最晚的日期
@@ -237,10 +243,14 @@ export default function PriceChart({
             if (foundDate) {
               line1Value = line1Map.get(foundDate);
               line2Value = line2Map.get(foundDate);
+              line3Value = dualLineData.line3Field ? line3Map.get(foundDate) : undefined;
             }
             
             dataPoint[dualLineData.line1Field] = line1Value ?? null;
             dataPoint[dualLineData.line2Field] = line2Value ?? null;
+            if (dualLineData.line3Field) {
+              dataPoint[dualLineData.line3Field] = line3Value ?? null;
+            }
             
             return dataPoint;
           });
@@ -568,7 +578,7 @@ export default function PriceChart({
     return (
       <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6 bg-white">
         <h3 className="text-lg font-semibold mb-4">
-          数据走势图 - {tsCode} ({dualLineData.line1Label} / {dualLineData.line2Label})
+          数据走势图 - {tsCode} ({dualLineData.line1Label} / {dualLineData.line2Label}{dualLineData.line3Label ? ` / ${dualLineData.line3Label}` : ''})
         </h3>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 28 }}>
@@ -617,6 +627,18 @@ export default function PriceChart({
               activeDot={{ r: 5 }}
               name={dualLineData.line2Label}
             />
+            {dualLineData.line3Field && (
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey={dualLineData.line3Field}
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={{ r: 3, fill: '#ef4444' }}
+                activeDot={{ r: 5 }}
+                name={dualLineData.line3Label || dualLineData.line3Field}
+              />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>

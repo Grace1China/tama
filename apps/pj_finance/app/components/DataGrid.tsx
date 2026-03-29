@@ -6,7 +6,7 @@ import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { GridReadyEvent, IDatasource } from 'ag-grid-community';
-import { Download } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface CSVData {
@@ -47,6 +47,38 @@ function getColVisibilityKey(category: string, tabId?: string): string {
   return `colVisibility_${category}${tabId ? `_${tabId}` : ''}`;
 }
 
+type ColumnPrefs = {
+  hiddenFields: string[];
+  columnOrder?: string[];
+};
+
+function parseColumnPrefs(raw: string | null): ColumnPrefs | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    // backward compatibility: old format is string[] (hidden fields only)
+    if (Array.isArray(parsed)) {
+      return {
+        hiddenFields: parsed.filter((v): v is string => typeof v === 'string'),
+        columnOrder: [],
+      };
+    }
+    if (parsed && typeof parsed === 'object') {
+      const obj = parsed as Record<string, unknown>;
+      const hiddenFields = Array.isArray(obj.hiddenFields)
+        ? obj.hiddenFields.filter((v): v is string => typeof v === 'string')
+        : [];
+      const columnOrder = Array.isArray(obj.columnOrder)
+        ? obj.columnOrder.filter((v): v is string => typeof v === 'string')
+        : [];
+      return { hiddenFields, columnOrder };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function DataGrid({ 
   category, 
   title,
@@ -70,30 +102,27 @@ export default function DataGrid({
   const storageKey = getColVisibilityKey(category, tabId);
   const [hiddenFields, setHiddenFields] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return defaultHiddenFields ?? new Set();
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const arr = JSON.parse(raw) as string[];
-        if (Array.isArray(arr)) return new Set(arr);
-      }
-    } catch { /* ignore */ }
+    const prefs = parseColumnPrefs(window.localStorage.getItem(storageKey));
+    if (prefs) return new Set(prefs.hiddenFields);
     return defaultHiddenFields ?? new Set();
+  });
+  const [customColumnOrder, setCustomColumnOrder] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const prefs = parseColumnPrefs(window.localStorage.getItem(storageKey));
+    return prefs?.columnOrder ?? [];
   });
 
   // 切换页签或 category 时，从该页签的缓存恢复列显示状态
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        const arr = JSON.parse(raw) as string[];
-        if (Array.isArray(arr)) {
-          setHiddenFields(new Set(arr));
-          return;
-        }
-      }
-    } catch { /* ignore */ }
+    const prefs = parseColumnPrefs(window.localStorage.getItem(storageKey));
+    if (prefs) {
+      setHiddenFields(new Set(prefs.hiddenFields));
+      setCustomColumnOrder(prefs.columnOrder ?? []);
+      return;
+    }
     setHiddenFields(defaultHiddenFields ?? new Set());
+    setCustomColumnOrder([]);
   }, [storageKey, defaultHiddenFields]);
   const [colSearchText, setColSearchText] = useState('');
   const colSelectorRef = useRef<HTMLDivElement>(null);
@@ -336,10 +365,14 @@ export default function DataGrid({
   const saveColVisibility = useCallback(() => {
     if (typeof window === 'undefined') return;
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify([...hiddenFields]));
+      const payload: ColumnPrefs = {
+        hiddenFields: [...hiddenFields],
+        columnOrder: customColumnOrder,
+      };
+      window.localStorage.setItem(storageKey, JSON.stringify(payload));
       setColDirty(false);
     } catch { /* ignore quota errors */ }
-  }, [hiddenFields, storageKey]);
+  }, [hiddenFields, customColumnOrder, storageKey]);
 
   useEffect(() => {
     if (!colSelectorOpen) return;
@@ -370,6 +403,25 @@ export default function DataGrid({
     setColDirty(true);
   }, [csvData]);
   const resetToDefault = useCallback(() => { setHiddenFields(defaultHiddenFields ?? new Set()); setColDirty(true); }, [defaultHiddenFields]);
+  const moveField = useCallback((field: string, direction: 'up' | 'down') => {
+    if (!csvData || !csvData.headers || csvData.headers.length === 0) return;
+    const originalHeaders = csvData.originalHeaders || csvData.headers;
+    const present = new Set(originalHeaders);
+    const baseOrder =
+      customColumnOrder.length > 0
+        ? [...customColumnOrder.filter((f) => present.has(f)), ...originalHeaders.filter((f) => !customColumnOrder.includes(f))]
+        : columnOrder && columnOrder.length > 0
+          ? [...columnOrder.filter((f) => present.has(f)), ...originalHeaders.filter((f) => !columnOrder.includes(f))]
+          : [...originalHeaders];
+    const idx = baseOrder.indexOf(field);
+    if (idx === -1) return;
+    if (direction === 'up' && idx === 0) return;
+    if (direction === 'down' && idx === baseOrder.length - 1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    [baseOrder[idx], baseOrder[swapIdx]] = [baseOrder[swapIdx], baseOrder[idx]];
+    setCustomColumnOrder(baseOrder);
+    setColDirty(true);
+  }, [csvData, customColumnOrder, columnOrder]);
 
   // 生成AG Grid的列定义
   const columnDefs = useMemo(() => {
@@ -436,7 +488,12 @@ export default function DataGrid({
     };
 
     let orderedFields: string[];
-    if (columnOrder && columnOrder.length > 0) {
+    if (customColumnOrder.length > 0) {
+      const present = new Set(originalHeaders);
+      const ordered = customColumnOrder.filter((f) => present.has(f));
+      const rest = originalHeaders.filter((f) => !customColumnOrder.includes(f));
+      orderedFields = [...ordered, ...rest];
+    } else if (columnOrder && columnOrder.length > 0) {
       const present = new Set(originalHeaders);
       const ordered = columnOrder.filter((f) => present.has(f));
       const rest = originalHeaders.filter((f) => !columnOrder.includes(f));
@@ -458,7 +515,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter, columnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields]);
+  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({
@@ -702,7 +759,7 @@ export default function DataGrid({
   }, [category, pageSize, csvData, useServerPagination, apiPath]);
 
   return (
-    <div className="container">
+    <div className="container relative">
       {/* <div className="header">
         <h1>{title}</h1>
         <p>查看和分析数据</p>
@@ -737,14 +794,16 @@ export default function DataGrid({
             </div>
           </div> */}
 
-          <div className="mb-4 flex justify-end items-center gap-2">
+          <div className="mb-4 flex items-end gap-2 absolute right-0 flex-col top-10">
             <div className="relative" ref={colSelectorRef}>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setColSelectorOpen((v) => !v)}
+                title="列筛选"
+                aria-label="列筛选"
               >
-                列筛选 ({columnDefs.filter((c: any) => !c.hide).length}/{columnDefs.length})
+                <SlidersHorizontal className="h-4 w-4" />
               </Button>
               {colSelectorOpen && (
                 <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-72 max-h-96 flex flex-col">
@@ -796,6 +855,26 @@ export default function DataGrid({
                             {(fieldLabelMap?.[col.field] || col.headerName.split('\n')[0])}
                             <span className="text-gray-400 ml-1">{col.field}</span>
                           </span>
+                          <span className="ml-auto inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveField(col.field, 'up'); }}
+                              className="text-gray-500 hover:text-gray-800"
+                              title="上移"
+                              aria-label="上移"
+                            >
+                              <ArrowUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveField(col.field, 'down'); }}
+                              className="text-gray-500 hover:text-gray-800"
+                              title="下移"
+                              aria-label="下移"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
                         </label>
                       ))}
                   </div>
@@ -807,9 +886,10 @@ export default function DataGrid({
               disabled={exporting}
               variant="outline"
               size="sm"
+              title={exporting ? '导出中...' : '导出CSV'}
+              aria-label={exporting ? '导出中...' : '导出CSV'}
             >
-              <Download className="h-4 w-4 mr-2" />
-              {exporting ? '导出中...' : '导出CSV'}
+              <Download className="h-4 w-4" />
             </Button>
           </div>
 

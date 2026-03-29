@@ -2,12 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { ParagraphInfo } from '@/types/paragraph';
 
-const BOOK_TO_CSV: Record<string, string> = {
-  ROM: 'romans.csv',
+/**
+ * bible-cuv / bible JSON 使用 USFM 书卷 id（如 MRK、JHN），
+ * biblePara/cuv|niv 下部分 CSV 用惯用英文名（mark、john、songs 等）。
+ * 未列出的书卷：id 小写 + .csv 即与文件名一致。
+ */
+const BOOK_ID_TO_PARA_BASENAME: Record<string, string> = {
+  MRK: 'mark',
+  JHN: 'john',
+  SNG: 'songs',
+  JOL: 'joel',
+  NAM: 'nahum',
 };
 
+function paragraphCsvBasename(bookId: string): string {
+  return BOOK_ID_TO_PARA_BASENAME[bookId] ?? bookId.toLowerCase();
+}
+
 export async function GET(request: NextRequest) {
-  
   const bookId = request.nextUrl.searchParams.get('bookId');
   let version = request.nextUrl.searchParams.get('version');
   if (!bookId) {
@@ -17,13 +29,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const csvFile = `${bookId}.csv`//BOOK_TO_CSV[bookId];
-  if (!csvFile) {
-    return NextResponse.json([]);
-  }
+  const csvFile = `${paragraphCsvBasename(bookId)}.csv`;
 
-  // Ensure version and csvFile are both strings before proceeding
-  if (!version || !csvFile) {
+  if (!version) {
     return NextResponse.json([]);
   }
 
