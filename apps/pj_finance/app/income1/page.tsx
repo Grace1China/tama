@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
-import { Input } from '@/components/ui/input';
+import StockCodeAutocomplete from '../components/StockCodeAutocomplete';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -11,14 +11,17 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ComposedChart,
-  Bar,
 } from 'recharts';
+import { formatDateYYMM } from '@/lib/dateFormat';
 
 interface StockInfo {
   name: string;
@@ -65,31 +68,6 @@ function useContainerWidth() {
 const CASHFLOW_TAB_DEFAULT_HIDDEN = new Set([
   'report_type', 'comp_type', 'q_total_revenue', 'q_n_income', 'q_c_inf_fr_operate_a',
 ]);
-
-function formatDateYYMM(value: unknown): string {
-  const raw = String(value ?? '').trim();
-  if (!raw) return '';
-  // support YYYYMMDD and YYYY-MM-DD
-  if (/^\d{8}$/.test(raw)) {
-    const dd = raw.slice(6, 8);
-    return dd === '01'
-      ? `${raw.slice(2, 4)}-${raw.slice(4, 6)}`
-      : `${raw.slice(2, 4)}-${raw.slice(4, 6)}-${dd}`;
-  }
-  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) {
-    const dd = raw.slice(8, 10);
-    return dd === '01'
-      ? `${raw.slice(2, 4)}-${raw.slice(5, 7)}`
-      : `${raw.slice(2, 4)}-${raw.slice(5, 7)}-${dd}`;
-  }
-  if (/^\d{4}\/\d{1,2}\/\d{1,2}/.test(raw)) {
-    const parts = raw.split(/[\/\s]/).filter(Boolean);
-    const yy = parts[0]?.slice(2, 4) ?? '';
-    const mm = String(parts[1] ?? '').padStart(2, '0');
-    if (yy && mm) return `${yy}-${mm}`;
-  }
-  return raw;
-}
 
 function calcMeanStd(values: number[]): { mean: number; std: number } | null {
   if (!values.length) return null;
@@ -187,6 +165,22 @@ export default function Income1Page() {
   const [costMarginData, setCostMarginData] = useState<Array<Record<string, any>>>([]);
   const [costMarginLoading, setCostMarginLoading] = useState(false);
   const [costMarginError, setCostMarginError] = useState<string | null>(null);
+  const [revCashflowData, setRevCashflowData] = useState<Array<Record<string, any>>>([]);
+  const [revCashflowLoading, setRevCashflowLoading] = useState(false);
+  const [revCashflowError, setRevCashflowError] = useState<string | null>(null);
+  const [feeRevenueData, setFeeRevenueData] = useState<Array<Record<string, any>>>([]);
+  const [feeRevenueLoading, setFeeRevenueLoading] = useState(false);
+  const [feeRevenueError, setFeeRevenueError] = useState<string | null>(null);
+  const [growthSummaryData, setGrowthSummaryData] = useState<Array<{ name: string; value: number | null; fill: string }>>([]);
+  const [growthSummaryLoading, setGrowthSummaryLoading] = useState(false);
+  const [growthSummaryError, setGrowthSummaryError] = useState<string | null>(null);
+  const [growthTrendData, setGrowthTrendData] = useState<Array<Record<string, any>>>([]);
+  const [growthTrendLoading, setGrowthTrendLoading] = useState(false);
+  const [growthTrendError, setGrowthTrendError] = useState<string | null>(null);
+  const [balanceStructureData, setBalanceStructureData] = useState<Array<{ name: string; value: number | null; fill: string }>>([]);
+  const [balanceStructurePeriod, setBalanceStructurePeriod] = useState<string | null>(null);
+  const [balanceStructureLoading, setBalanceStructureLoading] = useState(false);
+  const [balanceStructureError, setBalanceStructureError] = useState<string | null>(null);
   const isValuationTab = chartTab === 'ps_valuation' || chartTab === 'pe_valuation' || chartTab === 'pb_valuation';
   const valuationCfg =
     chartTab === 'pe_valuation'
@@ -556,6 +550,60 @@ export default function Income1Page() {
     };
   }, [chartTab, selectedTsCode]);
 
+  // 营收和现金流：指标 API — 4 条曲线（亿元）
+  useEffect(() => {
+    if (chartTab !== 'rev_cashflow') return;
+    if (!selectedTsCode.trim()) {
+      setRevCashflowData([]);
+      setRevCashflowError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setRevCashflowLoading(true);
+      setRevCashflowError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'total_revenue_ttm,c_inf_fr_operate_a_ttm,n_income_attr_p_ttm,n_cashflow_act_ttm',
+          from: '2014Q1',
+          to: '2025Q4',
+        });
+        const url = `/api/metrics?${qs.toString()}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(
+            typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`
+          );
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const toYi = (p: Record<string, unknown>, key: string) => {
+          const n = Number(p?.[key]);
+          return Number.isFinite(n) ? n / 1e8 : null;
+        };
+        const chartRows = points.map((p) => ({
+          period: String(p?.period ?? ''),
+          total_revenue_yi: toYi(p, 'total_revenue_ttm'),
+          cashflow_in_yi: toYi(p, 'c_inf_fr_operate_a_ttm'),
+          net_profit_yi: toYi(p, 'n_income_attr_p_ttm'),
+          cashflow_net_yi: toYi(p, 'n_cashflow_act_ttm'),
+        }));
+        setRevCashflowData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setRevCashflowError(e instanceof Error ? e.message : String(e));
+          setRevCashflowData([]);
+        }
+      } finally {
+        if (!cancelled) setRevCashflowLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [chartTab, selectedTsCode]);
+
   // 成本与毛利率：指标 API — total_revenue_ttm / oper_cost_ttm / grossMargin_ttm（滚动四季度单季之和）
   useEffect(() => {
     if (chartTab !== 'cost_margin') return;
@@ -618,22 +666,261 @@ export default function Income1Page() {
     };
   }, [chartTab, selectedTsCode]);
 
+  // 三费与总营收：左轴营收 TTM（亿元柱）、右轴销售/管理/研发 TTM（亿元线）；字段见 income_vip sell_exp / admin_exp / rd_exp
+  useEffect(() => {
+    if (chartTab !== 'fee_revenue') return;
+    if (!selectedTsCode.trim()) {
+      setFeeRevenueData([]);
+      setFeeRevenueError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setFeeRevenueLoading(true);
+      setFeeRevenueError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'total_revenue_ttm,sell_exp_ttm,admin_exp_ttm,rd_exp_ttm',
+          from: '2014Q1',
+          to: '2025Q3',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(
+            typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`
+          );
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const chartRows = points.map((p) => {
+          const periodKey = String(p?.period ?? '');
+          const toYi = (k: string) => {
+            const n = Number(p?.[k]);
+            return Number.isFinite(n) ? n / 1e8 : null;
+          };
+          return {
+            period: periodKey,
+            total_revenue_yi: toYi('total_revenue_ttm'),
+            sell_exp_yi: toYi('sell_exp_ttm'),
+            admin_exp_yi: toYi('admin_exp_ttm'),
+            rd_exp_yi: toYi('rd_exp_ttm'),
+          };
+        });
+        setFeeRevenueData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setFeeRevenueError(e instanceof Error ? e.message : String(e));
+          setFeeRevenueData([]);
+        }
+      } finally {
+        if (!cancelled) setFeeRevenueLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
+  // 综合增长率：mv_growth / revenue_growth / profit_growth / net_assets_growth（指标在 metrics/definitions.ts）
+  useEffect(() => {
+    if (chartTab !== 'growth_summary') return;
+    if (!selectedTsCode.trim()) {
+      setGrowthSummaryData([]);
+      setGrowthSummaryError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setGrowthSummaryLoading(true);
+      setGrowthSummaryError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'mv_growth,revenue_growth,profit_growth,net_assets_growth',
+          years: '5',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`);
+        }
+        const results = (json?.results ?? {}) as Record<string, any>;
+        const getVal = (k: string) => {
+          const v = results?.[k]?.value;
+          const n = typeof v === 'number' ? v : Number(v);
+          return Number.isFinite(n) ? n : null;
+        };
+        setGrowthSummaryData([
+          { name: '市值增长', value: getVal('mv_growth'), fill: '#facc15' },
+          { name: '营收增长', value: getVal('revenue_growth'), fill: '#60a5fa' },
+          { name: '利润增长', value: getVal('profit_growth'), fill: '#60a5fa' },
+          { name: '净资产增长', value: getVal('net_assets_growth'), fill: '#60a5fa' },
+        ]);
+      } catch (e) {
+        if (!cancelled) {
+          setGrowthSummaryError(e instanceof Error ? e.message : String(e));
+          setGrowthSummaryData([]);
+        }
+      } finally {
+        if (!cancelled) setGrowthSummaryLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
+  // 综合增长率变化趋势：左轴=市值/营收/净利润/净资产，右轴=对应5年CAGR
+  useEffect(() => {
+    if (chartTab !== 'growth_trend') return;
+    if (!selectedTsCode.trim()) {
+      setGrowthTrendData([]);
+      setGrowthTrendError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setGrowthTrendLoading(true);
+      setGrowthTrendError(null);
+      try {
+        const years = 5;
+        const fromPeriod = '2014Q1';
+        const firstCagrPeriod = `${Number(fromPeriod.slice(0, 4)) + years}Q${fromPeriod.slice(-1)}`;
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics:
+            'total_mv,total_revenue_ttm,n_income_attr_p_ttm,total_hldr_eqy_exc_min_int,mv_growth,revenue_growth,profit_growth,net_assets_growth',
+          years: String(years),
+          from: fromPeriod,
+          to: '2025Q3',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`);
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const chartRows = points.map((p) => {
+          const toYiByKey = (k: string) => {
+            const n = Number(p?.[k]);
+            if (!Number.isFinite(n)) return null;
+            // total_mv 单位万元，其余为元
+            if (k === 'total_mv') return n / 1e4;
+            return n / 1e8;
+          };
+          const growthOrZero = (k: string) => {
+            const n = Number(p?.[k]);
+            return Number.isFinite(n) ? n : 0;
+          };
+          return {
+            period: String(p?.period ?? ''),
+            mv_yi: toYiByKey('total_mv'),
+            revenue_yi: toYiByKey('total_revenue_ttm'),
+            profit_yi: toYiByKey('n_income_attr_p_ttm'),
+            net_assets_yi: toYiByKey('total_hldr_eqy_exc_min_int'),
+            mv_growth_pct: growthOrZero('mv_growth'),
+            revenue_growth_pct: growthOrZero('revenue_growth'),
+            profit_growth_pct: growthOrZero('profit_growth'),
+            net_assets_growth_pct: growthOrZero('net_assets_growth'),
+          };
+        }).filter((row) => row.period >= firstCagrPeriod);
+        setGrowthTrendData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setGrowthTrendError(e instanceof Error ? e.message : String(e));
+          setGrowthTrendData([]);
+        }
+      } finally {
+        if (!cancelled) setGrowthTrendLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
+  // 资产负债结构：取最新一期资产/负债/权益关键项目（亿元）
+  useEffect(() => {
+    if (chartTab !== 'balance_structure') return;
+    if (!selectedTsCode.trim()) {
+      setBalanceStructureData([]);
+      setBalanceStructurePeriod(null);
+      setBalanceStructureError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setBalanceStructureLoading(true);
+      setBalanceStructureError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics:
+            'total_cash,prepayment,accounts_receiv,inventories,oth_cur_assets,lt_eqt_invest,fix_assets,intan_assets,oth_nca,st_borr,accounts_pay,contract_liab,payroll_taxes_payable,oth_cur_liab,lt_borr,oth_ncl',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`);
+        }
+        const results = (json?.results ?? {}) as Record<string, any>;
+        const toYi = (k: string) => {
+          const v = results?.[k]?.value;
+          const n = typeof v === 'number' ? v : Number(v);
+          return Number.isFinite(n) ? n / 1e8 : null;
+        };
+        setBalanceStructurePeriod(typeof json?.period === 'string' ? json.period : null);
+        setBalanceStructureData([
+          { name: '总现金', value: toYi('total_cash'), fill: '#60a5fa' },
+          { name: '应收款', value: toYi('accounts_receiv'), fill: '#60a5fa' },
+          { name: '预付款项', value: toYi('prepayment'), fill: '#60a5fa' },
+          { name: '存货', value: toYi('inventories'), fill: '#60a5fa' },
+          { name: '其他流动资产', value: toYi('oth_cur_assets'), fill: '#60a5fa' },
+          { name: '长期股权投资', value: toYi('lt_eqt_invest'), fill: '#60a5fa' },
+          { name: '固定资产', value: toYi('fix_assets'), fill: '#60a5fa' },
+          { name: '无形资产', value: toYi('intan_assets'), fill: '#60a5fa' },
+          { name: '其他非流动资产', value: toYi('oth_nca'), fill: '#60a5fa' },
+          { name: '短期借款', value: toYi('st_borr'), fill: '#ef4444' },
+          { name: '应付票据及应付账款', value: toYi('accounts_pay'), fill: '#ef4444' },
+          { name: '合同负债', value: toYi('contract_liab'), fill: '#ef4444' },
+          { name: '薪酬和税费', value: toYi('payroll_taxes_payable'), fill: '#ef4444' },
+          { name: '其他流动负债', value: toYi('oth_cur_liab'), fill: '#ef4444' },
+          { name: '长期借款', value: toYi('lt_borr'), fill: '#ef4444' },
+          { name: '其他长期负债', value: toYi('oth_ncl'), fill: '#ef4444' },
+        ]);
+      } catch (e) {
+        if (!cancelled) {
+          setBalanceStructureError(e instanceof Error ? e.message : String(e));
+          setBalanceStructureData([]);
+          setBalanceStructurePeriod(null);
+        }
+      } finally {
+        if (!cancelled) setBalanceStructureLoading(false);
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [chartTab, selectedTsCode]);
+
   return (
     <div className="space-y-6">
       {/* 控制面板 */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-white rounded-lg border border-gray-200">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative">
           <label htmlFor="tsCode" className="text-sm font-medium text-gray-700">
             股票代码:
           </label>
-          <Input
-            id="tsCode"
-            type="text"
-            placeholder="例如: 000001.SZ"
-            value={selectedTsCode}
-            onChange={(e) => setSelectedTsCode(e.target.value)}
-            className="w-40"
-          />
+          <StockCodeAutocomplete onSelectTsCode={setSelectedTsCode} />
         </div>
 
         {stockInfo && (
@@ -667,6 +954,10 @@ export default function Income1Page() {
                   <TabsTrigger value="rev_mv">营收和市值</TabsTrigger>
                   <TabsTrigger value="rev_cashflow">营收和现金流</TabsTrigger>
                   <TabsTrigger value="cost_margin">成本与毛利率</TabsTrigger>
+                  <TabsTrigger value="fee_revenue">三费与营收</TabsTrigger>
+                  <TabsTrigger value="growth_summary">综合增长率</TabsTrigger>
+                  <TabsTrigger value="growth_trend">综合增长率趋势</TabsTrigger>
+                  <TabsTrigger value="balance_structure">资产负债结构</TabsTrigger>
                   <TabsTrigger value="biz_comp">业务构成</TabsTrigger>
                   <TabsTrigger value="ps_valuation">市销率估值</TabsTrigger>
                   <TabsTrigger value="pe_valuation">滚动市盈率估值</TabsTrigger>
@@ -676,6 +967,7 @@ export default function Income1Page() {
                   {selectedTsCode ? (
                     <PriceChart
                       tsCode={selectedTsCode}
+                      xAxisDateFormat="quarter"
                       leftData1={{
                         barField: 'ttm_total_revenue',
                         barFieldLabel: 'TTM滚动总营收',
@@ -701,23 +993,81 @@ export default function Income1Page() {
                   )}
                 </TabsContent>
                 <TabsContent value="rev_cashflow">
-                  {selectedTsCode ? (
-                    <PriceChart
-                      tsCode={selectedTsCode}
-                      dualLineData={{
-                        line1Field: 'ttm_total_revenue',
-                        line1Label: '滚动总营收',
-                        line2Field: 'ttm_c_inf_fr_operate_a',
-                        line2Label: '滚动经营现金流入',
-                        line3Field: 'ttm_n_income',
-                        line3Label: '滚动净利润',
-                        apiPath: '/api/parq/cashflowIncome',
-                        dateField: 'end_date',
-                      }}
-                    />
-                  ) : (
+                  {!selectedTsCode ? (
                     <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
                       <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : revCashflowLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : revCashflowError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {revCashflowError}</p>
+                    </div>
+                  ) : revCashflowData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-slate-700 rounded-lg p-4 pb-8 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">
+                        营收和现金流分析 - {selectedTsCode}
+                      </h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        横轴：报告期（YYQn）；纵轴：亿元（/api/metrics TTM）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={revCashflowData}
+                          margin={{ top: 8, right: 36, left: 8, bottom: 52 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="period"
+                            tickFormatter={formatDateYYMM}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#94a3b8', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '营收/现金流入(亿)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '利润/现金流净额(亿)', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                            formatter={(value: any, name?: string | number) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              if (!Number.isFinite(n)) return ['—', String(name ?? '')];
+                              return [`${n.toFixed(2)} 亿`, String(name ?? '')];
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: 12 }}
+                            formatter={(value) => <span className="text-slate-300 text-sm">{value}</span>}
+                          />
+                          <Line yAxisId="left" type="monotone" dataKey="total_revenue_yi" name="滚动总营收 TTM" stroke="#1e40af" strokeWidth={2} dot={{ r: 2, fill: '#1e40af' }} connectNulls />
+                          <Line yAxisId="left" type="monotone" dataKey="cashflow_in_yi" name="经营现金流入 TTM" stroke="#60a5fa" strokeWidth={2} dot={{ r: 2, fill: '#60a5fa' }} connectNulls />
+                          <Line yAxisId="right" type="monotone" dataKey="net_profit_yi" name="归母净利润 TTM" stroke="#9a3412" strokeWidth={2} dot={{ r: 2, fill: '#9a3412' }} connectNulls />
+                          <Line yAxisId="right" type="monotone" dataKey="cashflow_net_yi" name="经营现金流净额 TTM" stroke="#fb923c" strokeWidth={2} dot={{ r: 2, fill: '#fb923c' }} connectNulls />
+                        </ComposedChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </TabsContent>
@@ -744,7 +1094,7 @@ export default function Income1Page() {
                         成本与毛利率分析 - {selectedTsCode}
                       </h3>
                       <p className="text-xs text-slate-400 mb-3">
-                        横轴：报告期（YYYYQn）；左轴：营业总收入 TTM / 营业成本 TTM（亿元，oper_cost 单季滚动四季度之和）；右轴：毛利率 TTM（%）= (营收 TTM − 营业成本 TTM) ÷ 营收 TTM（/api/metrics）
+                        横轴：报告期（YYQn）；左轴：营业总收入 TTM / 营业成本 TTM（亿元，oper_cost 单季滚动四季度之和）；右轴：毛利率 TTM（%）= (营收 TTM − 营业成本 TTM) ÷ 营收 TTM（/api/metrics）
                       </p>
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart
@@ -756,6 +1106,7 @@ export default function Income1Page() {
                           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                           <XAxis
                             dataKey="period"
+                            tickFormatter={formatDateYYMM}
                             tick={{ fill: '#94a3b8', fontSize: 10 }}
                             angle={-45}
                             textAnchor="end"
@@ -773,7 +1124,7 @@ export default function Income1Page() {
                           <YAxis
                             yAxisId="right"
                             orientation="right"
-                            domain={['auto', 'auto']}
+                            domain={[0, 'auto']}
                             tick={{ fill: '#cbd5e1', fontSize: 11 }}
                             tickFormatter={(v) => `${Number(v).toFixed(1)}%`}
                             label={{ value: '毛利率 TTM', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
@@ -822,6 +1173,319 @@ export default function Income1Page() {
                             connectNulls
                           />
                         </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="fee_revenue">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : feeRevenueLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : feeRevenueError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {feeRevenueError}</p>
+                    </div>
+                  ) : feeRevenueData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无利润表数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-slate-700 rounded-lg p-4 pb-8 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">三费与总营收 — {selectedTsCode}</h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        横轴：报告期（YYQn）；左轴：营业总收入 TTM（亿元）；右轴：销售费用 / 管理费用 / 研发费用 TTM（亿元），均为单季递推后滚动四季度之和；字段对应 income_vip 的 total_revenue、sell_exp、admin_exp、rd_exp（/api/metrics）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={feeRevenueData}
+                          margin={{ top: 8, right: 44, left: 8, bottom: 52 }}
+                          barCategoryGap="18%"
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="period"
+                            tickFormatter={formatDateYYMM}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            domain={[0, 'auto']}
+                            tick={{ fill: '#94a3b8', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '总营收 TTM（亿元）', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            domain={[0, 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '三费 TTM（亿元）', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                            formatter={(value: any, name?: string | number, props?: any) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              const label = String(name ?? '');
+                              if (!Number.isFinite(n)) return ['—', label];
+                              const color =
+                                typeof props?.color === 'string'
+                                  ? props.color
+                                  : typeof props?.payload?.fill === 'string'
+                                    ? props.payload.fill
+                                    : '#e2e8f0';
+                              return [<span style={{ color }}>{`${n.toFixed(2)} 亿`}</span>, label];
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: 12 }}
+                            formatter={(value) => <span className="text-slate-300 text-sm">{value}</span>}
+                          />
+                          <Bar
+                            yAxisId="left"
+                            dataKey="total_revenue_yi"
+                            name="营业总收入 TTM"
+                            fill="#38bdf8"
+                            radius={[2, 2, 0, 0]}
+                            maxBarSize={32}
+                          />
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="sell_exp_yi"
+                            name="销售费用 TTM"
+                            stroke="#ef4444"
+                            strokeWidth={2}
+                            dot={{ r: 2, fill: '#ef4444' }}
+                            connectNulls
+                          />
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="admin_exp_yi"
+                            name="管理费用 TTM"
+                            stroke="#e2e8f0"
+                            strokeWidth={2}
+                            dot={{ r: 2, fill: '#e2e8f0' }}
+                            connectNulls
+                          />
+                          <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="rd_exp_yi"
+                            name="研发费用 TTM"
+                            stroke="#eab308"
+                            strokeWidth={2}
+                            dot={{ r: 2, fill: '#eab308' }}
+                            connectNulls
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="growth_summary">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : growthSummaryLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : growthSummaryError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {growthSummaryError}</p>
+                    </div>
+                  ) : growthSummaryData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[24rem] border border-slate-700 rounded-lg p-4 pb-6 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">近五年综合增长率 - {selectedTsCode}</h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        指标：市值增长 / 营收增长 / 利润增长 / 净资产增长（CAGR，%）；口径：最近一个财报季 TTM vs 往前 5 年同季度 TTM（/api/metrics）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={growthSummaryData} margin={{ top: 8, right: 16, left: 16, bottom: 24 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis dataKey="name" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
+                          <YAxis
+                            domain={[0, 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toFixed(1)}%`}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#cbd5e1' }}
+                            itemStyle={{ color: '#cbd5e1' }}
+                            formatter={(value: any) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              if (!Number.isFinite(n)) return ['—', ''];
+                              return [`${n.toFixed(2)}%`, ''];
+                            }}
+                          />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                            {growthSummaryData.map((entry, idx) => (
+                              <Cell key={`cell-${idx}`} fill={entry.fill} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="growth_trend">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : growthTrendLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : growthTrendError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {growthTrendError}</p>
+                    </div>
+                  ) : growthTrendData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-slate-700 rounded-lg p-4 pb-8 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">综合增长率变化趋势 - {selectedTsCode}</h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        左轴：市值/总营收/净利润/净资产（亿元）；右轴：对应5年CAGR（%）；序列前段无5年基数时按0处理（/api/metrics）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={growthTrendData} margin={{ top: 8, right: 44, left: 8, bottom: 52 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="period"
+                            tickFormatter={formatDateYYMM}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            domain={[0, 'auto']}
+                            tick={{ fill: '#94a3b8', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '规模指标（亿元）', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            domain={[0, 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toFixed(1)}%`}
+                            label={{ value: '5年CAGR（%）', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                            formatter={(value: any, name?: string | number) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              const label = String(name ?? '');
+                              if (!Number.isFinite(n)) return ['—', label];
+                              if (label.includes('CAGR')) return [`${n.toFixed(2)}%`, label];
+                              return [`${n.toFixed(2)} 亿`, label];
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: 12 }}
+                            formatter={(value) => <span className="text-slate-300 text-sm">{value}</span>}
+                          />
+
+                          <Bar yAxisId="left" dataKey="mv_yi" name="总市值(亿元)" fill="#94a3b8" maxBarSize={16} />
+                          <Bar yAxisId="left" dataKey="revenue_yi" name="营收TTM(亿元)" fill="#3b82f6" maxBarSize={16} />
+                          <Bar yAxisId="left" dataKey="profit_yi" name="归母净利润TTM(亿元)" fill="#ef4444" maxBarSize={16} />
+                          <Bar yAxisId="left" dataKey="net_assets_yi" name="归母所有者权益(亿元)" fill="#22c55e" maxBarSize={16} />
+
+                          <Line yAxisId="right" type="monotone" dataKey="mv_growth_pct" name="市值5年CAGR" stroke="#cbd5e1" strokeWidth={2} dot={false} connectNulls />
+                          <Line yAxisId="right" type="monotone" dataKey="revenue_growth_pct" name="营收5年CAGR" stroke="#60a5fa" strokeWidth={2} dot={false} connectNulls />
+                          <Line yAxisId="right" type="monotone" dataKey="profit_growth_pct" name="利润5年CAGR" stroke="#fb7185" strokeWidth={2.5} dot={false} connectNulls />
+                          <Line yAxisId="right" type="monotone" dataKey="net_assets_growth_pct" name="净资产5年CAGR" stroke="#34d399" strokeWidth={2} dot={false} connectNulls />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="balance_structure">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : balanceStructureLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : balanceStructureError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {balanceStructureError}</p>
+                    </div>
+                  ) : balanceStructureData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无资产负债结构数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[30rem] border border-slate-700 rounded-lg p-4 pb-10 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">资产负债结构 - {selectedTsCode}</h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        报告期：{balanceStructurePeriod ?? '—'}；单位：亿元；蓝色=资产项目，红色=负债项目，黄色=权益项目（/api/metrics）
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={balanceStructureData} margin={{ top: 8, right: 16, left: 8, bottom: 76 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="name"
+                            tick={{ fill: '#cbd5e1', fontSize: 10 }}
+                            angle={-35}
+                            textAnchor="end"
+                            interval={0}
+                            height={84}
+                          />
+                          <YAxis
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '亿元', angle: -90, position: 'insideLeft', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#cbd5e1' }}
+                            itemStyle={{ color: '#cbd5e1' }}
+                            formatter={(value: any, name?: string | number) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              const label = String(name ?? '');
+                              if (!Number.isFinite(n)) return ['—', label];
+                              return [`${n.toFixed(2)} 亿`, label];
+                            }}
+                          />
+                          <Bar dataKey="value" name="规模" radius={[3, 3, 0, 0]} maxBarSize={30}>
+                            {balanceStructureData.map((entry, idx) => (
+                              <Cell key={`balance-cell-${idx}`} fill={entry.fill} />
+                            ))}
+                          </Bar>
+                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   )}

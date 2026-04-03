@@ -282,8 +282,8 @@ async function queryParquetFile(
         CAST(f_ann_date AS VARCHAR) AS f_ann_date
       ) ${calcFromClause} ${orderByClause} ${limitOffsetClause}`;
       
-      console.log(`[Parquet API] 执行count查询: ${countSql}`);
-      console.log(`[Parquet API] 执行分页查询(page=${safePage}, size=${safeSize}): ${dataSql}`);
+      // console.log(`[Parquet API] 执行count查询: ${countSql}`);
+      // console.log(`[Parquet API] 执行分页查询(page=${safePage}, size=${safeSize}): ${dataSql}`);
 
       // 先查总数
       conn.all(countSql, (countErr: Error | null, countRows: any[]) => {

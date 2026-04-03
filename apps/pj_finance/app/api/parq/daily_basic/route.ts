@@ -138,7 +138,7 @@ async function queryParquetFile(
         }
 
         const totalRows = Number(countRows?.[0]?.cnt ?? 0);
-        console.log(`[Parquet API] 查询: dataSql`,dataSql);
+        // console.log(`[Parquet API] 查询: dataSql`,dataSql);
         conn.all(dataSql, (err: Error | null, rows: any[]) => {
           if (err) {
             conn.close();
@@ -198,7 +198,7 @@ export async function GET(request: NextRequest) {
     q.delete('size');
     q.delete('file');
     const queryString = q.toString() ? `?${q.toString()}` : '';
-    console.log(`[Parquet API] 执行查询: parquetPath, queryString, pageCfg`,parquetPath, queryString, pageCfg);
+    // console.log(`[Parquet API] 执行查询: parquetPath, queryString, pageCfg`,parquetPath, queryString, pageCfg);
     const queryData = await queryParquetFile(parquetPath, queryString, pageCfg);
     const response = {
       category: 'daily_basic',

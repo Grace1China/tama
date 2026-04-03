@@ -4,6 +4,8 @@ export interface FinancialData {
   income: Record<string, Record<string, MetricValue>>;
   balance: Record<string, Record<string, MetricValue>>;
   cashflow: Record<string, Record<string, MetricValue>>;
+  /** 额外：非财报但按季度归档的数据（如市值） */
+  market?: Record<string, Record<string, MetricValue>>;
 }
 
 export interface MetricContext {
@@ -11,11 +13,20 @@ export interface MetricContext {
   period: string;
   data: FinancialData;
   engine: MetricEngine;
+  /** 可选：由 API 传入的计算参数，如 years */
+  params?: Record<string, unknown>;
 }
 
 export interface MetricDefinition {
   deps?: string[];
-  compute: (args: Record<string, MetricValue> & MetricContext) => MetricValue;
+  /**
+   * args 同时包含：
+   * - MetricContext（stockCode/period/data/engine/params）
+   * - deps 的计算结果（以 dep 名称为 key）
+   *
+   * 这里用 Record<string, unknown> 避免 index signature 与 engine/data 等字段冲突。
+   */
+  compute: (args: MetricContext & Record<string, unknown>) => MetricValue;
   meta?: {
     label: string;
     unit?: '%' | 'CNY' | 'times';
@@ -63,7 +74,8 @@ export function createMetricEngine(metrics: MetricRegistry): MetricEngine {
   const memo = new Map<string, MetricValue>();
 
   const calculateInternal = (metricName: string, ctx: Omit<MetricContext, 'engine'>): MetricValue => {
-    const key = `${ctx.stockCode}:${ctx.period}:${metricName}`;
+    const paramsKey = ctx.params ? JSON.stringify(ctx.params) : '';
+    const key = `${ctx.stockCode}:${ctx.period}:${metricName}:${paramsKey}`;
     if (memo.has(key)) {
       return memo.get(key) ?? null;
     }

@@ -57,6 +57,7 @@ interface PriceChartProps {
   tsCode?: string;
   apiPath?: string;
   dateField?: string; // 日期字段名，默认为 'end_date'
+  xAxisDateFormat?: 'month' | 'quarter';
   // 柱状图数据配置（左侧Y轴）
   leftData1?: LeftData1;
   // 向后兼容：保留旧的单独参数
@@ -84,6 +85,7 @@ export default function PriceChart({
   tsCode, 
   apiPath = '/api/parq/daily_pro_bar',
   dateField = 'end_date',
+  xAxisDateFormat = 'month',
   leftData1,
   barField,
   barFieldLabel,
@@ -320,15 +322,16 @@ export default function PriceChart({
           return;
         }
         
-        // 收集所有日期并找到最小最大值
-        const allDates: number[] = [];
+        // 分别收集柱/线日期：有柱时用柱数据决定时间上限，避免出现“仅折线无柱”的未来季度
+        const barDates: number[] = [];
+        const lineDates: number[] = [];
         
         if (barData) {
           barData.data.forEach((item: any) => {
             const dateValue = item[barData.dateField];
             const normalizedDate = normalizeDate(dateValue);
             if (normalizedDate) {
-              allDates.push(parseInt(normalizedDate));
+              barDates.push(parseInt(normalizedDate));
             }
           });
         }
@@ -338,19 +341,23 @@ export default function PriceChart({
             const dateValue = item[lineData.dateField];
             const normalizedDate = normalizeDate(dateValue);
             if (normalizedDate) {
-              allDates.push(parseInt(normalizedDate));
+              lineDates.push(parseInt(normalizedDate));
             }
           });
         }
-        
-        if (allDates.length === 0) {
+
+        if (barDates.length === 0 && lineDates.length === 0) {
           setData([]);
           return;
         }
-        
-        // 找到日期范围
-        const minDate = Math.min(...allDates);
-        const maxDate = Math.max(...allDates);
+
+        // 起始取两侧最早值；结束优先取柱状图最晚值（若无柱则退化为折线最晚值）
+        const allMinCandidates = [...barDates, ...lineDates];
+        const minDate = Math.min(...allMinCandidates);
+        const maxDate =
+          barDates.length > 0
+            ? Math.max(...barDates)
+            : Math.max(...lineDates);
         
         // 生成季度初日期列表（每年固定 4 个季度：0101/0401/0701/1001）
         const quarterDates: string[] = [];
@@ -505,6 +512,13 @@ export default function PriceChart({
       }
     }
     if (year && month) {
+      if (xAxisDateFormat === 'quarter') {
+        const mm = Number(month);
+        if (Number.isFinite(mm) && mm >= 1 && mm <= 12) {
+          const q = Math.floor((mm - 1) / 3) + 1;
+          return `${year}Q${q}`;
+        }
+      }
       return `${year}-${month}`;
     }
     return dateStr;

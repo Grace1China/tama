@@ -31,6 +31,7 @@ const categories = [
   { id: 'fiIndicator', name: '财务指标', path: '/fiIndicator', icon: Calculator },
   { id: 'indicator', name: '交易指标', path: '/indicator', icon: TrendingUp },
   { id: 'income1', name: '利润表', path: '/income1', icon: FileText },
+  { id: 'incomeContrast', name: '利润对比', path: '/incomeContrast', icon: BarChart3 },
   { id: 'balanceSheet', name: '资产负债表', path: '/balanceSheet', icon: FileSpreadsheet },
   { id: 'cashflowStatement', name: '现金流量表', path: '/cashflowStatement', icon: FileText },
   { id: 'ths_index', name: '同花顺指数', path: '/ths_index', icon: BarChart3 },

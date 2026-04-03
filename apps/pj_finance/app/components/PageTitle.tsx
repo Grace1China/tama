@@ -8,6 +8,8 @@ const pageTitles: Record<string, string> = {
   '/stockList': '股票列表',
   '/fiIndicator': '财务指标',
   '/indicator': '交易指标',
+  '/income1': '利润表',
+  '/incomeContrast': '利润对比',
   '/profit': '利润表',
   '/ths_index': '同花顺指数',
 };

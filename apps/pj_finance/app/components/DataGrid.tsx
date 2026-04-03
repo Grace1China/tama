@@ -41,6 +41,18 @@ interface DataGridProps {
   valueMappings?: Record<string, Record<string, string>>;
   /** 需要用「亿」为单位格式化的字段集合 */
   yiFields?: Set<string>;
+  /** 直接传入本地数据时，DataGrid 不再发起接口请求 */
+  localData?: CSVData | null;
+  /** 自定义单元格渲染器：field -> renderer(params) */
+  customCellRenderers?: Record<string, (params: any) => any>;
+  /** Grid 容器高度 */
+  gridHeight?: string;
+  /** 行高（用于图表单元格等） */
+  rowHeight?: number;
+  /** 全部列固定宽度（像素） */
+  uniformColumnWidth?: number;
+  /** 固定在左侧的列（英文字段名） */
+  pinnedLeftFields?: string[];
 }
 
 function getColVisibilityKey(category: string, tabId?: string): string {
@@ -92,8 +104,14 @@ export default function DataGrid({
   tabId,
   valueMappings,
   yiFields,
+  localData,
+  customCellRenderers,
+  gridHeight = '70vh',
+  rowHeight,
+  uniformColumnWidth,
+  pinnedLeftFields,
 }: DataGridProps) {
-  const [csvData, setCsvData] = useState<CSVData | null>(null);
+  const [csvData, setCsvData] = useState<CSVData | null>(localData ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState(50);
@@ -158,6 +176,12 @@ export default function DataGrid({
   }, [extraQueryParams]);
 
   const fetchInitialData = useCallback(async () => {
+    if (localData) {
+      setCsvData(localData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -244,13 +268,19 @@ export default function DataGrid({
     } finally {
       setLoading(false);
     }
-  }, [useServerPagination, apiPath, category]);
+  }, [useServerPagination, apiPath, category, localData]);
 
   // 数据加载
   useEffect(() => {
+    if (localData) {
+      setCsvData(localData);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setCsvData(null);
     fetchInitialData();
-  }, [category, extraQueryParamsStr, fetchInitialData]);
+  }, [category, extraQueryParamsStr, fetchInitialData, localData]);
 
   // 数字格式化函数：千分位 + 保留两位小数
   const formatNumber = (value: any, field: string): string => {
@@ -437,13 +467,23 @@ export default function DataGrid({
       const chineseLabel = fieldLabelMap?.[field] ?? fieldToChineseFromApi.get(field) ?? field;
       const headerText = chineseLabel !== field ? `${chineseLabel}\n${field}` : field;
       const calculatedWidth = calculateColumnWidth(chineseLabel.length > field.length ? chineseLabel : field);
+      const finalWidth = typeof uniformColumnWidth === 'number' && uniformColumnWidth > 0
+        ? uniformColumnWidth
+        : calculatedWidth;
       const isNumeric = isNumericColumn(field, csvData.data);
       const isDate = isDateColumn(field);
       const mapping = valueMappings?.[field];
       const useYi = yiFields?.has(field);
+      const customRenderer = customCellRenderers?.[field];
 
       let formatterProps: Record<string, any> = {};
-      if (mapping) {
+      if (customRenderer) {
+        formatterProps = {
+          cellRenderer: customRenderer,
+          autoHeight: true,
+          wrapText: true,
+        };
+      } else if (mapping) {
         formatterProps = {
           valueFormatter: (params: any) => {
             const raw = params.value;
@@ -479,10 +519,11 @@ export default function DataGrid({
         sortable: true,
         filter: true,
         resizable: true,
-        minWidth: calculatedWidth,
-        width: calculatedWidth,
+        minWidth: finalWidth,
+        width: finalWidth,
         headerClass: 'ag-header-cell-wrap',
         hide: hiddenFields.has(field),
+        pinned: pinnedLeftFields?.includes(field) ? ('left' as const) : undefined,
         ...formatterProps,
       };
     };
@@ -515,7 +556,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields]);
+  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, pinnedLeftFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({
@@ -894,7 +935,7 @@ export default function DataGrid({
           </div>
 
           <div className="table-container">
-            <div className="ag-theme-alpine" style={{ height: '70vh', width: '100%' }}>
+            <div className="ag-theme-alpine" style={{ height: gridHeight, width: '100%' }}>
               <AgGridReact
                 key={`${category}-${pageSize}`}
                 ref={gridRef}
@@ -916,6 +957,7 @@ export default function DataGrid({
                 rowSelection="multiple"
                 suppressRowClickSelection={true}
                 onGridReady={onGridReady}
+                rowHeight={rowHeight}
               />
             </div>
           </div>
