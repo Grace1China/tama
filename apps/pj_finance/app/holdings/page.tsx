@@ -203,7 +203,7 @@ async function buildHoldingCharts(tsCode: string): Promise<Record<MetricKey, Met
         const profit = parseNum(r?.n_income_attr_p_ttm);
         const mv = parseNum(r?.total_mv);
         return { x: q, rev: rev == null ? NaN : rev / 1e8, profit: profit == null ? NaN : profit / 1e8, mv: mv == null ? NaN : mv / 1e4 };
-      }).filter((p): p is P => p != null);
+      }).filter((p: P | null): p is P => p != null);
       charts.rev_mv = {
         x: allPts.map((p) => p.x), series: [allPts.map((p) => p.rev), allPts.map((p) => p.profit), allPts.map((p) => p.mv)],
         labels: ['TTM营收(亿)', 'TTM归母净利润(亿)', '总市值(亿)'],
@@ -739,14 +739,14 @@ export default function HoldingsDashboard() {
     { key: 'pnl_info', label: '持仓盈亏' },
   ];
   const allColumns = ['stock_basic', ...HOLDING_COLS.map((c) => c.key), ...METRIC_COLUMNS.map((c) => c.key)];
-  const fieldLabelMap = Object.fromEntries([
+  const fieldLabelMap: Record<string, string> = Object.fromEntries([
     ['stock_basic', '股票信息'],
     ...HOLDING_COLS.map((c) => [c.key, c.label]),
     ...METRIC_COLUMNS.map((c) => [c.key, c.label]),
-  ]);
+  ] as Array<[string, string]>);
 
   const gridData = useMemo<CSVData>(() => {
-    const headers = Object.values(fieldLabelMap);
+    const headers: string[] = Object.values(fieldLabelMap);
     const data = rows.map((row) => {
       const metricData = Object.fromEntries(METRIC_COLUMNS.map((c) => [c.key, row.charts[c.key]]));
       return { stock_basic: row, pool: row, weight_pct: row, pnl_info: row, ...metricData };
