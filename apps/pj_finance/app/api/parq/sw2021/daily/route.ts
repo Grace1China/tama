@@ -28,14 +28,15 @@ function queryRows<T = Record<string, unknown>>(sql: string): Promise<T[]> {
   return new Promise((resolve, reject) => {
     const db = new duckdb.Database(':memory:');
     const conn = db.connect();
-    conn.all(sql, (err: Error | null, rows: T[] | undefined) => {
+    // duckdb 的 TS 类型里 conn.all 回调参数是 TableData（非泛型数组），这里用 unknown 承接后再转成 T[]
+    conn.all(sql, (err: Error | null, rows: unknown) => {
       conn.close();
       db.close();
       if (err) {
         reject(err);
         return;
       }
-      resolve(rows ?? []);
+      resolve((Array.isArray(rows) ? (rows as T[]) : []) ?? []);
     });
   });
 }
