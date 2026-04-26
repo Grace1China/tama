@@ -78,7 +78,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
     return () => {
       cancelled = true;
     };
-  }, [book.id]);
+  }, [book.id, version]);
 
   useEffect(() => () => cancelClose(), []);
 

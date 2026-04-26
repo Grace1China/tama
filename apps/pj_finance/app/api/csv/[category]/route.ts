@@ -683,7 +683,14 @@ async function indicator_handler(category: string, supportsGzip: boolean, reques
 }
 
 async function ths_index_handler(category: string, supportsGzip: boolean) {
-  return await wrapResponse(path.join(process.cwd(), `temp/tuShare/${category}/ths_index.csv`), category, supportsGzip);
+  return NextResponse.json(
+    {
+      error: 'This endpoint is deprecated',
+      message: 'Please use /api/parq/ths_index instead.',
+      category,
+    },
+    { status: 410 }
+  );
 }
 
 /** 股票列表按 ts_code 查询单条：返回 { name, area, industry, ... } */

@@ -5,6 +5,7 @@ import path from 'path';
 import * as duckdb from 'duckdb';
 import { createMetricEngine, type FinancialData, type MetricValue } from '@/lib/metrics/engine';
 import { metrics } from '@/lib/metrics/definitions';
+import { buildIndustryMetrics } from '@/lib/metrics/industryAggregate';
 import { isValidPeriod, parsePeriod } from '@/lib/metrics/period';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,14 @@ function normalizeEndDateToPeriod(endDate: unknown): string | null {
   };
   const q = map[mmdd];
   return q ? `${year}${q}` : null;
+}
+
+function normalizeDividendEndDateToPeriod(endDate: unknown): string | null {
+  if (endDate == null) return null;
+  const text = String(endDate).replace(/\D/g, '');
+  // dividend.end_date 有时只给年份（如 2023），默认归到年末 Q4
+  if (/^\d{4}$/.test(text)) return `${text}Q4`;
+  return normalizeEndDateToPeriod(endDate);
 }
 
 function endDateSortKey(endDate: unknown): number {
@@ -93,6 +102,7 @@ function latestPeriod(data: FinancialData): string | null {
     ...Object.keys(data.income),
     ...Object.keys(data.balance),
     ...Object.keys(data.cashflow),
+    ...Object.keys(data.dividend ?? {}),
   ]);
   return Array.from(periods).sort().at(-1) ?? null;
 }
@@ -102,6 +112,7 @@ function allPeriods(data: FinancialData): string[] {
     ...Object.keys(data.income),
     ...Object.keys(data.balance),
     ...Object.keys(data.cashflow),
+    ...Object.keys(data.dividend ?? {}),
     ...Object.keys(data.market ?? {}),
   ]);
   return Array.from(periods).sort();
@@ -160,12 +171,14 @@ function normalizeFinancialData(
   incomeRows: RawRow[],
   balanceRows: RawRow[],
   cashflowRows: RawRow[],
-  dailyBasicRows: RawRow[]
+  dailyBasicRows: RawRow[],
+  dividendRows: RawRow[]
 ): FinancialData {
   const data: FinancialData = {
     income: {},
     balance: {},
     cashflow: {},
+    dividend: {},
     market: {},
   };
 
@@ -273,6 +286,10 @@ function normalizeFinancialData(
       total_hldr_eqy_exc_min_int: pickNumber(row, ['total_hldr_eqy_exc_min_int']),
       // balancesheet_vip: total_liab_hldr_eqy — 负债及股东权益总计
       total_liab_hldr_eqy: pickNumber(row, ['total_liab_hldr_eqy']),
+      // balancesheet_vip: loanto_oth_bank_fi — 向其他金融机构贷款 拆出资金
+      loanto_oth_bank_fi: pickNumber(row, ['loanto_oth_bank_fi']),
+      // balancesheet_vip: loan_oth_bank — 向其他金融机构贷款 贷款
+      loan_oth_bank: pickNumber(row, ['loan_oth_bank']),
     };
   }
 
@@ -296,6 +313,37 @@ function normalizeFinancialData(
   const mvByPeriod = buildQuarterLastValueMap(dailyBasicRows, 'total_mv');
   for (const [period, mv] of Object.entries(mvByPeriod)) {
     data.market![period] = { total_mv: mv };
+  }
+
+  // dividend: cash_div_tax — 每股分红（税前），按 end_date 归档（通常落在年末 Q4）
+  const dividendSorted = [...dividendRows].sort(
+    (a, b) => endDateSortKey(a.end_date) - endDateSortKey(b.end_date)
+  );
+  for (const row of dividendSorted) {
+    const period = normalizeDividendEndDateToPeriod(row.end_date);
+    if (!period) continue;
+    data.dividend![period] = {
+      cash_div_tax: pickNumber(row, ['cash_div_tax']),
+      base_share: pickNumber(row, ['base_share']),
+    };
+  }
+
+  // forward-fill: 对没有市值数据的季度，用前一季度的市值填充
+  const allPeriodsSet = new Set<string>([
+    ...Object.keys(data.income),
+    ...Object.keys(data.balance),
+    ...Object.keys(data.cashflow),
+    ...Object.keys(data.dividend ?? {}),
+    ...Object.keys(data.market ?? {}),
+  ]);
+  const sortedPeriods = Array.from(allPeriodsSet).sort();
+  let lastMv: number | undefined;
+  for (const p of sortedPeriods) {
+    if (data.market?.[p]?.total_mv != null) {
+      lastMv = data.market[p].total_mv as number;
+    } else if (lastMv != null) {
+      data.market![p] = { total_mv: lastMv };
+    }
   }
 
   return data;
@@ -340,11 +388,41 @@ function buildQuarterLastValueMap(rows: RawRow[], valueKey: string): Record<stri
   return out;
 }
 
+async function queryFinancialDataByStock(stockCode: string): Promise<FinancialData> {
+  const [incomeRows, balanceRows, cashflowRows, dailyBasicRows, dividendRows] = await Promise.all([
+    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/income_vip_ss.parquet'), stockCode),
+    // 使用按股票筛选后的 ss 文件；旧的 balanceSheet_vip.parquet 在部分股票上无 ts_code 对应行
+    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/balancesheet_vip_ss.parquet'), stockCode),
+    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/cashflow_vip_ss.parquet'), stockCode),
+    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/daily_basic_ss.parquet'), stockCode),
+    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/dividend_ss.parquet'), stockCode),
+  ]);
+  return normalizeFinancialData(incomeRows, balanceRows, cashflowRows, dailyBasicRows, dividendRows ?? []);
+}
+
+function parseStockList(raw: string | null): string[] {
+  if (!raw) return [];
+  return Array.from(
+    new Set(
+      raw
+        .split(',')
+        .map((s) => s.trim().toUpperCase())
+        .filter((s) => /^\d{6}\.(SZ|SH|BJ)$/.test(s))
+    )
+  );
+}
+
 
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const stockCode = url.searchParams.get('stock') ?? url.searchParams.get('ts_code');
+    const stocksParam = url.searchParams.get('stocks');
+    const aggregateMode = String(url.searchParams.get('aggregate') ?? '').trim().toLowerCase();
+    const industryCodeParam = String(url.searchParams.get('industry_code') ?? '').trim().toUpperCase();
+    const filterMetricParam = String(url.searchParams.get('filter_metric') ?? '').trim();
+    const filterMinParam = url.searchParams.get('filter_min');
+    const filterMaxParam = url.searchParams.get('filter_max');
     const metric = url.searchParams.get('metric');
     const metricsParam = url.searchParams.get('metrics');
     const periodParam = url.searchParams.get('period');
@@ -353,9 +431,14 @@ export async function GET(request: NextRequest) {
     const periodsParam = url.searchParams.get('periods'); // comma-separated
     const yearsParam = url.searchParams.get('years');
     const series = url.searchParams.get('series') === 'true' || Boolean(fromParam || toParam || periodsParam);
+    const stockList = parseStockList(stocksParam);
+    const useIndustryAggregate = aggregateMode === 'industry' || stockList.length > 0;
 
-    if (!stockCode) {
-      return NextResponse.json({ error: 'Missing required query param: stock (or ts_code)' }, { status: 400 });
+    if (!useIndustryAggregate && !stockCode) {
+      return NextResponse.json(
+        { error: 'Missing required query param: stock (or ts_code), or provide stocks with aggregate=industry' },
+        { status: 400 }
+      );
     }
     if (!metric && !metricsParam) {
       return NextResponse.json({ error: 'Missing required query param: metric or metrics' }, { status: 400 });
@@ -380,45 +463,145 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const [incomeRows, balanceRows, cashflowRows, dailyBasicRows] = await Promise.all([
-      queryParquetRows(path.join(process.cwd(), 'temp/tuShare/income_vip_ss.parquet'), stockCode),
-      // 使用按股票筛选后的 ss 文件；旧的 balanceSheet_vip.parquet 在部分股票上无 ts_code 对应行
-      queryParquetRows(path.join(process.cwd(), 'temp/tuShare/balancesheet_vip_ss.parquet'), stockCode),
-      queryParquetRows(path.join(process.cwd(), 'temp/tuShare/cashflow_vip_ss.parquet'), stockCode),
-      queryParquetRows(path.join(process.cwd(), 'temp/tuShare/daily_basic_ss.parquet'), stockCode),
-    ]);
-    // console.log('incomeRows', incomeRows);
-    console.log('balanceRows', balanceRows);
-    // console.log('cashflowRows', cashflowRows);
-    // console.log('dailyBasicRows', dailyBasicRows);
-    const data = normalizeFinancialData(incomeRows, balanceRows, cashflowRows, dailyBasicRows);
-    const available = allPeriods(data);
-    if (available.length === 0) {
-      return NextResponse.json({ error: `No financial rows found for stock ${stockCode}` }, { status: 404 });
-    }
     const metricNames = metric
       ? [metric]
       : (metricsParam ?? '')
           .split(',')
           .map((m) => m.trim())
           .filter(Boolean);
-    
-    console.log('metricNames', metricNames);
-    
-
     const engine = createMetricEngine(metrics);
     const years = yearsParam == null ? null : Number(yearsParam);
     const params = years != null && Number.isFinite(years) ? { years } : undefined;
+    const filterMin = filterMinParam == null ? undefined : Number(filterMinParam);
+    const filterMax = filterMaxParam == null ? undefined : Number(filterMaxParam);
+
+    if (useIndustryAggregate) {
+      if (stockList.length === 0) {
+        return NextResponse.json({ error: 'aggregate=industry requires non-empty stocks (comma-separated ts_code)' }, { status: 400 });
+      }
+
+      const filter =
+        filterMetricParam && (Number.isFinite(filterMin) || Number.isFinite(filterMax))
+          ? {
+              metricName: filterMetricParam,
+              min: Number.isFinite(filterMin) ? filterMin : undefined,
+              max: Number.isFinite(filterMax) ? filterMax : undefined,
+            }
+          : undefined;
+
+      const stockData = await Promise.all(
+        stockList.map(async (code) => ({ stockCode: code, data: await queryFinancialDataByStock(code) }))
+      );
+
+      const availableSet = new Set<string>();
+      for (const s of stockData) {
+        for (const p of allPeriods(s.data)) availableSet.add(p);
+      }
+      const available = Array.from(availableSet).sort(comparePeriod);
+      if (available.length === 0) {
+        return NextResponse.json({ error: 'No financial rows found for provided stocks' }, { status: 404 });
+      }
+
+      if (!series) {
+        const period = periodParam ?? available.at(-1)!;
+        const industry = buildIndustryMetrics({
+          engine,
+          stocks: stockData,
+          metricNames,
+          period,
+          params,
+          industryCode: industryCodeParam || undefined,
+          filter,
+        });
+        const results = Object.fromEntries(metricNames.map((name) => [name, toResult(name, industry.values[name] ?? null)]));
+        return NextResponse.json({
+          aggregate: 'industry',
+          industry: industry.industryStockCode,
+          period,
+          results,
+          selectedStockCodes: industry.selectedStockCodes,
+          excludedStockCodes: industry.excludedStockCodes,
+          selectedCount: industry.selectedCount,
+          totalCount: industry.totalCount,
+          diagnostics: {
+            availablePeriods: { combined: available },
+            filter: filter ?? null,
+          },
+        });
+      }
+
+      const periods = periodsParam
+        ? periodsParam
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .sort(comparePeriod)
+        : filterPeriodsInRange(available, fromParam, toParam);
+
+      const points = periods.map((period) => {
+        const industry = buildIndustryMetrics({
+          engine,
+          stocks: stockData,
+          metricNames,
+          period,
+          params,
+          industryCode: industryCodeParam || undefined,
+          filter,
+        });
+        const row: Record<string, unknown> = { period, selectedCount: industry.selectedCount };
+        for (const name of metricNames) row[name] = industry.values[name] ?? null;
+        return row;
+      });
+
+      const latestIndustry = periods.length > 0
+        ? buildIndustryMetrics({
+            engine,
+            stocks: stockData,
+            metricNames,
+            period: periods[periods.length - 1],
+            params,
+            industryCode: industryCodeParam || undefined,
+            filter,
+          })
+        : null;
+
+      return NextResponse.json({
+        aggregate: 'industry',
+        industry: latestIndustry?.industryStockCode ?? `IND:${industryCodeParam || 'AGG'}`,
+        periods,
+        metrics: Object.fromEntries(metricNames.map((name) => [name, metrics[name]?.meta ?? null])),
+        points,
+        selectedStockCodes: latestIndustry?.selectedStockCodes ?? [],
+        excludedStockCodes: latestIndustry?.excludedStockCodes ?? [],
+        selectedCount: latestIndustry?.selectedCount ?? 0,
+        totalCount: latestIndustry?.totalCount ?? stockList.length,
+        diagnostics: {
+          availablePeriods: { combined: available },
+          filter: filter ?? null,
+        },
+      });
+    }
+
+    const singleStockCode = stockCode;
+    if (!singleStockCode) {
+      return NextResponse.json({ error: 'Missing required query param: stock (or ts_code)' }, { status: 400 });
+    }
+
+    const data = await queryFinancialDataByStock(singleStockCode);
+    const available = allPeriods(data);
+    if (available.length === 0) {
+      return NextResponse.json({ error: `No financial rows found for stock ${singleStockCode}` }, { status: 404 });
+    }
 
     if (!series) {
       const period = periodParam ?? latestPeriod(data);
       if (!period) {
-        return NextResponse.json({ error: `No financial rows found for stock ${stockCode}` }, { status: 404 });
+        return NextResponse.json({ error: `No financial rows found for stock ${singleStockCode}` }, { status: 404 });
       }
-      const values = engine.calculateMany(metricNames, { stockCode, period, data, params });
+      const values = engine.calculateMany(metricNames, { stockCode: singleStockCode, period, data, params });
       const results = Object.fromEntries(metricNames.map((name) => [name, toResult(name, values[name] ?? null)]));
       return NextResponse.json({
-        stock: stockCode,
+        stock: singleStockCode,
         period,
         results,
         diagnostics: {
@@ -426,6 +609,7 @@ export async function GET(request: NextRequest) {
             income: Object.keys(data.income).sort(),
             balance: Object.keys(data.balance).sort(),
             cashflow: Object.keys(data.cashflow).sort(),
+            dividend: Object.keys(data.dividend ?? {}).sort(),
           },
         },
       });
@@ -440,14 +624,14 @@ export async function GET(request: NextRequest) {
       : filterPeriodsInRange(available, fromParam, toParam);
 
     const points = periods.map((period) => {
-      const values = engine.calculateMany(metricNames, { stockCode, period, data, params });
+      const values = engine.calculateMany(metricNames, { stockCode: singleStockCode, period, data, params });
       const row: Record<string, unknown> = { period };
       for (const name of metricNames) row[name] = values[name] ?? null;
       return row;
     });
 
     return NextResponse.json({
-      stock: stockCode,
+      stock: singleStockCode,
       periods,
       metrics: Object.fromEntries(metricNames.map((name) => [name, metrics[name]?.meta ?? null])),
       points,
@@ -456,6 +640,7 @@ export async function GET(request: NextRequest) {
           income: Object.keys(data.income).sort(),
           balance: Object.keys(data.balance).sort(),
           cashflow: Object.keys(data.cashflow).sort(),
+          dividend: Object.keys(data.dividend ?? {}).sort(),
         },
       },
     });

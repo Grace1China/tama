@@ -17,6 +17,12 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 仅在视口根层阻断横向过度滚动交给浏览器（后退手势）；内层 overflow-x-auto 仍可向上层滚动容器传递 */
+  overscroll-behavior-x: none;
+}
+
+main {
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -108,6 +114,15 @@ a {
 }
 .ag-header-cell-wrap {
   --ag-header-height: 52px;
+}
+
+/* DataGrid tightChrome：外层卡片已 rounded + overflow-hidden，内层取消圆角，避免与表头色块双层圆角错位露白 */
+.embed-flat-grid .ag-theme-alpine {
+  --ag-border-radius: 0;
+  --ag-wrapper-border-radius: 0;
+}
+.embed-flat-grid .ag-root-wrapper {
+  border-radius: 0 !important;
 }
 
 .loading {

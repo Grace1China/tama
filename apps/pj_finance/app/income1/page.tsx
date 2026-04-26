@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import DataGrid from '../components/DataGrid';
-import PriceChart from '../components/PriceChart';
 import StockCodeAutocomplete from '../components/StockCodeAutocomplete';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import 'react-grid-layout/css/styles.css';
@@ -165,6 +164,9 @@ export default function Income1Page() {
   const [costMarginData, setCostMarginData] = useState<Array<Record<string, any>>>([]);
   const [costMarginLoading, setCostMarginLoading] = useState(false);
   const [costMarginError, setCostMarginError] = useState<string | null>(null);
+  const [revMvData, setRevMvData] = useState<Array<Record<string, any>>>([]);
+  const [revMvLoading, setRevMvLoading] = useState(false);
+  const [revMvError, setRevMvError] = useState<string | null>(null);
   const [revCashflowData, setRevCashflowData] = useState<Array<Record<string, any>>>([]);
   const [revCashflowLoading, setRevCashflowLoading] = useState(false);
   const [revCashflowError, setRevCashflowError] = useState<string | null>(null);
@@ -177,6 +179,9 @@ export default function Income1Page() {
   const [growthTrendData, setGrowthTrendData] = useState<Array<Record<string, any>>>([]);
   const [growthTrendLoading, setGrowthTrendLoading] = useState(false);
   const [growthTrendError, setGrowthTrendError] = useState<string | null>(null);
+  const [dupontData, setDupontData] = useState<Array<Record<string, any>>>([]);
+  const [dupontLoading, setDupontLoading] = useState(false);
+  const [dupontError, setDupontError] = useState<string | null>(null);
   const [balanceStructureData, setBalanceStructureData] = useState<Array<{ name: string; value: number | null; fill: string }>>([]);
   const [balanceStructurePeriod, setBalanceStructurePeriod] = useState<string | null>(null);
   const [balanceStructureLoading, setBalanceStructureLoading] = useState(false);
@@ -550,6 +555,62 @@ export default function Income1Page() {
     };
   }, [chartTab, selectedTsCode]);
 
+  // 营收和市值：指标 API — 2 柱 + 1 线（亿 / 万）
+  useEffect(() => {
+    if (chartTab !== 'rev_mv') return;
+    if (!selectedTsCode.trim()) {
+      setRevMvData([]);
+      setRevMvError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setRevMvLoading(true);
+      setRevMvError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'total_revenue_ttm,n_income_attr_p_ttm,total_mv',
+          from: '2014Q1',
+          to: '2026Q4',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(
+            typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`
+          );
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const toYi = (p: Record<string, unknown>, key: string) => {
+          const n = Number(p?.[key]);
+          return Number.isFinite(n) ? n / 1e8 : null;
+        };
+        const toWanYi = (p: Record<string, unknown>, key: string) => {
+          const n = Number(p?.[key]);
+          return Number.isFinite(n) ? n / 1e4 : null;
+        };
+        const chartRows = points.map((p) => ({
+          period: String(p?.period ?? ''),
+          total_revenue_yi: toYi(p, 'total_revenue_ttm'),
+          net_profit_yi: toYi(p, 'n_income_attr_p_ttm'),
+          total_mv_yi: toWanYi(p, 'total_mv'),
+        }));
+        setRevMvData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setRevMvError(e instanceof Error ? e.message : String(e));
+          setRevMvData([]);
+        }
+      } finally {
+        if (!cancelled) setRevMvLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [chartTab, selectedTsCode]);
+
   // 营收和现金流：指标 API — 4 条曲线（亿元）
   useEffect(() => {
     if (chartTab !== 'rev_cashflow') return;
@@ -567,7 +628,7 @@ export default function Income1Page() {
           stock: selectedTsCode.trim(),
           metrics: 'total_revenue_ttm,c_inf_fr_operate_a_ttm,n_income_attr_p_ttm,n_cashflow_act_ttm',
           from: '2014Q1',
-          to: '2025Q4',
+          to: '2026Q4',
         });
         const url = `/api/metrics?${qs.toString()}`;
         const res = await fetch(url);
@@ -621,7 +682,7 @@ export default function Income1Page() {
           stock: selectedTsCode.trim(),
           metrics: 'total_revenue_ttm,oper_cost_ttm,grossMargin_ttm',
           from: '2014Q1',
-          to: '2025Q3',
+          to: '2026Q4',
         });
         const url = `/api/metrics?${qs.toString()}`;
         const res = await fetch(url);
@@ -683,7 +744,7 @@ export default function Income1Page() {
           stock: selectedTsCode.trim(),
           metrics: 'total_revenue_ttm,sell_exp_ttm,admin_exp_ttm,rd_exp_ttm',
           from: '2014Q1',
-          to: '2025Q3',
+          to: '2026Q4',
         });
         const res = await fetch(`/api/metrics?${qs.toString()}`);
         const json = await res.json();
@@ -797,7 +858,7 @@ export default function Income1Page() {
             'total_mv,total_revenue_ttm,n_income_attr_p_ttm,total_hldr_eqy_exc_min_int,mv_growth,revenue_growth,profit_growth,net_assets_growth',
           years: String(years),
           from: fromPeriod,
-          to: '2025Q3',
+          to: '2026Q4',
         });
         const res = await fetch(`/api/metrics?${qs.toString()}`);
         const json = await res.json();
@@ -844,6 +905,61 @@ export default function Income1Page() {
     return () => {
       cancelled = true;
     };
+  }, [chartTab, selectedTsCode]);
+
+  // 杜邦分析：netMargin_ttm, totalAsset_turnover_ttm, equity_multiplier_ttm, roe_dupont
+  useEffect(() => {
+    if (chartTab !== 'dupont') return;
+    if (!selectedTsCode.trim()) {
+      setDupontData([]);
+      setDupontError(null);
+      return;
+    }
+    let cancelled = false;
+    const run = async () => {
+      setDupontLoading(true);
+      setDupontError(null);
+      try {
+        const qs = new URLSearchParams({
+          stock: selectedTsCode.trim(),
+          metrics: 'netMargin_ttm,totalAsset_turnover_ttm,equity_multiplier_ttm,roe_dupont',
+          from: '2014Q1',
+          to: '2026Q4',
+        });
+        const res = await fetch(`/api/metrics?${qs.toString()}`);
+        const json = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          throw new Error(typeof json?.message === 'string' ? json.message : `metrics api failed: ${res.status}`);
+        }
+        const points: Record<string, unknown>[] = Array.isArray(json?.points) ? json.points : [];
+        const toPct = (p: Record<string, unknown>, key: string) => {
+          const n = Number(p?.[key]);
+          return Number.isFinite(n) ? n * 100 : null;
+        };
+        const toNum = (p: Record<string, unknown>, key: string) => {
+          const n = Number(p?.[key]);
+          return Number.isFinite(n) ? n : null;
+        };
+        const chartRows = points.map((p) => ({
+          period: String(p?.period ?? ''),
+          netMargin: toPct(p, 'netMargin_ttm'),
+          roe: toPct(p, 'roe_dupont'),
+          turnover: toNum(p, 'totalAsset_turnover_ttm'),
+          multiplier: toNum(p, 'equity_multiplier_ttm'),
+        }));
+        setDupontData(chartRows);
+      } catch (e) {
+        if (!cancelled) {
+          setDupontError(e instanceof Error ? e.message : String(e));
+          setDupontData([]);
+        }
+      } finally {
+        if (!cancelled) setDupontLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
   }, [chartTab, selectedTsCode]);
 
   // 资产负债结构：取最新一期资产/负债/权益关键项目（亿元）
@@ -962,33 +1078,83 @@ export default function Income1Page() {
                   <TabsTrigger value="ps_valuation">市销率估值</TabsTrigger>
                   <TabsTrigger value="pe_valuation">滚动市盈率估值</TabsTrigger>
                   <TabsTrigger value="pb_valuation">市净率估值</TabsTrigger>
+                  <TabsTrigger value="dupont">杜邦分析</TabsTrigger>
                 </TabsList>
                 <TabsContent value="rev_mv">
-                  {selectedTsCode ? (
-                    <PriceChart
-                      tsCode={selectedTsCode}
-                      xAxisDateFormat="quarter"
-                      leftData1={{
-                        barField: 'ttm_total_revenue',
-                        barFieldLabel: 'TTM滚动总营收',
-                        barField2: 'ttm_compr_inc_attr_p',
-                        barField2Label: 'TTM滚动归母综合收益总额',
-                        barField2Color: '#ef4444',
-                        barApiPath: '/api/parq/income1',
-                        barDateField: 'end_date',
-                      }}
-                      rightData1={{
-                        lineField: 'total_mv',
-                        lineFieldLabel: '总市值（万元）',
-                        lineApiPath: '/api/parq/daily_basic',
-                        lineDateField: 'trade_date',
-                        lineSource: 'parquet',
-                      }}
-                      swapYAxes={true}
-                    />
-                  ) : (
+                  {!selectedTsCode ? (
                     <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
                       <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : revMvLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : revMvError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {revMvError}</p>
+                    </div>
+                  ) : revMvData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-[28rem] border border-slate-700 rounded-lg p-4 pb-8 bg-slate-900 text-slate-100">
+                      <h3 className="text-lg font-semibold mb-1">
+                        营收和市值分析 - {selectedTsCode}
+                      </h3>
+                      <p className="text-xs text-slate-400 mb-3">
+                        横轴：报告期（YYQn）；左轴：总市值(亿元)；右轴：营收/利润(亿元)
+                      </p>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={revMvData}
+                          margin={{ top: 8, right: 36, left: 8, bottom: 52 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                          <XAxis
+                            dataKey="period"
+                            tickFormatter={formatDateYYMM}
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
+                            angle={-45}
+                            textAnchor="end"
+                            height={70}
+                            interval={0}
+                          />
+                          <YAxis
+                            yAxisId="left"
+                            orientation="left"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#94a3b8', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '总市值(亿)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                          />
+                          <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            domain={['auto', 'auto']}
+                            tick={{ fill: '#cbd5e1', fontSize: 11 }}
+                            tickFormatter={(v) => `${Number(v).toLocaleString('zh-CN', { maximumFractionDigits: 0 })}`}
+                            label={{ value: '营收/利润(亿)', angle: 90, position: 'insideRight', fill: '#cbd5e1', fontSize: 11 }}
+                          />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 8 }}
+                            labelStyle={{ color: '#e2e8f0' }}
+                            formatter={(value: any, name?: string | number) => {
+                              const n = typeof value === 'number' ? value : Number(value);
+                              if (!Number.isFinite(n)) return ['—', String(name ?? '')];
+                              return [`${n.toFixed(2)} 亿`, String(name ?? '')];
+                            }}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: 12 }}
+                            formatter={(value) => <span className="text-slate-300 text-sm">{value}</span>}
+                          />
+                          <Line yAxisId="left" type="monotone" dataKey="total_mv_yi" name="总市值" stroke="#60a5fa" strokeWidth={2} dot={{ r: 2, fill: '#60a5fa' }} connectNulls />
+                          <Bar yAxisId="right" dataKey="total_revenue_yi" name="总营收 TTM" fill="#3b82f6" barSize={10} />
+                          <Bar yAxisId="right" dataKey="net_profit_yi" name="归母净利润 TTM" fill="#ef4444" barSize={10} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </TabsContent>
@@ -1817,6 +1983,90 @@ export default function Income1Page() {
                               name="低估线(均值-1σ)"
                             />
                           </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="dupont">
+                  {!selectedTsCode ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">请选择股票代码查看数据走势</p>
+                    </div>
+                  ) : dupontLoading ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">加载中...</p>
+                    </div>
+                  ) : dupontError ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-red-200 rounded-lg bg-red-50">
+                      <p className="text-red-500">错误: {dupontError}</p>
+                    </div>
+                  ) : dupontData.length === 0 ? (
+                    <div className="w-full h-96 flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50">
+                      <p className="text-gray-500">暂无数据</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-full h-[28rem] border border-gray-200 rounded-lg p-4 pb-6" style={{ backgroundColor: '#1e293b' }}>
+                        <h3 className="text-lg font-semibold mb-1 text-slate-200">
+                          杜邦分析 ROE = 销售净利率 × 总资产周转率 × 权益乘数 — {selectedTsCode}
+                        </h3>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={dupontData} margin={{ top: 8, right: 44, left: 8, bottom: 52 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis
+                              dataKey="period"
+                              angle={-45}
+                              textAnchor="end"
+                              height={60}
+                              tick={{ fontSize: 10, fill: '#94a3b8' }}
+                              tickMargin={6}
+                            />
+                            <YAxis
+                              yAxisId="left"
+                              tick={{ fontSize: 10, fill: '#94a3b8' }}
+                              label={{ value: '次', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 11 }}
+                              tickFormatter={(v: number) => v.toFixed(2)}
+                            />
+                            <YAxis
+                              yAxisId="right"
+                              orientation="right"
+                              tick={{ fontSize: 10, fill: '#94a3b8' }}
+                              label={{ value: '%', angle: 90, position: 'insideRight', fill: '#94a3b8', fontSize: 11 }}
+                              tickFormatter={(v: number) => `${v.toFixed(1)}%`}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#1e293b',
+                                border: '1px solid #475569',
+                                fontSize: 11,
+                                lineHeight: '16px',
+                                padding: '4px 8px',
+                              }}
+                              labelStyle={{ color: '#94a3b8', fontSize: 11 }}
+                              itemStyle={{
+                                padding: '1px 0',
+                                WebkitTextStroke: '0.35px rgba(255,255,255,0.95)',
+                                textShadow: '0 1px 0 rgba(255,255,255,0.3)',
+                              }}
+                              formatter={(value: any, name: string) => {
+                                const n = Number(value);
+                                if (!Number.isFinite(n)) return ['—', name];
+                                if (name === '销售净利率(TTM)' || name === '杜邦ROE')
+                                  return [`${n.toFixed(2)}%`, name];
+                                return [n.toFixed(3), name];
+                              }}
+                            />
+                            <Legend
+                              verticalAlign="bottom"
+                              height={24}
+                              wrapperStyle={{ paddingTop: 8, fontSize: 11, color: '#cbd5e1' }}
+                            />
+                            <Bar yAxisId="left" dataKey="turnover" name="总资产周转率(TTM)" fill="#3b82f6" barSize={8} opacity={0.85} />
+                            <Bar yAxisId="left" dataKey="multiplier" name="权益乘数(TTM)" fill="#22c55e" barSize={8} opacity={0.85} />
+                            <Line yAxisId="right" type="monotone" dataKey="netMargin" name="销售净利率(TTM)" stroke="#f97316" strokeWidth={2} dot={{ r: 1.5 }} />
+                            <Line yAxisId="right" type="monotone" dataKey="roe" name="杜邦ROE" stroke="#ef4444" strokeWidth={2.5} dot={{ r: 1.5 }} />
+                          </ComposedChart>
                         </ResponsiveContainer>
                       </div>
                     </div>

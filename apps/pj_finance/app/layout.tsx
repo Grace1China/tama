@@ -19,13 +19,13 @@ export default function RootLayout({
       <body>
         <SidebarProvider>
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="min-h-0">
             <header className="flex h-14 items-center gap-2 border-b px-4">
               <SidebarTrigger className="-ml-2" />
               <PageTitle />
               <div className="flex-1" />
             </header>
-            <main className="flex-1 overflow-auto">
+            <main className="flex min-h-0 flex-1 flex-col overflow-auto">
               {children}
             </main>
           </SidebarInset>

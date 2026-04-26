@@ -36,6 +36,7 @@ export const metrics: MetricRegistry = {
     meta: { label: '总市值(季度末，万元)', unit: 'CNY', precision: 2 },
     compute: ({ data, period }) => data.market?.[period]?.total_mv ?? null,
   },
+ 
   total_revenue: {
     meta: { label: '营业总收入(累计)', unit: 'CNY', precision: 2 },
     compute: ({ data, period }) => data.income[period]?.total_revenue ?? null,
@@ -174,8 +175,10 @@ export const metrics: MetricRegistry = {
     compute: ({ data, period }) => {
       const moneyCap = asNumber(data.balance[period]?.money_cap);
       const tradAsset = asNumber(data.balance[period]?.trad_asset);
-      if (moneyCap == null && tradAsset == null) return null;
-      return (moneyCap ?? 0) + (tradAsset ?? 0);
+      const loansToOthBankFi = asNumber(data.balance[period]?.loanto_oth_bank_fi);
+      if (moneyCap == null && tradAsset == null && loansToOthBankFi == null) return null;
+      console.log('{ moneyCap, tradAsset, loansToOthBankFi }',{ moneyCap, tradAsset, loansToOthBankFi })
+      return (moneyCap ?? 0) + (tradAsset ?? 0) + (loansToOthBankFi ?? 0);
     },
   },
   notes_receiv: {
@@ -245,7 +248,12 @@ export const metrics: MetricRegistry = {
   },
   st_borr: {
     meta: { label: '短期借款', unit: 'CNY', precision: 2 },
-    compute: ({ data, period }) => data.balance[period]?.st_borr ?? null,
+    compute: ({ data, period }) => {
+      const stBorr= data.balance[period]?.st_borr ?? null
+      const loan_oth_bank = asNumber(data.balance[period]?.loan_oth_bank);
+      if (stBorr == null && loan_oth_bank == null) return null;
+      return (stBorr ?? 0) + (loan_oth_bank ?? 0);
+    }
   },
   acct_payable: {
     meta: { label: '应付账款', unit: 'CNY', precision: 2 },
@@ -310,15 +318,7 @@ export const metrics: MetricRegistry = {
   //   meta: { label: '净资产(TTM口径=季末值)', unit: 'CNY', precision: 2 },
   //   compute: ({ total_hldr_eqy_exc_min_int }) => asNumber(total_hldr_eqy_exc_min_int),
   // },
-  roe: {
-    deps: ['n_income_attr_p', 'total_hldr_eqy_exc_min_int'],
-    meta: { label: 'ROE', unit: '%', precision: 6 },
-    compute: ({ n_income_attr_p, total_hldr_eqy_exc_min_int }) => {
-      const p = asNumber(n_income_attr_p);
-      const e = asNumber(total_hldr_eqy_exc_min_int);
-      return safeDivide(p, e);
-    },
-  },
+  
   total_revenue_ttm: {
     meta: { label: '营收TTM(滚动四季度单季之和)', unit: 'CNY', precision: 2 },
     compute: ({ period, stockCode, data, engine }) => {
@@ -393,6 +393,58 @@ export const metrics: MetricRegistry = {
       return safeDivide(tr - oc, tr);
     },
   },
+  netMargin_ttm: {
+    deps: ['n_income_attr_p_ttm', 'total_revenue_ttm'],
+    meta: { label: '销售净利率(TTM)', unit: '%', precision: 6 },
+    compute: ({ n_income_attr_p_ttm, total_revenue_ttm }) => {
+      const ni = asNumber(n_income_attr_p_ttm);
+      const tr = asNumber(total_revenue_ttm);
+      if (ni == null || tr == null) return null;
+      return safeDivide(ni, tr);
+    },
+  },
+  totalAsset_turnover_ttm: {
+    deps: ['total_revenue_ttm', 'total_assets'],
+    meta: { label: '总资产周转率(TTM)', unit: 'times', precision: 4 },
+    compute: ({ total_revenue_ttm,total_assets }) => {
+      const tr = asNumber(total_revenue_ttm);
+      const ta = asNumber(total_assets);
+      if (tr == null || ta == null) return null;
+      return safeDivide(tr, ta);
+    },
+  },
+  equity_multiplier_ttm: {
+    deps: ['total_assets', 'total_hldr_eqy_exc_min_int'],
+    meta: { label: '权益乘数(TTM)', unit: 'times', precision: 4 },
+    compute: ({ total_assets, total_hldr_eqy_exc_min_int }) => {
+      const ta = asNumber(total_assets);
+      const te = asNumber(total_hldr_eqy_exc_min_int);
+      if (ta == null || te == null) return null;
+      return safeDivide(ta, te);
+    },
+  },
+  roe_dupont: {
+    deps: ['netMargin_ttm', 'totalAsset_turnover_ttm','equity_multiplier_ttm'],
+    meta: { label: 'roe_dupont', unit: '%', precision: 6 },
+    compute: ({ netMargin_ttm, totalAsset_turnover_ttm,equity_multiplier_ttm }) => {
+      const n = asNumber(netMargin_ttm);
+      const t = asNumber(totalAsset_turnover_ttm);
+      const e = asNumber(equity_multiplier_ttm);
+      if (n == null || t == null || e == null) return null;
+      return n*t*e
+    },
+  },
+
+  roe: {
+    deps: ['n_income_attr_p', 'total_hldr_eqy_exc_min_int'],
+    meta: { label: 'ROE', unit: '%', precision: 6 },
+    compute: ({ n_income_attr_p, total_hldr_eqy_exc_min_int }) => {
+      const p = asNumber(n_income_attr_p);
+      const e = asNumber(total_hldr_eqy_exc_min_int);
+      return safeDivide(p, e);
+    },
+  },
+
   total_revenue_yoy: {
     meta: { label: '营收同比', unit: '%', precision: 6 },
     compute: ({ period, stockCode, data, engine }) => {
@@ -401,6 +453,42 @@ export const metrics: MetricRegistry = {
       const lastYear = engine.calculate('total_revenue', { stockCode, period: lastYearPeriod, data });
       if (current == null || lastYear == null || lastYear === 0) return null;
       return (current - lastYear) / lastYear;
+    },
+  },
+  // /** dividend(按季度归档): cash_div_tax — 每股分红（税前） */
+  // cash_div_tax: {
+  //   meta: { label: '每股分红（税前）', unit: 'CNY', precision: 4 },
+  //   compute: ({ data, period }) => data.dividend?.[period]?.cash_div_tax ?? null,
+  // },
+  // /** dividend(按季度归档): cash_div_tax — 每股分红（税前） */
+  // cash_div_tax: {
+  //   meta: { label: '每股分红（税前）', unit: 'CNY', precision: 4 },
+  //   compute: ({ data, period }) => data.dividend?.[period]?.cash_div_tax ?? null,
+  // },
+  dividend_ttm:{
+    meta: { label: '分红TTM(滚动四季度单季之和)', unit: 'CNY', precision: 2 },
+    // compute: ({ data, period }) => data.balance[period]?.fix_assets ?? null,
+    compute: ({ period, data, engine }) => {
+      const periods = lastNQuarters(period, 4);
+      const values = periods.map((p) => {
+        const cashDivTax = asNumber(data.dividend?.[p]?.cash_div_tax ?? data.balance[p]?.cash_div_tax ?? null);
+        const baseShare = asNumber(data.dividend?.[p]?.base_share ?? data.balance[p]?.base_share ?? null);
+        if (cashDivTax == null || baseShare == null) return null;
+        return cashDivTax * baseShare;
+      });
+      if (values.every((v) => v == null)) return null;
+      return values.reduce<number>((sum, v) => sum + (v as number), 0);
+    },
+    // compute: ({ data, period }) => data.balance[period]?.fix_assets ?? null,
+  },
+  dividend_ttm_rate:{
+    deps: ['dividend_ttm', 'total_mv'],
+    meta: { label: '分红TTM率(滚动四季度单季之和/总市值)', unit: '%', precision: 2 },
+    compute: ({ dividend_ttm, total_mv }) => {
+      const d = asNumber(dividend_ttm);
+      const t = asNumber(total_mv);
+      if (d == null || t == null) return null;
+      return safeDivide(d, t)
     },
   },
 

@@ -13,6 +13,12 @@ body {
 @layer base {
   html {
     @apply antialiased;
+    /* 仅根层；不阻断内层横向滚动向外层表格传递 */
+    overscroll-behavior-x: none;
+  }
+
+  body {
+    overscroll-behavior-x: none;
   }
 }
 

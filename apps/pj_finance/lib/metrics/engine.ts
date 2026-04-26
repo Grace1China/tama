@@ -4,6 +4,8 @@ export interface FinancialData {
   income: Record<string, Record<string, MetricValue>>;
   balance: Record<string, Record<string, MetricValue>>;
   cashflow: Record<string, Record<string, MetricValue>>;
+  /** 分红数据（按 end_date 归档到季度；通常是年报对应 Q4） */
+  dividend?: Record<string, Record<string, MetricValue>>;
   /** 额外：非财报但按季度归档的数据（如市值） */
   market?: Record<string, Record<string, MetricValue>>;
 }

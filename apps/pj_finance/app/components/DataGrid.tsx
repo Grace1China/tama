@@ -6,8 +6,9 @@ import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { GridReadyEvent, IDatasource } from 'ag-grid-community';
-import { ArrowDown, ArrowUp, Download, SlidersHorizontal } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, Maximize2, Minimize2, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export interface CSVData {
   category: string;
@@ -51,8 +52,19 @@ interface DataGridProps {
   rowHeight?: number;
   /** 全部列固定宽度（像素） */
   uniformColumnWidth?: number;
+  /** 按字段覆盖列宽（像素），优先级高于 uniformColumnWidth 与自动宽度 */
+  columnWidthByField?: Record<string, number>;
   /** 固定在左侧的列（英文字段名） */
   pinnedLeftFields?: string[];
+  /** 行 ID 提取函数，启用后 Ag-Grid 可做增量更新 */
+  getRowId?: (params: any) => string;
+  /** 外层与表格外壳占满父级并去掉 container 默认 padding/margin（如利润对比嵌入分栏） */
+  tightChrome?: boolean;
+  /**
+   * 客户端 rowData 模式下：当该字符串变化时清除列排序，使父组件传入的行顺序生效
+   * （例如利润对比里「置顶 / 按 ROE 自动置顶」依赖 rowData 顺序，否则会一直被用户列排序覆盖）。
+   */
+  clientSortResetKey?: string;
 }
 
 function getColVisibilityKey(category: string, tabId?: string): string {
@@ -109,7 +121,11 @@ export default function DataGrid({
   gridHeight = '70vh',
   rowHeight,
   uniformColumnWidth,
+  columnWidthByField,
   pinnedLeftFields,
+  getRowId,
+  tightChrome = false,
+  clientSortResetKey,
 }: DataGridProps) {
   const [csvData, setCsvData] = useState<CSVData | null>(localData ?? null);
   const [loading, setLoading] = useState(false);
@@ -118,6 +134,29 @@ export default function DataGrid({
   const [exporting, setExporting] = useState(false);
   const [colSelectorOpen, setColSelectorOpen] = useState(false);
   const storageKey = getColVisibilityKey(category, tabId);
+  const clientSortResetKeyRef = useRef<string | undefined>(undefined);
+  clientSortResetKeyRef.current = clientSortResetKey;
+  const lastAppliedClientSortResetKeyRef = useRef<string | undefined>(undefined);
+
+  const syncClientSortReset = useCallback(() => {
+    if (useServerPagination) return;
+    const key = clientSortResetKeyRef.current;
+    if (key === undefined) return;
+    if (lastAppliedClientSortResetKeyRef.current === key) return;
+    const api = gridRef.current?.api as { applyColumnState?: (s: unknown) => void } | undefined;
+    if (!api?.applyColumnState) return;
+    try {
+      api.applyColumnState({ defaultState: { sort: null } });
+      sortModelRef.current = [];
+      lastAppliedClientSortResetKeyRef.current = key;
+    } catch {
+      // ignore
+    }
+  }, [useServerPagination]);
+
+  useEffect(() => {
+    syncClientSortReset();
+  }, [clientSortResetKey, syncClientSortReset]);
   const [hiddenFields, setHiddenFields] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return defaultHiddenFields ?? new Set();
     const prefs = parseColumnPrefs(window.localStorage.getItem(storageKey));
@@ -144,6 +183,8 @@ export default function DataGrid({
   }, [storageKey, defaultHiddenFields]);
   const [colSearchText, setColSearchText] = useState('');
   const colSelectorRef = useRef<HTMLDivElement>(null);
+  const fsShellRef = useRef<HTMLDivElement>(null);
+  const [isGridFullscreen, setIsGridFullscreen] = useState(false);
   const gridRef = useRef<AgGridReactType>(null);
   const sortModelRef = useRef<any[]>([]);
   const filterModelRef = useRef<any>({});
@@ -153,6 +194,52 @@ export default function DataGrid({
   useEffect(() => {
     extraQueryParamsRef.current = extraQueryParams;
   }, [extraQueryParams]);
+
+  const syncGridFullscreen = useCallback(() => {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null };
+    const fsEl = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+    setIsGridFullscreen(fsEl === fsShellRef.current);
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', syncGridFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncGridFullscreen as EventListener);
+    return () => {
+      document.removeEventListener('fullscreenchange', syncGridFullscreen);
+      document.removeEventListener('webkitfullscreenchange', syncGridFullscreen as EventListener);
+    };
+  }, [syncGridFullscreen]);
+
+  useEffect(() => {
+    if (!isGridFullscreen) return;
+    const id = window.requestAnimationFrame(() => {
+      gridRef.current?.api?.sizeColumnsToFit?.();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isGridFullscreen]);
+
+  const toggleGridFullscreen = useCallback(async () => {
+    const el = fsShellRef.current;
+    if (!el) return;
+    const doc = document as Document & {
+      webkitExitFullscreen?: () => void;
+      webkitFullscreenElement?: Element | null;
+    };
+    const hel = el as HTMLElement & { webkitRequestFullscreen?: () => void };
+    const inFs = document.fullscreenElement === el || doc.webkitFullscreenElement === el;
+    try {
+      if (inFs) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else doc.webkitExitFullscreen?.();
+      } else if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      } else {
+        hel.webkitRequestFullscreen?.();
+      }
+    } catch {
+      /* 浏览器拒绝全屏等 */
+    }
+  }, []);
 
   const getApiUrl = useCallback((page: number, size: number, sortQuery = '', filterQuery = '') => {
     const basePath = apiPath || `/api/csv/${category}`;
@@ -467,9 +554,13 @@ export default function DataGrid({
       const chineseLabel = fieldLabelMap?.[field] ?? fieldToChineseFromApi.get(field) ?? field;
       const headerText = chineseLabel !== field ? `${chineseLabel}\n${field}` : field;
       const calculatedWidth = calculateColumnWidth(chineseLabel.length > field.length ? chineseLabel : field);
-      const finalWidth = typeof uniformColumnWidth === 'number' && uniformColumnWidth > 0
-        ? uniformColumnWidth
-        : calculatedWidth;
+      const overrideW = columnWidthByField?.[field];
+      const finalWidth =
+        typeof overrideW === 'number' && overrideW > 0
+          ? overrideW
+          : typeof uniformColumnWidth === 'number' && uniformColumnWidth > 0
+            ? uniformColumnWidth
+            : calculatedWidth;
       const isNumeric = isNumericColumn(field, csvData.data);
       const isDate = isDateColumn(field);
       const mapping = valueMappings?.[field];
@@ -556,7 +647,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, pinnedLeftFields]);
+  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, columnWidthByField, pinnedLeftFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({
@@ -797,10 +888,17 @@ export default function DataGrid({
       
       params.api.setGridOption('datasource', dataSource);
     }
-  }, [category, pageSize, csvData, useServerPagination, apiPath]);
+
+    syncClientSortReset();
+  }, [category, pageSize, csvData, useServerPagination, apiPath, syncClientSortReset]);
 
   return (
-    <div className="container relative">
+    <div
+      className={cn(
+        'container relative',
+        tightChrome && 'h-full !p-0 !m-0',
+      )}
+    >
       {/* <div className="header">
         <h1>{title}</h1>
         <p>查看和分析数据</p>
@@ -819,7 +917,14 @@ export default function DataGrid({
       )}
 
       {csvData && !loading && (
-        <>
+        <div
+          ref={fsShellRef}
+          className={cn(
+            'relative flex min-h-0 flex-col',
+            tightChrome && 'h-full',
+            isGridFullscreen && 'bg-white',
+          )}
+        >
           {/* <div className="info">
             <div className="info-item">
               <span className="info-label">文件:</span>
@@ -835,8 +940,8 @@ export default function DataGrid({
             </div>
           </div> */}
 
-          <div className="mb-4 flex items-end gap-2 absolute right-0 flex-col top-10">
-            <div className="relative" ref={colSelectorRef}>
+          <div className="pointer-events-none absolute right-2 top-2 z-30 flex flex-row items-center gap-2">
+            <div className="relative pointer-events-auto" ref={colSelectorRef}>
               <Button
                 variant="outline"
                 size="sm"
@@ -923,6 +1028,19 @@ export default function DataGrid({
               )}
             </div>
             <Button
+              type="button"
+              className="pointer-events-auto"
+              variant="outline"
+              size="sm"
+              onClick={() => void toggleGridFullscreen()}
+              title={isGridFullscreen ? '退出全屏 (Esc)' : '表格全屏'}
+              aria-label={isGridFullscreen ? '退出全屏' : '表格全屏'}
+              aria-pressed={isGridFullscreen}
+            >
+              {isGridFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+            <Button
+              className="pointer-events-auto"
               onClick={handleExportCSV}
               disabled={exporting}
               variant="outline"
@@ -934,8 +1052,23 @@ export default function DataGrid({
             </Button>
           </div>
 
-          <div className="table-container">
-            <div className="ag-theme-alpine" style={{ height: gridHeight, width: '100%' }}>
+          <div
+            className={cn(
+              'table-container',
+              tightChrome && 'h-full !p-0 !m-0 !rounded-none !shadow-none embed-flat-grid',
+              (tightChrome || isGridFullscreen) && 'flex min-h-0 flex-1 flex-col',
+            )}
+          >
+            <div
+              className={cn(
+                'ag-theme-alpine w-full',
+                (tightChrome || isGridFullscreen) && 'min-h-0 flex-1',
+              )}
+              style={{
+                height: tightChrome || isGridFullscreen ? '100%' : gridHeight,
+                width: '100%',
+              }}
+            >
               <AgGridReact
                 key={`${category}-${pageSize}`}
                 ref={gridRef}
@@ -958,10 +1091,11 @@ export default function DataGrid({
                 suppressRowClickSelection={true}
                 onGridReady={onGridReady}
                 rowHeight={rowHeight}
+                getRowId={getRowId}
               />
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
