@@ -30,20 +30,26 @@ export async function GET(request: NextRequest) {
 
     const qLower = q.toLowerCase().replace(/'/g, "''");
     const qUpper = q.toUpperCase().replace(/'/g, "''");
-    const digit6 = q.match(/^\d{6}$/)?.[0] ?? '';
+    const trimmed = q.trim();
+    // 成分库里 ts_code 可能是「000426.SZ」或仅「000426」；用数字部分对齐，避免只能依赖名称匹配
+    const fullStock = trimmed.match(/^(\d{6})(\.(SZ|SH|BJ))?$/i);
+    const digit6 = fullStock ? fullStock[1] : /^\d{6}$/.test(trimmed) ? trimmed : '';
     const digitEsc = digit6.replace(/'/g, "''");
     const filePath = path.resolve(MEMBER_FILE).replace(/\\/g, '/').replace(/'/g, "''");
 
-    const codeLike = digit6
-      ? ` OR ts_code LIKE '${digitEsc}.%'`
+    const tsNorm = `UPPER(TRIM(COALESCE(CAST(ts_code AS VARCHAR), '')))`;
+    const codePrefixEq = digit6
+      ? ` OR (
+          TRY_CAST(SPLIT_PART(${tsNorm}, '.', 1) AS BIGINT) IS NOT DISTINCT FROM TRY_CAST('${digitEsc}' AS BIGINT)
+        )`
       : '';
     const sql = `
       SELECT DISTINCT l1_code, l2_code, l3_code
       FROM read_parquet('${filePath}')
       WHERE (
-        LOWER(name) LIKE '%${qLower}%'
-        OR UPPER(ts_code) LIKE '%${qUpper}%'
-        ${codeLike}
+        LOWER(COALESCE(CAST(name AS VARCHAR), '')) LIKE '%${qLower}%'
+        OR ${tsNorm} LIKE '%${qUpper}%'
+        ${codePrefixEq}
       )
       LIMIT 20000
     `;

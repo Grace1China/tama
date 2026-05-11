@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, type CSSProperties } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -54,6 +54,8 @@ interface DataGridProps {
   uniformColumnWidth?: number;
   /** 按字段覆盖列宽（像素），优先级高于 uniformColumnWidth 与自动宽度 */
   columnWidthByField?: Record<string, number>;
+  /** 按字段覆盖单元格样式（如 Recharts Tooltip 需 overflow:visible） */
+  cellStyleByField?: Record<string, CSSProperties>;
   /** 固定在左侧的列（英文字段名） */
   pinnedLeftFields?: string[];
   /** 行 ID 提取函数，启用后 Ag-Grid 可做增量更新 */
@@ -122,6 +124,7 @@ export default function DataGrid({
   rowHeight,
   uniformColumnWidth,
   columnWidthByField,
+  cellStyleByField,
   pinnedLeftFields,
   getRowId,
   tightChrome = false,
@@ -573,6 +576,7 @@ export default function DataGrid({
           cellRenderer: customRenderer,
           autoHeight: true,
           wrapText: true,
+          ...(cellStyleByField?.[field] ? { cellStyle: cellStyleByField[field] } : {}),
         };
       } else if (mapping) {
         formatterProps = {
@@ -647,7 +651,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, columnWidthByField, pinnedLeftFields]);
+  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, columnWidthByField, cellStyleByField, pinnedLeftFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({

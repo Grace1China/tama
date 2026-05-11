@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import DataGrid, { type CSVData } from '../components/DataGrid';
+import { CninfoStockRecentInfoModal } from '../components/CninfoStockRecentInfoModal';
 import { formatDateYYMM } from '@/lib/dateFormat';
 import { ChevronDown, X } from 'lucide-react';
 import {
@@ -63,9 +64,15 @@ type ContrastRow = {
   charts: Record<MetricKey, MetricChart>;
 };
 
+/** 固定列「热点概念」单元格状态（定期报告标题 + LLM 归纳） */
+type HotConceptsCellState = { state: 'loading' } | { state: 'ready'; summary: string } | { state: 'error'; err: string };
+
+/** 附带热点：更新走 displayGridData，避免 customCellRenderers 随热点变化触发整表 columnDefs 重建（闪动） */
+type StockBasicGridValue = ContrastRow & { __hotConcepts?: HotConceptsCellState };
+
 type ContrastGridRow = {
   pin_top: string;
-  stock_basic: ContrastRow;
+  stock_basic: StockBasicGridValue;
 } & Record<MetricKey, MetricChart>;
 
 const COLORS = ['#2563eb', '#ef4444', '#16a34a', '#f59e0b', '#7c3aed', '#0ea5e9'];
@@ -799,6 +806,19 @@ export default function IncomeContrastPage() {
     setBalanceHistoryModal({ title, chart: chartPayload });
   }, []);
 
+  /** 巨潮 p_info3085 最近公开信息弹窗：点击证券代码打开 */
+  const [cninfoRecentTsCode, setCninfoRecentTsCode] = useState<string | null>(null);
+  const closeCninfoRecentModal = useCallback(() => setCninfoRecentTsCode(null), []);
+  const openCninfoRecentModal = useCallback((tsCode: string) => {
+    const c = String(tsCode ?? '').trim().toUpperCase();
+    if (c) setCninfoRecentTsCode(c);
+  }, []);
+
+  /** 基于定期报告标题归纳的热点概念（键为 tsCode 大写） */
+  const [hotConceptsByCode, setHotConceptsByCode] = useState<Record<string, HotConceptsCellState>>({});
+  const hotConceptsRequestedRef = useRef<Set<string>>(new Set());
+  const codesKeyForHotConcepts = useMemo(() => buildCodesKey(codes), [codes]);
+
   /** 顶部控制区（代码输入、指标过滤）展开/收起，收起后下方分栏占满剩余高度 */
   const [controlPanelExpanded, setControlPanelExpanded] = useState(true);
 
@@ -1051,11 +1071,21 @@ export default function IncomeContrastPage() {
     };
 
     const stockRenderer = (params: any) => {
-      const row = params?.value as ContrastRow | undefined;
+      const row = params?.value as StockBasicGridValue | undefined;
       if (!row) return <div className="text-xs text-gray-400">—</div>;
+      const hot = row.__hotConcepts;
       return (
         <div className="space-y-1 py-1">
-          <div className="font-medium text-gray-900">{row.tsCode}</div>
+          <button
+            type="button"
+            className="block w-full text-left font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
+            onClick={(e) => {
+              e.stopPropagation();
+              openCninfoRecentModal(row.tsCode);
+            }}
+          >
+            {row.tsCode}
+          </button>
           {row.loading ? (
             <div className="text-xs text-gray-500">加载中...</div>
           ) : row.error ? (
@@ -1069,6 +1099,18 @@ export default function IncomeContrastPage() {
           ) : (
             <div className="text-xs text-gray-500">无股票信息</div>
           )}
+          {!row.loading &&
+            (hot?.state === 'loading' ? (
+              <div className="text-[11px] text-gray-500">热点概念：归纳中…</div>
+            ) : hot?.state === 'error' ? (
+              <div className="text-[11px] text-amber-800" title={hot.err}>
+                热点：{hot.err.length > 48 ? `${hot.err.slice(0, 48)}…` : hot.err}
+              </div>
+            ) : hot?.state === 'ready' ? (
+              <div className="text-[11px] leading-snug text-violet-950" title={hot.summary}>
+                热点：{hot.summary || '—'}
+              </div>
+            ) : null)}
         </div>
       );
     };
@@ -1095,7 +1137,8 @@ export default function IncomeContrastPage() {
       };
     }
     return renderers;
-  }, [pinnedCodes, toggleRowPin, openBalanceHistoryModal]);
+    // 热点不进依赖：由行数据 __hotConcepts（displayGridData）刷新，避免每只股票 loading/ready 都换 renderers 引用导致 DataGrid 整表重建列
+  }, [pinnedCodes, toggleRowPin, openBalanceHistoryModal, openCninfoRecentModal]);
 
   const rowsRef = useRef<ContrastRow[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1172,6 +1215,42 @@ export default function IncomeContrastPage() {
       setRunning(false);
     };
   }, [codes, flushRows]);
+
+  /** 对比股票集合变化时清空热点请求记录与结果 */
+  useEffect(() => {
+    hotConceptsRequestedRef.current.clear();
+    setHotConceptsByCode({});
+  }, [codesKeyForHotConcepts]);
+
+  /** 行加载完成后按代码请求热点归纳（结果写入 displayGridData.__hotConcepts，不触发 cellRenderers 重建） */
+  useEffect(() => {
+    const ready = rows.filter((r) => !r.loading);
+    for (const row of ready) {
+      const code = row.tsCode.trim().toUpperCase();
+      if (hotConceptsRequestedRef.current.has(code)) continue;
+      hotConceptsRequestedRef.current.add(code);
+      setHotConceptsByCode((prev) => ({ ...prev, [code]: { state: 'loading' } }));
+      void fetch('/api/hot-concepts/from-disclosures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tsCode: code }),
+      })
+        .then(async (res) => {
+          const j = (await res.json().catch(() => ({}))) as { error?: string; summary?: string };
+          if (!res.ok) {
+            const err = typeof j?.error === 'string' ? j.error : `HTTP ${res.status}`;
+            setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'error', err } }));
+            return;
+          }
+          const summary = typeof j?.summary === 'string' ? j.summary.trim() : '';
+          setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'ready', summary } }));
+        })
+        .catch((e) => {
+          const msg = e instanceof Error ? e.message : String(e);
+          setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'error', err: msg } }));
+        });
+    }
+  }, [rows]);
 
   // metric filter: evaluate expression against latest metrics
   const { filteredRows, filterErr } = useMemo(() => {
@@ -1313,11 +1392,12 @@ export default function IncomeContrastPage() {
   const displayGridData = useMemo<CSVData>(() => {
     const headers = ['置顶', '股票基本信息', ...METRIC_COLUMNS.map((c) => c.label)];
     const data: ContrastGridRow[] = orderedFilteredRows.map((row) => {
+      const code = row.tsCode.trim().toUpperCase();
       const metricData = Object.fromEntries(METRIC_COLUMNS.map((c) => [c.key, row.charts[c.key]])) as Record<MetricKey, MetricChart>;
-      return { pin_top: row.tsCode.toUpperCase(), stock_basic: row, ...metricData };
+      return { pin_top: row.tsCode.toUpperCase(), stock_basic: { ...row, __hotConcepts: hotConceptsByCode[code] }, ...metricData };
     });
     return { category: 'incomeContrast', filename: 'incomeContrast', headers, originalHeaders: columnOrder, data, totalRows: data.length };
-  }, [orderedFilteredRows, columnOrder]);
+  }, [orderedFilteredRows, columnOrder, hotConceptsByCode]);
 
   return (
     <div className="box-border flex max-h-full min-h-0 min-w-0 max-w-full flex-1 basis-0 flex-col gap-4 overflow-hidden p-4">
@@ -1460,7 +1540,7 @@ export default function IncomeContrastPage() {
                 rowHeight={240}
                 gridHeight="100%"
                 uniformColumnWidth={360}
-                columnWidthByField={{ pin_top: 72, stock_basic: 150 }}
+                columnWidthByField={{ pin_top: 72, stock_basic: 228 }}
                 pinnedLeftFields={['pin_top', 'stock_basic']}
                 clientSortResetKey={gridClientSortResetKey}
                 getRowId={(params: any) => params.data?.stock_basic?.tsCode ?? String(params.rowIndex)}
@@ -1469,6 +1549,12 @@ export default function IncomeContrastPage() {
           )}
         </div>
       </div>
+
+      <CninfoStockRecentInfoModal
+        open={cninfoRecentTsCode != null}
+        tsCode={cninfoRecentTsCode ?? ''}
+        onClose={closeCninfoRecentModal}
+      />
 
       {balanceHistoryModal &&
         createPortal(

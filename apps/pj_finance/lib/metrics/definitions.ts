@@ -112,6 +112,26 @@ export const metrics: MetricRegistry = {
     meta: { label: '经营活动产生的现金流量净额(单季)', unit: 'CNY', precision: 2 },
     compute: ({ data, period }) => data.cashflow[period]?.n_cashflow_act_q ?? null,
   },
+  /** cashflow_vip: 购建固定资产、无形资产和其他长期资产支付的现金（当年截至该季末累计，与报表披露一致） */
+  c_pay_acq_const_fiolta: {
+    meta: { label: '购建固定资产、无形资产和其他长期资产支付的现金(累计)', unit: 'CNY', precision: 2 },
+    compute: ({ data, period }) => data.cashflow[period]?.c_pay_acq_const_fiolta ?? null,
+  },
+  /** 单季：由当年累计递推 */
+  c_pay_acq_const_fiolta_q: {
+    meta: { label: '购建固定资产、无形资产和其他长期资产支付的现金(单季)', unit: 'CNY', precision: 2 },
+    compute: ({ data, period }) => data.cashflow[period]?.c_pay_acq_const_fiolta_q ?? null,
+  },
+  /** 近四个季度单季购建支出之和（与 n_cashflow_act_ttm 同一滚动口径） */
+  c_pay_acq_const_fiolta_ttm: {
+    meta: { label: '购建固定资产、无形资产和其他长期资产支付的现金(TTM)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine }) => {
+      const periods = lastNQuarters(period, 4);
+      const values = periods.map((p) => engine.calculate('c_pay_acq_const_fiolta_q', { stockCode, period: p, data }));
+      if (values.some((v) => v == null)) return null;
+      return values.reduce<number>((sum, v) => sum + (v as number), 0);
+    },
+  },
   /** 语义别名：与 n_income_attr_p / n_cashflow_act 同值，兼容旧 API 参数名 */
   netProfit: {
     deps: ['n_income_attr_p'],
@@ -123,6 +143,7 @@ export const metrics: MetricRegistry = {
     meta: { label: '经营活动产生的现金流量净额', unit: 'CNY', precision: 2 },
     compute: ({ n_cashflow_act }) => asNumber(n_cashflow_act),
   },
+  /** 近四个季度单季经营活动现金流净额之和；单季由当年累计在行内递推（normalize 时现金流须按 end_date 升序） */
   n_cashflow_act_ttm: {
     meta: { label: '经营活动产生的现金流量滚动净额', unit: 'CNY', precision: 2 },
     // compute: ({ n_cashflow_act }) => asNumber(n_cashflow_act),
@@ -169,6 +190,11 @@ export const metrics: MetricRegistry = {
   money_cap: {
     meta: { label: '货币资金', unit: 'CNY', precision: 2 },
     compute: ({ data, period }) => data.balance[period]?.money_cap ?? null,
+  },
+  /** 与 route 资产负债表解析中的 trad_asset 一致（由 pickNumber 写入 balance） */
+  trad_asset: {
+    meta: { label: '交易性金融资产', unit: 'CNY', precision: 2 },
+    compute: ({ data, period }) => data.balance[period]?.trad_asset ?? null,
   },
   total_cash: {
     meta: { label: '总现金', unit: 'CNY', precision: 2 },
@@ -291,6 +317,16 @@ export const metrics: MetricRegistry = {
   lt_borr: {
     meta: { label: '长期借款', unit: 'CNY', precision: 2 },
     compute: ({ data, period }) => data.balance[period]?.lt_borr ?? null,
+  },
+  /** 流动负债：应付短期债券（≤1 年），净负债有息部分需与 bond_payable 一并计入 */
+  st_bonds_payable: {
+    meta: { label: '应付短期债券', unit: 'CNY', precision: 2 },
+    compute: ({ data, period }) => data.balance[period]?.st_bonds_payable ?? null,
+  },
+  /** 非流动侧应付债券（>1 年）；源数据列名可为 bond_payable 或 bonds_payable，由 route 归一到 balance.bond_payable */
+  bond_payable: {
+    meta: { label: '应付债券(非流动)', unit: 'CNY', precision: 2 },
+    compute: ({ data, period }) => data.balance[period]?.bond_payable ?? null,
   },
   total_ncl: {
     meta: { label: '非流动负债合计', unit: 'CNY', precision: 2 },
@@ -572,6 +608,80 @@ export const metrics: MetricRegistry = {
       const past = engine.calculate('total_hldr_eqy_exc_min_int', { stockCode, period: pastPeriod, data, params });
       // console.log('净资产近N年复合增长率',{ current, past, years });
       return cagrPct(current, asNumber(past), years);
+    },
+  },
+  // ==========================================
+  // 1. 基础组件：自由现金流 (FCF)
+  // ==========================================
+
+  // 滚动 TTM：在同一 period 下用 engine 显式计算，避免误以为无报告期上下文
+  fcff_ttm: {
+    meta: { label: '企业自由现金流(TTM)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine }) => {
+      const ocf = asNumber(engine.calculate('n_cashflow_act_ttm', { stockCode, period, data }));
+      const capex = asNumber(engine.calculate('c_pay_acq_const_fiolta_ttm', { stockCode, period, data }));
+      if (ocf == null || capex == null) return null;
+      // FCF = 经营活动现金流量净额 TTM - 购建长期资产现金支出 TTM
+      return ocf - capex;
+    },
+  },
+
+  // ==========================================
+  // 2. 基础组件：净负债 (Net Debt)
+  // ==========================================
+
+  net_debt: {
+    meta: { label: '净负债', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine }) => {
+      // 按 period 取各科期末值：有息负债（短借+长借+应付短期债券+应付债券非流动）-（货币资金 + 交易性金融资产）；trad_asset 为 route 归一字段
+      const st = asNumber(engine.calculate('st_borr', { stockCode, period, data }));
+      const lt = asNumber(engine.calculate('lt_borr', { stockCode, period, data }));
+      const stBonds = asNumber(engine.calculate('st_bonds_payable', { stockCode, period, data }));
+      const bondPayable = asNumber(engine.calculate('bond_payable', { stockCode, period, data }));
+      const money = asNumber(engine.calculate('money_cap', { stockCode, period, data }));
+      const trad = asNumber(data.balance[period]?.trad_asset);
+      const totalDebt = (st ?? 0) + (lt ?? 0) + (stBonds ?? 0) + (bondPayable ?? 0);
+      const totalCash = (money ?? 0) + (trad ?? 0);
+      return totalDebt - totalCash;
+    },
+  },
+
+  // ==========================================
+  // 3 & 4. 核心引擎：DCF 股权价值计算
+  // ==========================================
+
+  // 以 fcff_ttm 为第 0 年现金流基数、同 period 资产负债表 net_debt 去杠杆
+  dcf_equity_value_ttm: {
+    meta: { label: 'DCF股权价值(TTM)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine, params }) => {
+      const baseCtx = { stockCode, period, data, params };
+      const fcf0 = asNumber(engine.calculate('fcff_ttm', baseCtx));
+      const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
+
+      if (fcf0 == null || fcf0 <= 0) {
+        return null;
+      }
+
+      // --- 动态参数提取 (通过引擎的 params 传入，未传则给默认假设) ---
+      const wacc = asNumber(params?.wacc) ?? 0.085;
+      const g1 = asNumber(params?.stage1_growth) ?? 0.15;
+      const g2 = asNumber(params?.terminal_growth) ?? 0.02;
+      const projectionYears = asNumber(params?.projection_years) ?? 5;
+
+      if (wacc <= g2) return null;
+
+      let presentValueFCF = 0;
+      let currentFCF = fcf0;
+
+      for (let t = 1; t <= projectionYears; t++) {
+        currentFCF *= (1 + g1);
+        presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
+      }
+
+      const terminalValue = (currentFCF * (1 + g2)) / (wacc - g2);
+      const presentValueTV = terminalValue / Math.pow(1 + wacc, projectionYears);
+      const ev = presentValueFCF + presentValueTV;
+      return ev - netDebt;
     },
   },
 };

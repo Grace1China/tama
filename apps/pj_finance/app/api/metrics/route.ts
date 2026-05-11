@@ -274,6 +274,10 @@ function normalizeFinancialData(
       total_cur_liab: pickNumber(row, ['total_cur_liab']),
       // balancesheet_vip: lt_borr — 长期借款
       lt_borr: pickNumber(row, ['lt_borr']),
+      // balancesheet_vip: st_bonds_payable — 应付短期债券（流动）
+      st_bonds_payable: pickNumber(row, ['st_bonds_payable']),
+      // balancesheet_vip: bond_payable — 应付债券（列名 bond_payable / bonds_payable 归一到此字段）
+      bond_payable: pickNumber(row, ['bond_payable', 'bonds_payable']),
       // balancesheet_vip: total_ncl — 非流动负债合计
       total_ncl: pickNumber(row, ['total_ncl']),
       // balancesheet_vip: oth_ncl — 其他非流动负债
@@ -293,7 +297,11 @@ function normalizeFinancialData(
     };
   }
 
-  for (const row of cashflowRows) {
+  // 现金流量表含「当年累计→单季」递推，须与利润表相同按 end_date 升序写入，否则 n_cashflow_act_q 会错、TTM 偏离
+  const cashflowSorted = [...cashflowRows].sort(
+    (a, b) => endDateSortKey(a.end_date) - endDateSortKey(b.end_date)
+  );
+  for (const row of cashflowSorted) {
     const period = normalizeEndDateToPeriod(row.end_date);
     if (!period) continue;
     data.cashflow[period] = {
@@ -306,6 +314,10 @@ function normalizeFinancialData(
       c_inf_fr_operate_a:pickNumber(row,['c_inf_fr_operate_a']),
       // cashflow_vip: c_inf_fr_operate_a_q — 经营活动现金流入小计单季
       c_inf_fr_operate_a_q:pickNumber(row,['c_inf_fr_operate_a'], { deaccumulateQuarterly: true }, { cashflow: data.cashflow, period }),
+
+      // cashflow_vip: c_pay_acq_const_fiolta — 购建固定资产、无形资产和其他长期资产支付的现金
+      c_pay_acq_const_fiolta: pickNumber(row, ['c_pay_acq_const_fiolta']),
+      c_pay_acq_const_fiolta_q: pickNumber(row, ['c_pay_acq_const_fiolta'], { deaccumulateQuarterly: true }, { cashflow: data.cashflow, period }),
     };
   }
 
