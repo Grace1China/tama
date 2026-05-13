@@ -12,11 +12,15 @@ import { chatOpenAICompatible, resolveHotConceptsLlmConfig } from '@/lib/hotConc
  * POST JSON: { tsCode: string }
  * 从巨潮 p_info3085 中筛定期报告类标题，经 DeepSeek 或本地 OpenAI 兼容接口归纳热点概念词。
  *
- * 环境变量：
- * - HOT_CONCEPTS_LLM: deepseek | local | auto（默认 auto：有 DEEPSEEK_API_KEY 则 DeepSeek，否则 LOCAL_LLM_BASE_URL）
+ * 环境变量写在应用根目录 .env.local（与 package.json 同级，勿改 .env.example）：
+ * - HOT_CONCEPTS_LLM: deepseek | local | auto（默认 auto：优先 LOCAL_LLM_BASE_URL，否则 DEEPSEEK_API_KEY）
+ * - HOT_CONCEPTS_LLM_TIMEOUT_MS: 超时毫秒（不设时本地默认 600000、云端 180000；上限约 3600000）
  * - DEEPSEEK_API_KEY、DEEPSEEK_BASE_URL、DEEPSEEK_MODEL
  * - LOCAL_LLM_BASE_URL（如 LM Studio http://127.0.0.1:1234/v1）、LOCAL_LLM_MODEL、LOCAL_LLM_API_KEY（可选）
  */
+/** 与热点 LLM 超时对齐：默认 600s 本地推理 + 巨潮与头尾余量；Vercel 等环境仍受套餐上限约束 */
+export const maxDuration = 660;
+
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          '未配置热点归纳模型：请设置 DEEPSEEK_API_KEY，或设置 LOCAL_LLM_BASE_URL（OpenAI 兼容 /v1，如本地 Gemma）',
+          '未配置热点归纳模型：请在 .env.local 中设置 LOCAL_LLM_BASE_URL（OpenAI 兼容 /v1），或 DEEPSEEK_API_KEY（云端）。可选 HOT_CONCEPTS_LLM=local|deepseek|auto。保存后需重启 dev。',
       },
       { status: 503 }
     );
@@ -52,7 +56,11 @@ export async function POST(req: NextRequest) {
   const j = cn.json;
   if (j.resultcode != null && j.resultcode !== 200) {
     return NextResponse.json(
-      { error: String(j.resultmsg ?? `巨潮 resultcode=${j.resultcode}`) },
+      {
+        phase: 'cninfo',
+        resultcode: j.resultcode,
+        error: String(j.resultmsg ?? `巨潮 resultcode=${j.resultcode}`),
+      },
       { status: 502 }
     );
   }
@@ -61,11 +69,31 @@ export async function POST(req: NextRequest) {
   const user = buildHotConceptsUserPrompt(tsCode, lines);
   const system = buildHotConceptsSystemPrompt();
 
+  // 开发排查：打印入模概要（不落 API Key）；periodicReportTitleLines 即 user 中的公告标题素材（新→旧）
+  const userPreviewLimit = 2500;
+  console.log('[hot-concepts/from-disclosures] llm_input', {
+    tsCode,
+    cninfoScode: scode,
+    provider: cfg.provider,
+    model: cfg.model,
+    baseUrl: cfg.baseUrl,
+    apiKeyConfigured: Boolean(cfg.apiKey?.trim()),
+    periodicReportTitleCount: lines.length,
+    periodicReportTitleLines: lines,
+    systemPrompt: system,
+    userPromptCharCount: user.length,
+    userPromptPreview:
+      user.length <= userPreviewLimit
+        ? user
+        : `${user.slice(0, userPreviewLimit)}…(${user.length - userPreviewLimit} more chars omitted)`,
+  });
+
   try {
     const summary = await chatOpenAICompatible({
       baseUrl: cfg.baseUrl,
       apiKey: cfg.apiKey,
       model: cfg.model,
+      provider: cfg.provider,
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
@@ -79,6 +107,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: msg }, { status: 502 });
+    return NextResponse.json({ phase: 'llm', error: msg }, { status: 502 });
   }
 }

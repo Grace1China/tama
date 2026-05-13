@@ -67,6 +67,8 @@ interface DataGridProps {
    * （例如利润对比里「置顶 / 按 ROE 自动置顶」依赖 rowData 顺序，否则会一直被用户列排序覆盖）。
    */
   clientSortResetKey?: string;
+  /** 为 false 时关闭行动画，减轻批量数据更新时的视觉抖动 */
+  animateRows?: boolean;
 }
 
 function getColVisibilityKey(category: string, tabId?: string): string {
@@ -129,6 +131,7 @@ export default function DataGrid({
   getRowId,
   tightChrome = false,
   clientSortResetKey,
+  animateRows = true,
 }: DataGridProps) {
   const [csvData, setCsvData] = useState<CSVData | null>(localData ?? null);
   const [loading, setLoading] = useState(false);
@@ -267,7 +270,7 @@ export default function DataGrid({
 
   const fetchInitialData = useCallback(async () => {
     if (localData) {
-      setCsvData(localData);
+      setCsvData((prev) => (prev && prev.data === localData.data ? prev : localData));
       setLoading(false);
       setError(null);
       return;
@@ -360,10 +363,13 @@ export default function DataGrid({
     }
   }, [useServerPagination, apiPath, category, localData]);
 
-  // 数据加载
+  // 数据加载：本地数据仅在 data 引用变化时更新，避免父组件重复传入等价 CSV 包装对象导致整表重刷
   useEffect(() => {
     if (localData) {
-      setCsvData(localData);
+      setCsvData((prev) => {
+        if (prev && prev.data === localData.data) return prev;
+        return localData;
+      });
       setLoading(false);
       setError(null);
       return;
@@ -1090,7 +1096,7 @@ export default function DataGrid({
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
                 suppressCellFocus={false}
-                animateRows={true}
+                animateRows={animateRows}
                 rowSelection="multiple"
                 suppressRowClickSelection={true}
                 onGridReady={onGridReady}

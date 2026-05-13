@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import DataGrid, { type CSVData } from '../components/DataGrid';
 import { CninfoStockRecentInfoModal } from '../components/CninfoStockRecentInfoModal';
 import { formatDateYYMM } from '@/lib/dateFormat';
+import { metrics } from '@/lib/metrics/definitions';
 import { ChevronDown, X } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -24,6 +25,33 @@ import {
   ReferenceLine,
 } from 'recharts';
 
+/** 图轴为 26Q1 时展开为 2026Q1，便于 tooltip 首行展示 */
+function expandTooltipPeriod(axisLabel: string): string {
+  const t = String(axisLabel ?? '').trim();
+  if (/^\d{4}Q[1-4]$/.test(t)) return t;
+  const m = t.match(/^(\d{2})Q([1-4])$/);
+  if (m) return `20${m[1]}Q${m[2]}`;
+  return t;
+}
+
+/** 与 definitions 中 meta.label 一致（DCF tooltip 用） */
+function metricLabel(key: keyof typeof metrics): string {
+  const m = metrics[key] as { meta?: { label?: string } } | undefined;
+  return m?.meta?.label ?? String(key);
+}
+
+/** DCF tooltip：标签只保留连续的前四个汉字 */
+function first4Han(text: string): string {
+  const out: string[] = [];
+  for (const ch of text) {
+    if (/[\u4e00-\u9fff]/.test(ch)) {
+      out.push(ch);
+      if (out.length >= 4) break;
+    }
+  }
+  return out.join('') || text.slice(0, 4);
+}
+
 type StockInfo = {
   name: string;
   area: string;
@@ -38,6 +66,19 @@ type MetricChart = {
   note?: string;
   _stats?: { mean: number; high: number; low: number };
   history?: Array<{ period: string; values: number[] }>;
+  /** DCF 列：与 x 同序，tooltip 核对用（金额为财报元） */
+  dcfTooltipRows?: Array<{
+    n_cashflow_act_ttm: number | null;
+    c_pay_acq_const_fiolta_ttm: number | null;
+    fcff_ttm: number | null;
+    net_debt: number | null;
+    st_borr: number | null;
+    lt_borr: number | null;
+    st_bonds_payable: number | null;
+    bond_payable: number | null;
+    money_cap: number | null;
+    trad_asset: number | null;
+  }>;
 };
 
 type MetricKey =
@@ -53,7 +94,9 @@ type MetricKey =
   | 'ps_valuation'
   | 'pe_valuation'
   | 'pb_valuation'
+  | 'vol_turnover_40d'
   | 'dupont'
+  | 'dcf_valuation'
   | 'forecast_signal';
 
 type ContrastRow = {
@@ -70,6 +113,16 @@ type HotConceptsCellState = { state: 'loading' } | { state: 'ready'; summary: st
 /** 附带热点：更新走 displayGridData，避免 customCellRenderers 随热点变化触发整表 columnDefs 重建（闪动） */
 type StockBasicGridValue = ContrastRow & { __hotConcepts?: HotConceptsCellState };
 
+function hotConceptsEqual(a: HotConceptsCellState | undefined, b: HotConceptsCellState | undefined): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return a === b;
+  if (a.state !== b.state) return false;
+  if (a.state === 'loading' && b.state === 'loading') return true;
+  if (a.state === 'error' && b.state === 'error') return a.err === b.err;
+  if (a.state === 'ready' && b.state === 'ready') return a.summary === b.summary;
+  return false;
+}
+
 type ContrastGridRow = {
   pin_top: string;
   stock_basic: StockBasicGridValue;
@@ -84,20 +137,23 @@ const BALANCE_FULL_LABELS: Record<string, string> = {
   '他流负': '其他流动负债', '长借': '长期借款', '长负': '其他非流动负债',
 };
 
+/** 表头顺序：紧挨「置顶 + 股票基本信息」后为营收现金流、增长趋势、杜邦、DCF，其余保持原相对顺序 */
 const METRIC_COLUMNS: Array<{ key: MetricKey; label: string }> = [
-  { key: 'rev_mv', label: '营收和市值' },
   { key: 'rev_cashflow', label: '营收和现金流' },
+  { key: 'growth_trend', label: '综合增长率趋势' },
+  { key: 'dupont', label: '杜邦分析' },
+  { key: 'dcf_valuation', label: 'DCF估值(TTM)' },
+  { key: 'rev_mv', label: '营收和市值' },
   { key: 'cost_margin', label: '成本与毛利率' },
   { key: 'fee_revenue', label: '三费与营收' },
   { key: 'dividend_yield', label: '股息率' },
   { key: 'growth_summary', label: '综合增长率' },
-  { key: 'growth_trend', label: '综合增长率趋势' },
   { key: 'balance_structure', label: '资产负债结构' },
   { key: 'biz_comp', label: '业务构成' },
   { key: 'ps_valuation', label: '市销率估值' },
   { key: 'pe_valuation', label: '滚动市盈率估值' },
   { key: 'pb_valuation', label: '市净率估值' },
-  { key: 'dupont', label: '杜邦分析' },
+  { key: 'vol_turnover_40d', label: '40日成交/换手' },
   { key: 'forecast_signal', label: '预测列(三表信号)' },
 ];
 
@@ -234,7 +290,9 @@ function emptyCharts(): Record<MetricKey, MetricChart> {
     ps_valuation: emptyChart(),
     pe_valuation: emptyChart(),
     pb_valuation: emptyChart(),
+    vol_turnover_40d: emptyChart(),
     dupont: emptyChart(),
+    dcf_valuation: emptyChart(),
     forecast_signal: emptyChart(),
   };
 }
@@ -276,6 +334,9 @@ const IncomeChartCell = memo(function IncomeChartCell({
     chart.series.forEach((s, si) => {
       row[`s${si}`] = s[i] ?? null;
     });
+    if (metricKey === 'dcf_valuation' && chart.dcfTooltipRows?.[i] != null) {
+      row._dcfDetail = chart.dcfTooltipRows[i];
+    }
     return row;
   });
   // console.log('chartData',metricKey,chartData);
@@ -285,6 +346,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
     metricKey === 'fee_revenue' ||
     metricKey === 'growth_summary' ||
     metricKey === 'growth_trend' ||
+    metricKey === 'vol_turnover_40d' ||
     metricKey === 'dupont' ||
     metricKey === 'forecast_signal';
   const valuationTooltip =
@@ -319,11 +381,13 @@ const IncomeChartCell = memo(function IncomeChartCell({
           const n = Number(p.value);
           const suffix = valuationTooltip
             ? '倍'
-            : /CAGR|毛利率|%|得分|增速/.test(p.name)
-              ? '%'
-              : /周转率|权益乘数/.test(p.name)
-                ? ''
-                : '亿';
+            : /万手/.test(p.name)
+              ? '万手'
+              : /CAGR|毛利率|%|得分|增速/.test(p.name)
+                ? '%'
+                : /周转率|权益乘数/.test(p.name)
+                  ? ''
+                  : '亿';
           return (
             <div
               key={i}
@@ -349,6 +413,97 @@ const IncomeChartCell = memo(function IncomeChartCell({
   };
   const formatYi = (v: any) => `${Number(v).toFixed(0)}亿`;
   const formatPct = (v: any) => `${Number(v).toFixed(1)}%`;
+
+  /** DCF 列 tooltip：首行为期间+股权价值+总市值；下为两列分项（左 FCF 相关、右净负债相关，无前缀） */
+  const formatYiFromYuan = (v: number | null | undefined) =>
+    v == null || !Number.isFinite(v) ? '—' : `${(v / 1e8).toFixed(2)}亿`;
+
+  const dcfDetailTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    const rowPayload = payload.find((p: any) => p?.payload?._dcfDetail)?.payload ?? payload[0]?.payload;
+    const d = rowPayload?._dcfDetail as NonNullable<MetricChart['dcfTooltipRows']>[number] | undefined;
+    const headRows = payload.map((p: any) => {
+      const n = Number(p?.value);
+      const valStr = Number.isFinite(n) ? `${n.toFixed(2)}亿` : '—';
+      return { valStr };
+    });
+    const fcfRows: Array<{ k: string; v: string }> = [];
+    const ndRows: Array<{ k: string; v: string }> = [];
+    if (d) {
+      fcfRows.push(
+        { k: first4Han(metricLabel('n_cashflow_act_ttm')), v: formatYiFromYuan(d.n_cashflow_act_ttm) },
+        { k: first4Han(metricLabel('c_pay_acq_const_fiolta_ttm')), v: formatYiFromYuan(d.c_pay_acq_const_fiolta_ttm) },
+        { k: first4Han(metricLabel('fcff_ttm')), v: formatYiFromYuan(d.fcff_ttm) },
+      );
+      ndRows.push(
+        { k: first4Han(metricLabel('st_borr')), v: formatYiFromYuan(d.st_borr) },
+        { k: first4Han(metricLabel('lt_borr')), v: formatYiFromYuan(d.lt_borr) },
+        { k: first4Han(metricLabel('st_bonds_payable')), v: formatYiFromYuan(d.st_bonds_payable) },
+        { k: first4Han(metricLabel('bond_payable')), v: formatYiFromYuan(d.bond_payable) },
+        { k: first4Han(metricLabel('money_cap')), v: formatYiFromYuan(d.money_cap) },
+        { k: first4Han(metricLabel('trad_asset')), v: formatYiFromYuan(d.trad_asset) },
+      );
+    }
+    const rowStyle = { display: 'flex' as const, justifyContent: 'space-between' as const, gap: 6, lineHeight: '15px' };
+    const dcfHead = headRows[0];
+    const mvHead = headRows[1];
+    const periodFull = expandTooltipPeriod(String(label ?? ''));
+    const headline = `${periodFull}股权价值：${dcfHead?.valStr ?? '—'}，总市值：${mvHead?.valStr ?? '—'}`;
+    return (
+      <div
+        style={{
+          background: '#1e293b',
+          border: '1px solid #475569',
+          borderRadius: 3,
+          padding: '8px 10px',
+          fontSize: 10,
+          lineHeight: '16px',
+          color: '#e2e8f0',
+          maxWidth: 380,
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 600,
+            marginBottom: d ? 8 : 0,
+            fontSize: 11,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {headline}
+        </div>
+        {d ? (
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                borderRight: '1px solid #475569',
+                paddingRight: 10,
+              }}
+            >
+              {fcfRows.map((r: { k: string; v: string }, i: number) => (
+                <div key={`f${i}`} style={rowStyle}>
+                  <span>{r.k}</span>
+                  <span>{r.v}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {ndRows.map((r: { k: string; v: string }, i: number) => (
+                <div key={`n${i}`} style={rowStyle}>
+                  <span>{r.k}</span>
+                  <span>{r.v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  };
 
   if (metricKey === 'rev_mv') {
     return (
@@ -402,13 +557,23 @@ const IncomeChartCell = memo(function IncomeChartCell({
               width={52}
               orientation="right"
               tickFormatter={formatYi}
-              label={{ value: '利润/现金流净额(亿)', angle: 90, position: 'insideRight', style: { fill: '#cbd5e1', fontSize: 10 } }}
+              label={{ value: '利润/经营净额/自由现金(亿)', angle: 90, position: 'insideRight', style: { fill: '#cbd5e1', fontSize: 10 } }}
             />
             <Tooltip content={compactTooltip} />
             <Line yAxisId="left" type="monotone" dataKey="s0" stroke="#1e40af" strokeWidth={2} dot={false} name={chart.labels[0] ?? '滚动总营收 TTM'} />
             <Line yAxisId="left" type="monotone" dataKey="s1" stroke="#60a5fa" strokeWidth={2} dot={false} name={chart.labels[1] ?? '经营现金流入 TTM'} />
             <Line yAxisId="right" type="monotone" dataKey="s2" stroke="#9a3412" strokeWidth={2} dot={false} name={chart.labels[2] ?? '归母净利润 TTM'} />
             <Line yAxisId="right" type="monotone" dataKey="s3" stroke="#fb923c" strokeWidth={2} dot={false} name={chart.labels[3] ?? '经营现金流净额 TTM'} />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="s4"
+              stroke="#ef4444"
+              strokeWidth={2.5}
+              dot={false}
+              connectNulls
+              name={chart.labels[4] ?? '自由现金流TTM(亿)'}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -473,6 +638,51 @@ const IncomeChartCell = memo(function IncomeChartCell({
             )}
           </LineChart>
         </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (metricKey === 'vol_turnover_40d') {
+    const noteText = chart.note?.trim();
+    const formatWan = (v: any) => `${Number(v).toFixed(1)}万手`;
+    return (
+      <div className="h-[190px] w-full rounded-md border border-slate-700 bg-slate-900 p-1 text-slate-100">
+        {noteText ? <div className="px-1 pb-0.5 text-[10px] text-slate-400">{noteText}</div> : null}
+        <div className={noteText ? 'h-[calc(100%-16px)]' : 'h-full'}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 4, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="xLabel" tick={{ fill: '#94a3b8', fontSize: 9 }} interval="preserveStartEnd" />
+              <YAxis
+                yAxisId="left"
+                tick={{ fill: '#94a3b8', fontSize: 10 }}
+                width={48}
+                tickFormatter={formatWan}
+                label={{ value: '成交量(万手)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10 } }}
+              />
+              <YAxis
+                yAxisId="right"
+                tick={{ fill: '#cbd5e1', fontSize: 10 }}
+                width={40}
+                orientation="right"
+                tickFormatter={formatPct}
+                label={{ value: '换手(%)', angle: 90, position: 'insideRight', style: { fill: '#cbd5e1', fontSize: 10 } }}
+              />
+              <Tooltip content={compactTooltip} />
+              <Bar yAxisId="left" dataKey="s0" barSize={4} fill="#6366f1" name={chart.labels[0] ?? '成交量(万手)'} />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="s1"
+                stroke="#22d3ee"
+                strokeWidth={2}
+                dot={false}
+                connectNulls
+                name={chart.labels[1] ?? '换手率(%)'}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     );
   }
@@ -689,6 +899,42 @@ const IncomeChartCell = memo(function IncomeChartCell({
     );
   }
 
+  // DCF 股权价值（TTM）+ 总市值对比；tooltip 带 FCF/净负债分项（与历史对话实现一致）
+  if (metricKey === 'dcf_valuation') {
+    return (
+      <div className="h-[190px] w-full rounded-md border border-slate-700 bg-slate-900 p-1 text-slate-100">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 6, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <XAxis dataKey="xLabel" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
+            <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} width={44} tickFormatter={formatYi} />
+            <Tooltip content={dcfDetailTooltip} />
+            <Line
+              type="monotone"
+              dataKey="s0"
+              stroke="#ef4444"
+              strokeWidth={2.5}
+              dot={false}
+              connectNulls
+              isAnimationActive={false}
+              name={chart.labels[0] ?? 'DCF股权价值(TTM)(亿)'}
+            />
+            <Line
+              type="monotone"
+              dataKey="s1"
+              stroke="#22c55e"
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+              isAnimationActive={false}
+              name={chart.labels[1] ?? '总市值(亿)'}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
   if (metricKey === 'forecast_signal') {
     const scoreLabels = ['利润表', '资产负债', '现金流', '综合'];
     const scoreValues = scoreLabels.map((_, idx) => chart.series[0]?.[idx] ?? NaN);
@@ -817,10 +1063,41 @@ export default function IncomeContrastPage() {
   /** 基于定期报告标题归纳的热点概念（键为 tsCode 大写） */
   const [hotConceptsByCode, setHotConceptsByCode] = useState<Record<string, HotConceptsCellState>>({});
   const hotConceptsRequestedRef = useRef<Set<string>>(new Set());
+  /** 热点结果合并到每帧一次 setState，减少 displayGridData 与 DataGrid 连锁刷新 */
+  const hotConceptsBatchRef = useRef<Record<string, HotConceptsCellState>>({});
+  const hotConceptsRafRef = useRef<number | null>(null);
   const codesKeyForHotConcepts = useMemo(() => buildCodesKey(codes), [codes]);
+
+  const scheduleHotConceptsUpdate = useCallback((code: string, next: HotConceptsCellState) => {
+    hotConceptsBatchRef.current[code] = next;
+    if (hotConceptsRafRef.current != null) return;
+    hotConceptsRafRef.current = requestAnimationFrame(() => {
+      hotConceptsRafRef.current = null;
+      const batch = hotConceptsBatchRef.current;
+      hotConceptsBatchRef.current = {};
+      const keys = Object.keys(batch);
+      if (keys.length === 0) return;
+      setHotConceptsByCode((prev) => {
+        let out: Record<string, HotConceptsCellState> | null = null;
+        for (const k of keys) {
+          const v = batch[k];
+          if (hotConceptsEqual(prev[k], v)) continue;
+          if (!out) out = { ...prev };
+          out[k] = v;
+        }
+        return out ?? prev;
+      });
+    });
+  }, []);
+
+  const displayGridStableRef = useRef<CSVData | null>(null);
+  const displayGridRowByCodeRef = useRef<Map<string, ContrastGridRow>>(new Map());
 
   /** 顶部控制区（代码输入、指标过滤）展开/收起，收起后下方分栏占满剩余高度 */
   const [controlPanelExpanded, setControlPanelExpanded] = useState(true);
+
+  /** 仅勾选时对已加载行请求公告热点归纳（走本地大模型，较慢）；不勾选则不请求 */
+  const [hotConceptsLlmEnabled, setHotConceptsLlmEnabled] = useState(false);
 
   // load sw tree once
   useEffect(() => {
@@ -1103,8 +1380,11 @@ export default function IncomeContrastPage() {
             (hot?.state === 'loading' ? (
               <div className="text-[11px] text-gray-500">热点概念：归纳中…</div>
             ) : hot?.state === 'error' ? (
-              <div className="text-[11px] text-amber-800" title={hot.err}>
-                热点：{hot.err.length > 48 ? `${hot.err.slice(0, 48)}…` : hot.err}
+              <div
+                className="max-w-[min(100%,22rem)] text-[11px] leading-snug text-amber-800 break-words line-clamp-6"
+                title={hot.err}
+              >
+                热点：{hot.err}
               </div>
             ) : hot?.state === 'ready' ? (
               <div className="text-[11px] leading-snug text-violet-950" title={hot.summary}>
@@ -1219,17 +1499,37 @@ export default function IncomeContrastPage() {
   /** 对比股票集合变化时清空热点请求记录与结果 */
   useEffect(() => {
     hotConceptsRequestedRef.current.clear();
+    hotConceptsBatchRef.current = {};
+    if (hotConceptsRafRef.current != null) {
+      cancelAnimationFrame(hotConceptsRafRef.current);
+      hotConceptsRafRef.current = null;
+    }
+    displayGridStableRef.current = null;
+    displayGridRowByCodeRef.current = new Map();
     setHotConceptsByCode({});
   }, [codesKeyForHotConcepts]);
 
-  /** 行加载完成后按代码请求热点归纳（结果写入 displayGridData.__hotConcepts，不触发 cellRenderers 重建） */
+  /** 关闭热点 LLM 时清空在途请求状态与已展示结果，避免仍显示旧归纳或占满请求表 */
   useEffect(() => {
+    if (hotConceptsLlmEnabled) return;
+    hotConceptsRequestedRef.current.clear();
+    hotConceptsBatchRef.current = {};
+    if (hotConceptsRafRef.current != null) {
+      cancelAnimationFrame(hotConceptsRafRef.current);
+      hotConceptsRafRef.current = null;
+    }
+    setHotConceptsByCode({});
+  }, [hotConceptsLlmEnabled]);
+
+  /** 行加载完成后按代码请求热点归纳（仅 hotConceptsLlmEnabled 为真；结果写入 displayGridData.__hotConcepts） */
+  useEffect(() => {
+    if (!hotConceptsLlmEnabled) return;
     const ready = rows.filter((r) => !r.loading);
     for (const row of ready) {
       const code = row.tsCode.trim().toUpperCase();
       if (hotConceptsRequestedRef.current.has(code)) continue;
       hotConceptsRequestedRef.current.add(code);
-      setHotConceptsByCode((prev) => ({ ...prev, [code]: { state: 'loading' } }));
+      scheduleHotConceptsUpdate(code, { state: 'loading' });
       void fetch('/api/hot-concepts/from-disclosures', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1239,18 +1539,18 @@ export default function IncomeContrastPage() {
           const j = (await res.json().catch(() => ({}))) as { error?: string; summary?: string };
           if (!res.ok) {
             const err = typeof j?.error === 'string' ? j.error : `HTTP ${res.status}`;
-            setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'error', err } }));
+            scheduleHotConceptsUpdate(code, { state: 'error', err });
             return;
           }
           const summary = typeof j?.summary === 'string' ? j.summary.trim() : '';
-          setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'ready', summary } }));
+          scheduleHotConceptsUpdate(code, { state: 'ready', summary });
         })
         .catch((e) => {
           const msg = e instanceof Error ? e.message : String(e);
-          setHotConceptsByCode((p) => ({ ...p, [code]: { state: 'error', err: msg } }));
+          scheduleHotConceptsUpdate(code, { state: 'error', err: msg });
         });
     }
-  }, [rows]);
+  }, [rows, scheduleHotConceptsUpdate, hotConceptsLlmEnabled]);
 
   // metric filter: evaluate expression against latest metrics
   const { filteredRows, filterErr } = useMemo(() => {
@@ -1388,15 +1688,70 @@ export default function IncomeContrastPage() {
     return `${buildCodesKey(codes)}#${pinPart}`;
   }, [codes, pinnedCodes]);
 
-  // grid uses filteredRows
+  // grid uses filteredRows：行级复用引用 + 整表未变时复用 CSVData，减轻 AG Grid / DataGrid 重刷
   const displayGridData = useMemo<CSVData>(() => {
     const headers = ['置顶', '股票基本信息', ...METRIC_COLUMNS.map((c) => c.label)];
-    const data: ContrastGridRow[] = orderedFilteredRows.map((row) => {
+    const rowCache = displayGridRowByCodeRef.current;
+    const nextRowCache = new Map<string, ContrastGridRow>();
+
+    const nextData: ContrastGridRow[] = orderedFilteredRows.map((row) => {
       const code = row.tsCode.trim().toUpperCase();
+      const hot = hotConceptsByCode[code];
       const metricData = Object.fromEntries(METRIC_COLUMNS.map((c) => [c.key, row.charts[c.key]])) as Record<MetricKey, MetricChart>;
-      return { pin_top: row.tsCode.toUpperCase(), stock_basic: { ...row, __hotConcepts: hotConceptsByCode[code] }, ...metricData };
+      const pin = row.tsCode.toUpperCase();
+      const prevRow = rowCache.get(code);
+      if (prevRow) {
+        const sb = prevRow.stock_basic;
+        const baseSame =
+          sb.tsCode === row.tsCode &&
+          sb.loading === row.loading &&
+          sb.error === row.error &&
+          sb.stockInfo === row.stockInfo &&
+          sb.charts === row.charts;
+        const hotSame = hotConceptsEqual(sb.__hotConcepts, hot);
+        const pinSame = prevRow.pin_top === pin;
+        let metricsSame = true;
+        for (const c of METRIC_COLUMNS) {
+          if (prevRow[c.key] !== metricData[c.key]) {
+            metricsSame = false;
+            break;
+          }
+        }
+        if (baseSame && hotSame && pinSame && metricsSame) {
+          nextRowCache.set(code, prevRow);
+          return prevRow;
+        }
+      }
+      const built = { pin_top: pin, stock_basic: { ...row, __hotConcepts: hot }, ...metricData } as ContrastGridRow;
+      nextRowCache.set(code, built);
+      return built;
     });
-    return { category: 'incomeContrast', filename: 'incomeContrast', headers, originalHeaders: columnOrder, data, totalRows: data.length };
+    displayGridRowByCodeRef.current = nextRowCache;
+
+    const prevCsv = displayGridStableRef.current;
+    if (prevCsv && prevCsv.data.length === nextData.length) {
+      let identical = true;
+      for (let i = 0; i < nextData.length; i += 1) {
+        if (prevCsv.data[i] !== nextData[i]) {
+          identical = false;
+          break;
+        }
+      }
+      if (identical) {
+        return prevCsv;
+      }
+    }
+
+    const csv: CSVData = {
+      category: 'incomeContrast',
+      filename: 'incomeContrast',
+      headers,
+      originalHeaders: columnOrder,
+      data: nextData,
+      totalRows: nextData.length,
+    };
+    displayGridStableRef.current = csv;
+    return csv;
   }, [orderedFilteredRows, columnOrder, hotConceptsByCode]);
 
   return (
@@ -1480,7 +1835,21 @@ export default function IncomeContrastPage() {
           style={{ width: treePaneWidth }}
         >
           <div className="p-3 border-b border-gray-100 shrink-0 space-y-2">
-            <h3 className="text-sm font-semibold text-gray-900">申万行业分类</h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-gray-900 shrink min-w-0">申万行业分类</h3>
+              <label className="flex shrink-0 items-center gap-1.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hotConceptsLlmEnabled}
+                  onChange={(e) => setHotConceptsLlmEnabled(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  aria-label="公告热点归纳使用大模型"
+                />
+                <span className="text-[11px] text-gray-600 whitespace-nowrap" title="勾选后对表格中已加载股票请求公告热点归纳（调用本地大模型，可能较慢）">
+                  热点(LLM)
+                </span>
+              </label>
+            </div>
             <Input
               value={treeFilter}
               onChange={(e) => setTreeFilter(e.target.value)}
@@ -1543,6 +1912,7 @@ export default function IncomeContrastPage() {
                 columnWidthByField={{ pin_top: 72, stock_basic: 228 }}
                 pinnedLeftFields={['pin_top', 'stock_basic']}
                 clientSortResetKey={gridClientSortResetKey}
+                animateRows={false}
                 getRowId={(params: any) => params.data?.stock_basic?.tsCode ?? String(params.rowIndex)}
               />
             </div>
@@ -1646,6 +2016,9 @@ const ALL_SERIES_METRICS = [
   'dividend_ttm_rate',
   'mv_growth', 'revenue_growth', 'profit_growth', 'net_assets_growth',
   'netMargin_ttm', 'totalAsset_turnover_ttm', 'equity_multiplier_ttm', 'roe_dupont',
+  'dcf_equity_value_ttm',
+  'fcff_ttm', 'c_pay_acq_const_fiolta_ttm', 'net_debt',
+  'st_borr', 'lt_borr', 'st_bonds_payable', 'bond_payable', 'money_cap', 'trad_asset',
 ].join(',');
 
 /** Single-period snapshot metrics (balance structure) */
@@ -1721,7 +2094,7 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
       };
     }
 
-    // rev_cashflow
+    // rev_cashflow（含 fcff_ttm，与 definitions 企业自由现金流 TTM 一致）
     charts.rev_cashflow = {
       x: spLabels,
       series: [
@@ -1729,13 +2102,15 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
         sp.map((r: any) => toYi(r, 'c_inf_fr_operate_a_ttm') ?? NaN),
         sp.map((r: any) => toYi(r, 'n_income_attr_p_ttm') ?? NaN),
         sp.map((r: any) => toYi(r, 'n_cashflow_act_ttm') ?? NaN),
+        sp.map((r: any) => toYi(r, 'fcff_ttm') ?? NaN),
       ],
-      labels: ['营收TTM(亿)', '经营现金流TTM(亿)', '净利润TTM(亿)', '经营现金流净额TTM(亿)'],
+      labels: ['营收TTM(亿)', '经营现金流TTM(亿)', '净利润TTM(亿)', '经营现金流净额TTM(亿)', '自由现金流TTM(亿)'],
       latest: [
         fmt(toYi(pts.at(-1), 'total_revenue_ttm'), '亿'),
         fmt(toYi(pts.at(-1), 'c_inf_fr_operate_a_ttm'), '亿'),
         fmt(toYi(pts.at(-1), 'n_income_attr_p_ttm'), '亿'),
         fmt(toYi(pts.at(-1), 'n_cashflow_act_ttm'), '亿'),
+        fmt(toYi(pts.at(-1), 'fcff_ttm'), '亿'),
       ],
     };
 
@@ -1942,6 +2317,30 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
     charts.pe_valuation = buildValuationChart(dailyRows.map((r: any) => parseNum(r?.pe_ttm) ?? parseNum(r?.pe)), 'PE/PE_TTM');
     charts.pb_valuation = buildValuationChart(dailyRows.map((r: any) => parseNum(r?.pb)), 'PB');
 
+    // 近 40 个交易日：daily_basic 成交量（手→万手）与换手率（%）
+    {
+      const n = 40;
+      const tail = dailyRows.slice(-n);
+      const x40 = tail.map((r: any) => formatDateYYMM(r?.trade_date));
+      const volWan = tail.map((r: any) => {
+        const v = parseNum(r?.vol);
+        return v == null ? NaN : v / 10000;
+      });
+      const turnoverPct = tail.map((r: any) => parseNum(r?.turnover_rate) ?? NaN);
+      const lastVol = [...volWan].reverse().find((v) => Number.isFinite(v));
+      const lastTo = [...turnoverPct].reverse().find((v) => Number.isFinite(v));
+      charts.vol_turnover_40d = {
+        x: x40,
+        series: [volWan, turnoverPct],
+        labels: ['成交量(万手)', '换手率(%)'],
+        latest: [
+          lastVol == null ? '—' : fmt(lastVol, '万手'),
+          lastTo == null ? '—' : `${lastTo.toFixed(2)}%`,
+        ],
+        note: tail.length ? `最近${tail.length}个交易日` : undefined,
+      };
+    }
+
     // dupont
     {
       const dpPts = sp.map((r: any) => ({
@@ -1961,6 +2360,45 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
           (() => { const v = dpPts.filter((p: any) => Number.isFinite(p.netMargin)).at(-1)?.netMargin; return v == null ? '—' : `${v.toFixed(2)}%`; })(),
           (() => { const v = dpPts.filter((p: any) => Number.isFinite(p.roe)).at(-1)?.roe; return v == null ? '—' : `${v.toFixed(2)}%`; })(),
         ],
+      };
+    }
+
+    // DCF 股权价值（TTM）+ 总市值：全量季度 pts；dcfTooltipRows 供悬停核对分项
+    {
+      type DcfPt = { x: string; dcfYi: number; mvYi: number };
+      type DcfTooltipItem = NonNullable<MetricChart['dcfTooltipRows']>[number];
+      const dcfPts: DcfPt[] = [];
+      const dcfTooltipRows: DcfTooltipItem[] = [];
+      for (const r of pts) {
+        const x = formatDateYYMM(r?.period);
+        if (!x) continue;
+        const rawDcf = parseNum(r?.dcf_equity_value_ttm);
+        const dcfYi = rawDcf == null ? NaN : rawDcf / 1e8;
+        const rawMv = parseNum(r?.total_mv);
+        const mvYi = rawMv == null ? NaN : rawMv / 1e4;
+        dcfPts.push({ x, dcfYi, mvYi });
+        dcfTooltipRows.push({
+          n_cashflow_act_ttm: parseNum(r?.n_cashflow_act_ttm),
+          c_pay_acq_const_fiolta_ttm: parseNum(r?.c_pay_acq_const_fiolta_ttm),
+          fcff_ttm: parseNum(r?.fcff_ttm),
+          net_debt: parseNum(r?.net_debt),
+          st_borr: parseNum(r?.st_borr),
+          lt_borr: parseNum(r?.lt_borr),
+          st_bonds_payable: parseNum(r?.st_bonds_payable),
+          bond_payable: parseNum(r?.bond_payable),
+          money_cap: parseNum(r?.money_cap),
+          trad_asset: parseNum(r?.trad_asset),
+        });
+      }
+      const lastDcf = [...dcfPts].reverse().find((p) => Number.isFinite(p.dcfYi))?.dcfYi;
+      const lastMv = [...dcfPts].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      charts.dcf_valuation = {
+        x: dcfPts.map((p) => p.x),
+        series: [dcfPts.map((p) => p.dcfYi), dcfPts.map((p) => p.mvYi)],
+        labels: ['DCF股权价值(TTM)(亿)', '总市值(亿)'],
+        latest: [fmt(lastDcf ?? null, '亿'), fmt(lastMv ?? null, '亿')],
+        note: 'FCF=经营现金流TTM−购建长期资产支出TTM；两阶段增长+终值，再减净负债（详见指标引擎）',
+        dcfTooltipRows,
       };
     }
 
