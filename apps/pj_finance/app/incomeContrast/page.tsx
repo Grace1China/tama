@@ -25,6 +25,73 @@ import {
   ReferenceLine,
 } from 'recharts';
 
+/** 输入侧股票名称规整：去空白、全角字母数字转半角，便于与基础库名称对齐 */
+function normalizeStockNameInput(s: string): string {
+  return s
+    .trim()
+    .replace(/\u3000/g, ' ')
+    .replace(/[\uFF01-\uFF5E]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+}
+
+type StockListRow = Record<string, string>;
+
+type StockResolveIndex = {
+  bySymbol: Map<string, string>;
+  byNormalizedName: Map<string, string[]>;
+  rowsListed: Array<{ ts: string; normalizedName: string }>;
+};
+
+/** 基于 ts_a_stock_list 构建：6 位代码、规范化后的完整名称 -> ts_code（仅上市 L） */
+function buildStockResolveIndex(rows: StockListRow[]): StockResolveIndex {
+  const bySymbol = new Map<string, string>();
+  const byNormalizedName = new Map<string, string[]>();
+  const rowsListed: Array<{ ts: string; normalizedName: string }> = [];
+
+  for (const r of rows) {
+    const ts = String(r.ts_code ?? '').trim().toUpperCase();
+    const rawName = String(r.name ?? '').trim();
+    const symbol = String(r.symbol ?? '').trim();
+    const status = String(r.list_status ?? '').trim().toUpperCase();
+    if (!/^\d{6}\.(SZ|SH|BJ)$/.test(ts)) continue;
+    if (status !== 'L') continue;
+    if (symbol && !bySymbol.has(symbol)) bySymbol.set(symbol, ts);
+    const nk = normalizeStockNameInput(rawName);
+    if (nk) {
+      const prev = byNormalizedName.get(nk) ?? [];
+      prev.push(ts);
+      byNormalizedName.set(nk, prev);
+      rowsListed.push({ ts, normalizedName: nk });
+    }
+  }
+
+  return { bySymbol, byNormalizedName, rowsListed };
+}
+
+/**
+ * 顶部「开始对比」单段输入：优先完整 ts_code；否则 6 位数字代码；否则按股票名称（全名精确，或全表唯一包含匹配）。
+ */
+function resolveStockToken(token: string, idx: StockResolveIndex): { ok: string } | { err: string } {
+  const trimmed = token.trim();
+  if (!trimmed) return { err: '空项' };
+  const up = trimmed.toUpperCase();
+  if (/^\d{6}\.(SZ|SH|BJ)$/.test(up)) return { ok: up };
+  if (/^\d{6}$/.test(trimmed)) {
+    const ts = idx.bySymbol.get(trimmed);
+    return ts ? { ok: ts } : { err: trimmed };
+  }
+  const nk = normalizeStockNameInput(trimmed);
+  const exact = idx.byNormalizedName.get(nk);
+  if (exact?.length === 1) return { ok: exact[0] };
+  if (exact && exact.length > 1)
+    return { err: `${trimmed}（同名上市${exact.length}只，请改用代码）` };
+
+  const hits = idx.rowsListed.filter((x) => x.normalizedName.includes(nk));
+  if (hits.length === 1) return { ok: hits[0].ts };
+  if (hits.length > 1)
+    return { err: `${trimmed}（名称含关键词 ${hits.length} 只，请写全名或代码）` };
+  return { err: trimmed };
+}
+
 /** 图轴为 26Q1 时展开为 2026Q1，便于 tooltip 首行展示 */
 function expandTooltipPeriod(axisLabel: string): string {
   const t = String(axisLabel ?? '').trim();
@@ -1024,6 +1091,11 @@ function swNodeKey(node: SwTreeNode): string {
 
 export default function IncomeContrastPage() {
   const [inputText, setInputText] = useState('603983.SH, 600519.SH');
+  /** null：加载中；[]：加载失败或无数据 */
+  const [stockListRows, setStockListRows] = useState<StockListRow[] | null>(null);
+  const [stockListLoadError, setStockListLoadError] = useState<string | null>(null);
+  /** 解析名称/代码时部分失败时在输入区下方提示 */
+  const [compareParseError, setCompareParseError] = useState<string | null>(null);
   const [codes, setCodes] = useState<string[]>([]);
   const [rows, setRows] = useState<ContrastRow[]>([]);
   const [running, setRunning] = useState(false);
@@ -1098,6 +1170,35 @@ export default function IncomeContrastPage() {
 
   /** 仅勾选时对已加载行请求公告热点归纳（走本地大模型，较慢）；不勾选则不请求 */
   const [hotConceptsLlmEnabled, setHotConceptsLlmEnabled] = useState(false);
+
+  const stockResolveIdx = useMemo(() => {
+    if (stockListRows === null || stockListRows.length === 0) return null;
+    return buildStockResolveIndex(stockListRows);
+  }, [stockListRows]);
+
+  // 股票列表（用于顶部输入按名称解析 ts_code）
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/csv/stockList')
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<{ data?: StockListRow[] }>;
+      })
+      .then((j) => {
+        if (cancelled) return;
+        const data = Array.isArray(j?.data) ? j.data : [];
+        setStockListRows(data);
+        setStockListLoadError(data.length === 0 ? '股票基础列表为空' : null);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setStockListRows([]);
+        setStockListLoadError(e instanceof Error ? e.message : '加载失败');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // load sw tree once
   useEffect(() => {
@@ -1658,18 +1759,35 @@ export default function IncomeContrastPage() {
     setAutoPinByRoeTargetKey(null);
   }, [autoPinByRoeTargetKey, codes, rows]);
 
-  const startCompare = () => {
-    const parsed = Array.from(
-      new Set(
-        inputText
-          .split(/[,\n，]+/)
-          .map((s) => s.trim().toUpperCase())
-          .filter((s) => /^\d{6}\.(SZ|SH|BJ)$/.test(s))
-      )
-    );
+  const startCompare = useCallback(() => {
+    setCompareParseError(null);
+    if (stockListRows === null) {
+      setCompareParseError('股票基础列表加载中，请稍后再点「开始对比」。');
+      return;
+    }
+    if (!stockResolveIdx) {
+      setCompareParseError(stockListLoadError ?? '股票基础列表不可用，无法按名称或 6 位代码解析。');
+      return;
+    }
+
+    const parts = inputText
+      .split(/[,\n，]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const resolved: string[] = [];
+    const errors: string[] = [];
+    for (const token of parts) {
+      const r = resolveStockToken(token, stockResolveIdx);
+      if ('ok' in r) resolved.push(r.ok);
+      else errors.push(r.err);
+    }
+    const parsed = Array.from(new Set(resolved.map((s) => s.trim().toUpperCase())));
+    if (errors.length > 0) {
+      setCompareParseError(`以下未能解析（代码与名称可混写，逗号或换行分隔）：${errors.join('、')}`);
+    }
     setCodes(parsed);
     setAutoPinByRoeTargetKey(parsed.length ? buildCodesKey(parsed) : null);
-  };
+  }, [inputText, stockListRows, stockResolveIdx, stockListLoadError]);
 
   const orderedFilteredRows = useMemo(() => {
     if (pinnedCodes.size === 0) return filteredRows;
@@ -1789,19 +1907,32 @@ export default function IncomeContrastPage() {
             className="space-y-3 border-t border-gray-100 px-4 pb-4 pt-2"
           >
             <p className="text-sm text-gray-600">
-              左侧行业树点击枝干（一级/二级行业）或叶子（个股）即可在右侧加载对比；亦可手动输入代码后点「开始对比」。指标过滤作用于右侧已加载数据。
+              左侧行业树点击枝干（一级/二级行业）或叶子（个股）即可在右侧加载对比；亦可手动输入股票代码或股票名称（逗号、中文逗号或换行分隔）后点「开始对比」。指标过滤作用于右侧已加载数据。
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="例如: 603983.SH, 600519.SH, 000001.SZ"
+                onChange={(e) => {
+                  setInputText(e.target.value);
+                  if (compareParseError) setCompareParseError(null);
+                }}
+                placeholder="例如：600519.SH，贵州茅台　或　600519, 海天味业（逗号，换行分隔）"
                 className="min-w-[24rem] flex-1"
+                aria-invalid={!!compareParseError}
               />
               <Button onClick={startCompare} disabled={running}>
                 {running ? '加载中...' : '开始对比'}
               </Button>
               <span className="text-sm text-gray-500">{progressText}</span>
+            </div>
+            <div className="space-y-1 text-xs">
+              {stockListRows === null && (
+                <p className="text-gray-500">正在加载股票基础列表（用于名称与 6 位代码解析）…</p>
+              )}
+              {stockListRows !== null && stockListLoadError && (
+                <p className="text-red-600">股票列表不可用：{stockListLoadError}</p>
+              )}
+              {compareParseError && <p className="text-amber-700">{compareParseError}</p>}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -1888,7 +2019,7 @@ export default function IncomeContrastPage() {
         <div className="flex min-h-0 min-w-0 max-h-full flex-1 basis-0 flex-col overflow-hidden bg-white">
           {codes.length === 0 ? (
             <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-gray-400">
-              在左侧点击一级行业、二级行业或个股，右侧将加载对应股票对比；也可在上方输入代码后点「开始对比」。
+              在左侧点击一级行业、二级行业或个股，右侧将加载对应股票对比；也可在上方输入股票代码或名称后点「开始对比」。
             </div>
           ) : (
             <div className="flex min-h-0 min-w-0 max-h-full flex-1 basis-0 overflow-x-auto">
