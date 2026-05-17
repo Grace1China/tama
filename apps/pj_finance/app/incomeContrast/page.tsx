@@ -145,6 +145,10 @@ type MetricChart = {
     bond_payable: number | null;
     money_cap: number | null;
     trad_asset: number | null;
+    /** dcf_r 列：与引擎 profit_growth 一致（%；五年利润复合增长率） */
+    profit_growth_5y_pct?: number | null;
+    /** DCF(TTM) 列启用分类表行业增速时：与请求 industry_growth_pct 一致（%） */
+    industry_growth_csv_pct?: number | null;
   }>;
 };
 
@@ -164,6 +168,7 @@ type MetricKey =
   | 'vol_turnover_40d'
   | 'dupont'
   | 'dcf_valuation'
+  | 'dcf_r'
   | 'forecast_signal';
 
 type ContrastRow = {
@@ -210,6 +215,7 @@ const METRIC_COLUMNS: Array<{ key: MetricKey; label: string }> = [
   { key: 'growth_trend', label: '综合增长率趋势' },
   { key: 'dupont', label: '杜邦分析' },
   { key: 'dcf_valuation', label: 'DCF估值(TTM)' },
+  { key: 'dcf_r', label: 'DCF估值(五年利润增速)' },
   { key: 'rev_mv', label: '营收和市值' },
   { key: 'cost_margin', label: '成本与毛利率' },
   { key: 'fee_revenue', label: '三费与营收' },
@@ -360,6 +366,7 @@ function emptyCharts(): Record<MetricKey, MetricChart> {
     vol_turnover_40d: emptyChart(),
     dupont: emptyChart(),
     dcf_valuation: emptyChart(),
+    dcf_r: emptyChart(),
     forecast_signal: emptyChart(),
   };
 }
@@ -401,7 +408,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
     chart.series.forEach((s, si) => {
       row[`s${si}`] = s[i] ?? null;
     });
-    if (metricKey === 'dcf_valuation' && chart.dcfTooltipRows?.[i] != null) {
+    if ((metricKey === 'dcf_valuation' || metricKey === 'dcf_r') && chart.dcfTooltipRows?.[i] != null) {
       row._dcfDetail = chart.dcfTooltipRows[i];
     }
     return row;
@@ -515,7 +522,22 @@ const IncomeChartCell = memo(function IncomeChartCell({
     const dcfHead = headRows[0];
     const mvHead = headRows[1];
     const periodFull = expandTooltipPeriod(String(label ?? ''));
-    const headline = `${periodFull}股权价值：${dcfHead?.valStr ?? '—'}，总市值：${mvHead?.valStr ?? '—'}`;
+    const headline =
+      metricKey === 'dcf_valuation' && headRows.length >= 3
+        ? `${periodFull}DCF(阶段一15%)：${headRows[0]?.valStr ?? '—'}，总市值：${headRows[1]?.valStr ?? '—'}，DCF(行业)：${headRows[2]?.valStr ?? '—'}`
+        : metricKey === 'dcf_valuation'
+          ? `${periodFull}DCF(阶段一15%)：${headRows[0]?.valStr ?? '—'}，总市值：${headRows[1]?.valStr ?? '—'}`
+          : `${periodFull}股权价值：${dcfHead?.valStr ?? '—'}，总市值：${mvHead?.valStr ?? '—'}`;
+    const pg5 = d?.profit_growth_5y_pct;
+    const igCsv = d?.industry_growth_csv_pct;
+    const extraLines: string[] = [];
+    if (igCsv != null && Number.isFinite(igCsv)) {
+      extraLines.push(`阶段一：申万分类 industry_growth ${igCsv}%（dcf_equity_value_ttm_growth_ind）`);
+    }
+    if (pg5 != null && Number.isFinite(pg5)) {
+      extraLines.push(`阶段一：五年利润CAGR ${pg5.toFixed(2)}%（dcf_r 假设）`);
+    }
+    const hasExtra = extraLines.length > 0;
     return (
       <div
         style={{
@@ -534,13 +556,20 @@ const IncomeChartCell = memo(function IncomeChartCell({
         <div
           style={{
             fontWeight: 600,
-            marginBottom: d ? 8 : 0,
+            marginBottom: hasExtra || d ? 6 : 0,
             fontSize: 11,
-            whiteSpace: 'nowrap',
+            whiteSpace: metricKey === 'dcf_valuation' && headRows.length >= 3 ? 'normal' : 'nowrap',
           }}
         >
           {headline}
         </div>
+        {hasExtra ? (
+          <div style={{ fontSize: 10, opacity: 0.92, marginBottom: d ? 8 : 0, whiteSpace: 'normal' }}>
+            {extraLines.map((line, idx) => (
+              <div key={idx}>{line}</div>
+            ))}
+          </div>
+        ) : null}
         {d ? (
           <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
             <div
@@ -966,8 +995,9 @@ const IncomeChartCell = memo(function IncomeChartCell({
     );
   }
 
-  // DCF 股权价值（TTM）+ 总市值对比；tooltip 带 FCF/净负债分项（与历史对话实现一致）
-  if (metricKey === 'dcf_valuation') {
+  // DCF：红线=默认阶段一15%；绿线=总市值；橙线=分类表 industry_growth（仅传入 industry_growth_pct 时）
+  if (metricKey === 'dcf_valuation' || metricKey === 'dcf_r') {
+    const showIndustryLine = metricKey === 'dcf_valuation' && chart.series.length >= 3;
     return (
       <div className="h-[190px] w-full rounded-md border border-slate-700 bg-slate-900 p-1 text-slate-100">
         <ResponsiveContainer width="100%" height="100%">
@@ -984,7 +1014,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
               dot={false}
               connectNulls
               isAnimationActive={false}
-              name={chart.labels[0] ?? 'DCF股权价值(TTM)(亿)'}
+              name={chart.labels[0] ?? 'DCF股权价值(阶段一15%)(亿)'}
             />
             <Line
               type="monotone"
@@ -996,6 +1026,18 @@ const IncomeChartCell = memo(function IncomeChartCell({
               isAnimationActive={false}
               name={chart.labels[1] ?? '总市值(亿)'}
             />
+            {showIndustryLine ? (
+              <Line
+                type="monotone"
+                dataKey="s2"
+                stroke="#f97316"
+                strokeWidth={2.5}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+                name={chart.labels[2] ?? 'DCF股权价值(行业增速)(亿)'}
+              />
+            ) : null}
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -1074,6 +1116,8 @@ type SwTreeNode = {
   name: string;
   level: 'L1' | 'L2' | 'L3';
   memberCount: number;
+  /** 与树接口 industry_growth 一致（百分比，来自 index_classify_SW2021.parquet） */
+  industry_growth?: number | null;
   children: SwTreeNode[];
 };
 
@@ -1083,6 +1127,7 @@ type TreeSelection = {
   name: string;
   indexCode: string;
   memberCount: number;
+  industry_growth?: number | null;
 };
 
 function swNodeKey(node: SwTreeNode): string {
@@ -1113,6 +1158,8 @@ export default function IncomeContrastPage() {
   const [memberSearchLoading, setMemberSearchLoading] = useState(false);
   const [treePaneWidth, setTreePaneWidth] = useState(320);
   const dragSplitRef = useRef<{ startX: number; startW: number } | null>(null);
+  /** 左侧申万节点 industry_growth（%）；顶部「开始对比」会清空 */
+  const industryGrowthPctRef = useRef<number | null>(null);
 
   // metric filter state
   const [filterExpr, setFilterExpr] = useState('');
@@ -1300,6 +1347,8 @@ export default function IncomeContrastPage() {
   }, []);
 
   const applyTreeCodes = useCallback((nextCodes: string[], sel: TreeSelection) => {
+    industryGrowthPctRef.current =
+      sel.industry_growth != null && Number.isFinite(sel.industry_growth) ? sel.industry_growth : null;
     setTreeSelection(sel);
     setInputText(nextCodes.join(', '));
     setCodes(nextCodes);
@@ -1314,6 +1363,7 @@ export default function IncomeContrastPage() {
         name: node.name,
         indexCode: node.indexCode,
         memberCount: node.memberCount,
+        industry_growth: node.industry_growth ?? null,
       };
       setTreeSelection(sel);
       setTreeNodeLoading(true);
@@ -1399,9 +1449,13 @@ export default function IncomeContrastPage() {
             type="button"
             className="flex-1 text-left px-2 py-1.5 text-sm text-gray-800 hover:bg-gray-50/80 rounded-r-md truncate"
             onClick={() => { void onSelectNode(node); }}
-            title={`${node.name} ${node.indexCode}`}
+            title={`${node.name} ${node.indexCode}${node.industry_growth != null && Number.isFinite(node.industry_growth) ? ` 行业增速 ${node.industry_growth}%（分类表）` : ''}`}
           >
-            <span className="font-medium">{node.name}</span>
+            <span className="font-medium">
+              {node.industry_growth != null && Number.isFinite(node.industry_growth)
+                ? `${node.name}-${node.industry_growth}%`
+                : node.name}
+            </span>
             <span className="text-xs text-gray-400 ml-1">{node.indexCode}</span>
             <span className="text-xs text-gray-400 ml-1">({node.memberCount})</span>
           </button>
@@ -1564,7 +1618,7 @@ export default function IncomeContrastPage() {
       while (codeIdx.next < codes.length && !cancelled) {
         const i = codeIdx.next++;
         const tsCode = codes[i];
-        const row = await buildContrastRow(tsCode);
+        const row = await buildContrastRow(tsCode, industryGrowthPctRef.current);
         if (cancelled) break;
         rowsRef.current = rowsRef.current.map((r) => (r.tsCode === tsCode ? row : r));
         codeIdx.done++;
@@ -1760,6 +1814,7 @@ export default function IncomeContrastPage() {
   }, [autoPinByRoeTargetKey, codes, rows]);
 
   const startCompare = useCallback(() => {
+    industryGrowthPctRef.current = null;
     setCompareParseError(null);
     if (stockListRows === null) {
       setCompareParseError('股票基础列表加载中，请稍后再点「开始对比」。');
@@ -1992,7 +2047,11 @@ export default function IncomeContrastPage() {
             )}
             {treeSelection && (
               <div className="text-xs text-gray-500 leading-relaxed">
-                已选 {treeSelection.level}「{treeSelection.name}」({treeSelection.indexCode}) — 预计 {treeSelection.memberCount} 只股票
+                已选 {treeSelection.level}「{treeSelection.name}」({treeSelection.indexCode})
+                {treeSelection.industry_growth != null && Number.isFinite(treeSelection.industry_growth)
+                  ? ` · 行业增速 ${treeSelection.industry_growth}%（分类表）`
+                  : ''}{' '}
+                — 预计 {treeSelection.memberCount} 只股票
                 {treeNodeLoading ? '，正在加载成分...' : ''}
               </div>
             )}
@@ -2148,6 +2207,8 @@ const ALL_SERIES_METRICS = [
   'mv_growth', 'revenue_growth', 'profit_growth', 'net_assets_growth',
   'netMargin_ttm', 'totalAsset_turnover_ttm', 'equity_multiplier_ttm', 'roe_dupont',
   'dcf_equity_value_ttm',
+  'dcf_equity_value_ttm_growth_r',
+  'dcf_equity_value_ttm_growth_ind',
   'fcff_ttm', 'c_pay_acq_const_fiolta_ttm', 'net_debt',
   'st_borr', 'lt_borr', 'st_bonds_payable', 'bond_payable', 'money_cap', 'trad_asset',
 ].join(',');
@@ -2160,13 +2221,19 @@ const BALANCE_METRICS = [
   'oth_cur_liab', 'lt_borr', 'oth_ncl',
 ].join(',');
 
-async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
+async function buildContrastRow(tsCode: string, industryGrowthPct?: number | null): Promise<ContrastRow> {
   const charts = emptyCharts();
   try {
     const enc = encodeURIComponent(tsCode);
+    const useIndustryDcf =
+      industryGrowthPct != null && Number.isFinite(industryGrowthPct);
+    const metricsBase = `/api/metrics?stock=${enc}&metrics=${ALL_SERIES_METRICS}&from=2014Q1&to=2026Q4&years=5`;
+    const metricsUrl =
+      useIndustryDcf ? `${metricsBase}&industry_growth_pct=${encodeURIComponent(String(industryGrowthPct))}` : metricsBase;
+
     const [stockJson, allMetricsJson, balanceJson, dailyJson, mainBizJson] = await Promise.all([
       fetchJson(`/api/csv/stockList?ts_code=${enc}`),
-      fetchJson(`/api/metrics?stock=${enc}&metrics=${ALL_SERIES_METRICS}&from=2014Q1&to=2026Q4&years=5`),
+      fetchJson(metricsUrl),
       fetchJson(`/api/metrics?stock=${enc}&metrics=${BALANCE_METRICS}&from=2014Q1&to=2026Q4`),
       fetchJson(`/api/parq/daily_basic?ts_code=${enc}&page=1&size=1000000&sortField=trade_date&sortDir=asc&start_date=20140101`),
       fetchJson(`/api/parq/finaMainbzVip?ts_code=${enc}&page=1&size=1000000&sortField=end_date&sortDir=asc&start_date=20140101`),
@@ -2494,20 +2561,23 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
       };
     }
 
-    // DCF 股权价值（TTM）+ 总市值：全量季度 pts；dcfTooltipRows 供悬停核对分项
+    // DCF(TTM) 列：红线=dcf_equity_value_ttm（阶段一默认15%）；绿线=总市值；传入 industry_growth 时橙线=dcf_equity_value_ttm_growth_ind
     {
-      type DcfPt = { x: string; dcfYi: number; mvYi: number };
       type DcfTooltipItem = NonNullable<MetricChart['dcfTooltipRows']>[number];
-      const dcfPts: DcfPt[] = [];
+      type DcfRow = { x: string; dcfDefaultYi: number; mvYi: number; dcfIndustryYi: number };
+      const dcfRows: DcfRow[] = [];
       const dcfTooltipRows: DcfTooltipItem[] = [];
       for (const r of pts) {
         const x = formatDateYYMM(r?.period);
         if (!x) continue;
-        const rawDcf = parseNum(r?.dcf_equity_value_ttm);
-        const dcfYi = rawDcf == null ? NaN : rawDcf / 1e8;
+        const rawDefault = parseNum(r?.dcf_equity_value_ttm);
+        const dcfDefaultYi = rawDefault == null ? NaN : rawDefault / 1e8;
         const rawMv = parseNum(r?.total_mv);
         const mvYi = rawMv == null ? NaN : rawMv / 1e4;
-        dcfPts.push({ x, dcfYi, mvYi });
+        const rawInd =
+          useIndustryDcf ? parseNum(r?.dcf_equity_value_ttm_growth_ind) : null;
+        const dcfIndustryYi = rawInd == null ? NaN : rawInd / 1e8;
+        dcfRows.push({ x, dcfDefaultYi, mvYi, dcfIndustryYi });
         dcfTooltipRows.push({
           n_cashflow_act_ttm: parseNum(r?.n_cashflow_act_ttm),
           c_pay_acq_const_fiolta_ttm: parseNum(r?.c_pay_acq_const_fiolta_ttm),
@@ -2519,17 +2589,75 @@ async function buildContrastRow(tsCode: string): Promise<ContrastRow> {
           bond_payable: parseNum(r?.bond_payable),
           money_cap: parseNum(r?.money_cap),
           trad_asset: parseNum(r?.trad_asset),
+          industry_growth_csv_pct: useIndustryDcf ? industryGrowthPct ?? null : undefined,
         });
       }
-      const lastDcf = [...dcfPts].reverse().find((p) => Number.isFinite(p.dcfYi))?.dcfYi;
-      const lastMv = [...dcfPts].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      const lastDefault = [...dcfRows].reverse().find((p) => Number.isFinite(p.dcfDefaultYi))?.dcfDefaultYi;
+      const lastMv = [...dcfRows].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      const lastIndustry = [...dcfRows].reverse().find((p) => Number.isFinite(p.dcfIndustryYi))?.dcfIndustryYi;
+
+      const series: number[][] = [
+        dcfRows.map((p) => p.dcfDefaultYi),
+        dcfRows.map((p) => p.mvYi),
+      ];
+      const labels = ['DCF股权价值(阶段一15%默认)(亿)', '总市值(亿)'];
+      const latest = [fmt(lastDefault ?? null, '亿'), fmt(lastMv ?? null, '亿')];
+      if (useIndustryDcf) {
+        series.push(dcfRows.map((p) => p.dcfIndustryYi));
+        labels.push(`DCF股权价值(行业增速${industryGrowthPct}%)(亿)`);
+        latest.push(fmt(lastIndustry ?? null, '亿'));
+      }
+
       charts.dcf_valuation = {
-        x: dcfPts.map((p) => p.x),
-        series: [dcfPts.map((p) => p.dcfYi), dcfPts.map((p) => p.mvYi)],
-        labels: ['DCF股权价值(TTM)(亿)', '总市值(亿)'],
-        latest: [fmt(lastDcf ?? null, '亿'), fmt(lastMv ?? null, '亿')],
-        note: 'FCF=经营现金流TTM−购建长期资产支出TTM；两阶段增长+终值，再减净负债（详见指标引擎）',
+        x: dcfRows.map((p) => p.x),
+        series,
+        labels,
+        latest,
+        note: useIndustryDcf
+          ? `红：阶段一默认15%（dcf_equity_value_ttm）；橙：分类 industry_growth=${industryGrowthPct}%（dcf_equity_value_ttm_growth_ind）；绿：总市值；其余假设一致。`
+          : '红：DCF股权价值（阶段一默认15%）；绿：总市值。FCF=经营现金流TTM−购建长期资产支出TTM；两阶段增长+终值，再减净负债。',
         dcfTooltipRows,
+      };
+    }
+
+    // DCF 股权价值（阶段一增速 = 各期五年利润 CAGR，与 metrics.dcf_equity_value_ttm_growth_r 一致）
+    {
+      type DcfRPt = { x: string; dcfYi: number; mvYi: number };
+      type DcfTooltipItem = NonNullable<MetricChart['dcfTooltipRows']>[number];
+      const dcfRPts: DcfRPt[] = [];
+      const dcfRTooltipRows: DcfTooltipItem[] = [];
+      for (const r of pts) {
+        const x = formatDateYYMM(r?.period);
+        if (!x) continue;
+        const rawDcf = parseNum(r?.dcf_equity_value_ttm_growth_r);
+        const dcfYi = rawDcf == null ? NaN : rawDcf / 1e8;
+        const rawMv = parseNum(r?.total_mv);
+        const mvYi = rawMv == null ? NaN : rawMv / 1e4;
+        dcfRPts.push({ x, dcfYi, mvYi });
+        dcfRTooltipRows.push({
+          n_cashflow_act_ttm: parseNum(r?.n_cashflow_act_ttm),
+          c_pay_acq_const_fiolta_ttm: parseNum(r?.c_pay_acq_const_fiolta_ttm),
+          fcff_ttm: parseNum(r?.fcff_ttm),
+          net_debt: parseNum(r?.net_debt),
+          st_borr: parseNum(r?.st_borr),
+          lt_borr: parseNum(r?.lt_borr),
+          st_bonds_payable: parseNum(r?.st_bonds_payable),
+          bond_payable: parseNum(r?.bond_payable),
+          money_cap: parseNum(r?.money_cap),
+          trad_asset: parseNum(r?.trad_asset),
+          profit_growth_5y_pct: parseNum(r?.profit_growth),
+        });
+      }
+      const lastDcfR = [...dcfRPts].reverse().find((p) => Number.isFinite(p.dcfYi))?.dcfYi;
+      const lastMvR = [...dcfRPts].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      charts.dcf_r = {
+        x: dcfRPts.map((p) => p.x),
+        series: [dcfRPts.map((p) => p.dcfYi), dcfRPts.map((p) => p.mvYi)],
+        labels: ['DCF股权价值(五年利润增速阶段一)(亿)', '总市值(亿)'],
+        latest: [fmt(lastDcfR ?? null, '亿'), fmt(lastMvR ?? null, '亿')],
+        note:
+          '与 DCF(TTM) 相同的 FCF、WACC、终值增长假设；阶段一复合增长率取引擎「利润近5年复合增长率」(profit_growth)，缺失时沿用默认 stage1（15%）。',
+        dcfTooltipRows: dcfRTooltipRows,
       };
     }
 

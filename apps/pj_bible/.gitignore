@@ -1,0 +1,3 @@
+# 本地环境与密钥（.env.example 可提交）
+.env.local
+.env.*.local

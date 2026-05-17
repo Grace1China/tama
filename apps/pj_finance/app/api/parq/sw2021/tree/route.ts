@@ -11,6 +11,8 @@ type ClassifyRow = {
   parent_code: string;
   level: 'L1' | 'L2' | 'L3' | string;
   industry_code: string;
+  /** parquet 原始 industry_growth（可为小数增长率）；解析后见 TreeNode.industry_growth */
+  industry_growth?: number | null;
 };
 
 type TreeNode = {
@@ -20,6 +22,8 @@ type TreeNode = {
   name: string;
   level: 'L1' | 'L2' | 'L3' | string;
   memberCount: number;
+  /** 百分数口径（如 24 表示 24%）；来自 parquet 小数增长率时已换算；无字段或空则为 null */
+  industry_growth: number | null;
   children: TreeNode[];
 };
 
@@ -49,23 +53,52 @@ function queryAll<T = Record<string, unknown>>(sql: string): Promise<T[]> {
   });
 }
 
+function parseIndustryGrowth(raw: unknown): number | null {
+  if (raw == null || raw === '') return null;
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isFinite(n)) return null;
+  // Tushare 分类表多为小数增长率（0.24 表示 24%）；已是「百分数书写」且 |n|>1 时不再放大，避免重复缩放
+  if (Math.abs(n) <= 1) return n * 100;
+  return n;
+}
+
+async function queryClassifyRows(classifyPathEscaped: string): Promise<ClassifyRow[]> {
+  const sqlWithGrowth = `
+    SELECT index_code, industry_name, parent_code, level, industry_code,
+           TRY_CAST(industry_growth AS DOUBLE) AS industry_growth
+    FROM read_parquet('${classifyPathEscaped}')
+    WHERE src = 'SW2021'
+    ORDER BY industry_code ASC
+  `;
+  const sqlBase = `
+    SELECT index_code, industry_name, parent_code, level, industry_code
+    FROM read_parquet('${classifyPathEscaped}')
+    WHERE src = 'SW2021'
+    ORDER BY industry_code ASC
+  `;
+  try {
+    const rows = await queryAll<ClassifyRow>(sqlWithGrowth);
+    return rows.map((r) => ({
+      ...r,
+      industry_growth: parseIndustryGrowth(r.industry_growth),
+    }));
+  } catch {
+    const rows = await queryAll<Omit<ClassifyRow, 'industry_growth'>>(sqlBase);
+    return rows.map((r) => ({ ...r, industry_growth: null }));
+  }
+}
+
 export async function GET() {
   try {
     const classifyPath = path.resolve(CLASSIFY_FILE).replace(/\\/g, '/').replace(/'/g, "''");
     const memberPath = path.resolve(MEMBER_FILE).replace(/\\/g, '/').replace(/'/g, "''");
-    const classifySql = `
-      SELECT index_code, industry_name, parent_code, level, industry_code
-      FROM read_parquet('${classifyPath}')
-      WHERE src = 'SW2021'
-      ORDER BY industry_code ASC
-    `;
     const memberSql = `
       SELECT l1_code, l2_code, l3_code, ts_code
       FROM read_parquet('${memberPath}')
       WHERE out_date IS NULL OR CAST(out_date AS VARCHAR) = ''
     `;
     const [rows, memberRows] = await Promise.all([
-      queryAll<ClassifyRow>(classifySql),
+      queryClassifyRows(classifyPath),
       queryAll<MemberRow>(memberSql),
     ]);
 
@@ -102,6 +135,7 @@ export async function GET() {
           for (const child of childBuilt) {
             child.stocks.forEach((s) => stocks.add(s));
           }
+          const industry_growth = row.industry_growth ?? null;
           const node: TreeNode = {
             indexCode,
             industryCode: String(row.industry_code ?? ''),
@@ -109,6 +143,7 @@ export async function GET() {
             name: String(row.industry_name ?? ''),
             level: row.level,
             memberCount: stocks.size,
+            industry_growth,
             children: childBuilt.map((c) => c.node),
           };
           return { node, stocks };

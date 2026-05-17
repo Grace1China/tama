@@ -483,7 +483,16 @@ export async function GET(request: NextRequest) {
           .filter(Boolean);
     const engine = createMetricEngine(metrics);
     const years = yearsParam == null ? null : Number(yearsParam);
-    const params = years != null && Number.isFinite(years) ? { years } : undefined;
+    const industryGrowthRaw = url.searchParams.get('industry_growth_pct');
+    const industryGrowthPctNum =
+      industryGrowthRaw == null || industryGrowthRaw.trim() === '' ? null : Number(industryGrowthRaw);
+
+    const engineInput: Record<string, unknown> = {};
+    if (years != null && Number.isFinite(years)) engineInput.years = years;
+    if (industryGrowthPctNum != null && Number.isFinite(industryGrowthPctNum)) {
+      engineInput.industry_growth_pct = industryGrowthPctNum;
+    }
+    const params = Object.keys(engineInput).length > 0 ? engineInput : undefined;
     const filterMin = filterMinParam == null ? undefined : Number(filterMinParam);
     const filterMax = filterMaxParam == null ? undefined : Number(filterMaxParam);
 

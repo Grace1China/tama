@@ -684,4 +684,85 @@ export const metrics: MetricRegistry = {
       return ev - netDebt;
     },
   },
+
+  /**
+   * 与 dcf_equity_value_ttm 相同折现结构；阶段一复合增长率 g1 由各期计算好的 profit_growth（利润近 N 年 CAGR，默认 5 年）换算为小数代入。
+   * profit_growth 为空时沿用 params.stage1_growth，默认 15%。
+   */
+  dcf_equity_value_ttm_growth_r: {
+    deps: ['profit_growth'],
+    meta: { label: 'DCF股权价值(TTM,五年利润增速)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine, params }) => {
+      const baseCtx = { stockCode, period, data, params };
+      const fcf0 = asNumber(engine.calculate('fcff_ttm', baseCtx));
+      const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
+
+      if (fcf0 == null || fcf0 <= 0) {
+        return null;
+      }
+
+      const wacc = asNumber(params?.wacc) ?? 0.085;
+      const profitGrowthPct = asNumber(engine.calculate('profit_growth', baseCtx));
+      const g1 =
+        profitGrowthPct != null
+          ? profitGrowthPct / 100
+          : (asNumber(params?.stage1_growth) ?? 0.15);
+      const g2 = asNumber(params?.terminal_growth) ?? 0.02;
+      const projectionYears = asNumber(params?.projection_years) ?? 5;
+
+      if (wacc <= g2) return null;
+
+      let presentValueFCF = 0;
+      let currentFCF = fcf0;
+
+      for (let t = 1; t <= projectionYears; t++) {
+        currentFCF *= 1 + g1;
+        presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
+      }
+
+      const terminalValue = (currentFCF * (1 + g2)) / (wacc - g2);
+      const presentValueTV = terminalValue / Math.pow(1 + wacc, projectionYears);
+      const ev = presentValueFCF + presentValueTV;
+      return ev - netDebt;
+    },
+  },
+
+  /**
+   * DCF：阶段一 g1 由请求参数 industry_growth_pct（百分数口径，如 24 表示 24%）给定；与树接口返回的 industry_growth 一致（parquet 小数已在 /api/parq/sw2021/tree 中换算）。
+   */
+  dcf_equity_value_ttm_growth_ind: {
+    meta: { label: 'DCF股权价值(TTM,CSV行业增速)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine, params }) => {
+      const igPct = asNumber(params?.industry_growth_pct);
+      if (igPct == null || !Number.isFinite(igPct)) return null;
+
+      const baseCtx = { stockCode, period, data, params };
+      const fcf0 = asNumber(engine.calculate('fcff_ttm', baseCtx));
+      const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
+
+      if (fcf0 == null || fcf0 <= 0) {
+        return null;
+      }
+
+      const wacc = asNumber(params?.wacc) ?? 0.085;
+      const g1 = igPct / 100;
+      const g2 = asNumber(params?.terminal_growth) ?? 0.02;
+      const projectionYears = asNumber(params?.projection_years) ?? 5;
+
+      if (wacc <= g2) return null;
+
+      let presentValueFCF = 0;
+      let currentFCF = fcf0;
+
+      for (let t = 1; t <= projectionYears; t++) {
+        currentFCF *= 1 + g1;
+        presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
+      }
+
+      const terminalValue = (currentFCF * (1 + g2)) / (wacc - g2);
+      const presentValueTV = terminalValue / Math.pow(1 + wacc, projectionYears);
+      const ev = presentValueFCF + presentValueTV;
+      return ev - netDebt;
+    },
+  },
 };
