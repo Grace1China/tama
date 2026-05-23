@@ -46,8 +46,11 @@ jobs:
       - name: Save build artifacts
         run: |
           cp -r apps/pj_bible/.next /tmp/pd_bible_build
+          # webpack pack 仅存于缓存，单机可达 70MB+/100MB+，入库会触发 GitHub 限额；线上运行不需要 cache
+          rm -rf /tmp/pd_bible_build/cache
           [ -d apps/pj_bible/data ] && cp -r apps/pj_bible/data /tmp/pd_bible_data || true
           cp -r apps/pj_finance/.next /tmp/pd_finance_build
+          rm -rf /tmp/pd_finance_build/cache
 
       - name: Push pd_bible build to branch pd_bible
         env:
