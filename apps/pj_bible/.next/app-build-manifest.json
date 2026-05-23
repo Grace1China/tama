@@ -23,13 +23,6 @@
       "static/css/a7ba95cbbc9b5af1.css",
       "static/chunks/app/layout-a642b2ba63d84ca0.js"
     ],
-    "/book/[bookId]/[chapterId]/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-95542c12c8153870.js",
-      "static/chunks/23-a78c227209d638a5.js",
-      "static/chunks/main-app-34c8c8da26f2469d.js",
-      "static/chunks/app/book/[bookId]/[chapterId]/page-6158b294d4c6d9b0.js"
-    ],
     "/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-95542c12c8153870.js",
@@ -37,6 +30,21 @@
       "static/chunks/main-app-34c8c8da26f2469d.js",
       "static/chunks/231-95354d13698d9daf.js",
       "static/chunks/app/page-22ad6c9cce20dfff.js"
+    ],
+    "/book/[bookId]/[chapterId]/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-95542c12c8153870.js",
+      "static/chunks/23-a78c227209d638a5.js",
+      "static/chunks/main-app-34c8c8da26f2469d.js",
+      "static/chunks/app/book/[bookId]/[chapterId]/page-6158b294d4c6d9b0.js"
+    ],
+    "/book/[bookId]/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-95542c12c8153870.js",
+      "static/chunks/23-a78c227209d638a5.js",
+      "static/chunks/main-app-34c8c8da26f2469d.js",
+      "static/chunks/231-95354d13698d9daf.js",
+      "static/chunks/app/book/[bookId]/page-7eb2d59ac08ac8b3.js"
     ],
     "/book/whole/[bookId]/[chapterId]/[version]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
@@ -46,14 +54,6 @@
       "static/chunks/231-95354d13698d9daf.js",
       "static/chunks/900-bb8e189b21a56e33.js",
       "static/chunks/app/book/whole/[bookId]/[chapterId]/[version]/page-aff4c64f6ffe1a81.js"
-    ],
-    "/book/[bookId]/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-95542c12c8153870.js",
-      "static/chunks/23-a78c227209d638a5.js",
-      "static/chunks/main-app-34c8c8da26f2469d.js",
-      "static/chunks/231-95354d13698d9daf.js",
-      "static/chunks/app/book/[bookId]/page-7eb2d59ac08ac8b3.js"
     ],
     "/book/[bookId]/[chapterId]/[version]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
