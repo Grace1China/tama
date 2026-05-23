@@ -1,11 +1,11 @@
 {
-  "/api/bible/route": "app/api/bible/route.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/bible/route": "app/api/bible/route.js",
   "/api/paragraphs/route": "app/api/paragraphs/route.js",
   "/api/word-lookup/route": "app/api/word-lookup/route.js",
-  "/page": "app/page.js",
   "/book/[bookId]/[chapterId]/page": "app/book/[bookId]/[chapterId]/page.js",
-  "/book/[bookId]/page": "app/book/[bookId]/page.js",
+  "/page": "app/page.js",
   "/book/whole/[bookId]/[chapterId]/[version]/page": "app/book/whole/[bookId]/[chapterId]/[version]/page.js",
+  "/book/[bookId]/page": "app/book/[bookId]/page.js",
   "/book/[bookId]/[chapterId]/[version]/page": "app/book/[bookId]/[chapterId]/[version]/page.js"
 }
