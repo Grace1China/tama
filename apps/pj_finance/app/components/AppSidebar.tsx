@@ -13,6 +13,7 @@ import {
   FolderTree,
   Briefcase,
   ClipboardCheck,
+  GitBranch,
 } from 'lucide-react';
 
 import {
@@ -43,6 +44,11 @@ const categories = [
   { id: 'approval', name: '调仓审批', path: '/approval', icon: ClipboardCheck },
 ];
 
+/** 左侧「产业链」分组：与 /industryLink 看板路由对应，后续可在此扩展子链、子行业 */
+const industryChainItems = [
+  { id: 'industry_link_board', name: '分析看板', path: '/industryLink', icon: GitBranch },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
 
@@ -55,6 +61,27 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>产业链</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {industryChainItems.map((item) => (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.path || pathname.startsWith(`${item.path}/`)}
+                    tooltip={item.name}
+                  >
+                    <Link href={item.path}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>数据模块</SidebarGroupLabel>
           <SidebarGroupContent>

@@ -149,6 +149,8 @@ type MetricChart = {
     profit_growth_5y_pct?: number | null;
     /** DCF(TTM) 列启用分类表行业增速时：与请求 industry_growth_pct 一致（%） */
     industry_growth_csv_pct?: number | null;
+    /** DCF(分红基数) 列：dividend_ttm 原为万元口径，_tooltip 填入时已 ×1e4 为元人民币便于读 */
+    dividend_ttm_yuan?: number | null;
   }>;
 };
 
@@ -169,6 +171,7 @@ type MetricKey =
   | 'dupont'
   | 'dcf_valuation'
   | 'dcf_r'
+  | 'dcf_div'
   | 'forecast_signal';
 
 type ContrastRow = {
@@ -216,6 +219,7 @@ const METRIC_COLUMNS: Array<{ key: MetricKey; label: string }> = [
   { key: 'dupont', label: '杜邦分析' },
   { key: 'dcf_valuation', label: 'DCF估值(TTM)' },
   { key: 'dcf_r', label: 'DCF估值(五年利润增速)' },
+  { key: 'dcf_div', label: 'DCF估值(分红TTM)' },
   { key: 'rev_mv', label: '营收和市值' },
   { key: 'cost_margin', label: '成本与毛利率' },
   { key: 'fee_revenue', label: '三费与营收' },
@@ -367,6 +371,7 @@ function emptyCharts(): Record<MetricKey, MetricChart> {
     dupont: emptyChart(),
     dcf_valuation: emptyChart(),
     dcf_r: emptyChart(),
+    dcf_div: emptyChart(),
     forecast_signal: emptyChart(),
   };
 }
@@ -408,7 +413,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
     chart.series.forEach((s, si) => {
       row[`s${si}`] = s[i] ?? null;
     });
-    if ((metricKey === 'dcf_valuation' || metricKey === 'dcf_r') && chart.dcfTooltipRows?.[i] != null) {
+    if ((metricKey === 'dcf_valuation' || metricKey === 'dcf_r' || metricKey === 'dcf_div') && chart.dcfTooltipRows?.[i] != null) {
       row._dcfDetail = chart.dcfTooltipRows[i];
     }
     return row;
@@ -504,11 +509,15 @@ const IncomeChartCell = memo(function IncomeChartCell({
     const fcfRows: Array<{ k: string; v: string }> = [];
     const ndRows: Array<{ k: string; v: string }> = [];
     if (d) {
-      fcfRows.push(
-        { k: first4Han(metricLabel('n_cashflow_act_ttm')), v: formatYiFromYuan(d.n_cashflow_act_ttm) },
-        { k: first4Han(metricLabel('c_pay_acq_const_fiolta_ttm')), v: formatYiFromYuan(d.c_pay_acq_const_fiolta_ttm) },
-        { k: first4Han(metricLabel('fcff_ttm')), v: formatYiFromYuan(d.fcff_ttm) },
-      );
+      if (metricKey === 'dcf_div') {
+        fcfRows.push({ k: '分红TTM', v: formatYiFromYuan(d.dividend_ttm_yuan ?? null) });
+      } else {
+        fcfRows.push(
+          { k: first4Han(metricLabel('n_cashflow_act_ttm')), v: formatYiFromYuan(d.n_cashflow_act_ttm) },
+          { k: first4Han(metricLabel('c_pay_acq_const_fiolta_ttm')), v: formatYiFromYuan(d.c_pay_acq_const_fiolta_ttm) },
+          { k: first4Han(metricLabel('fcff_ttm')), v: formatYiFromYuan(d.fcff_ttm) },
+        );
+      }
       ndRows.push(
         { k: first4Han(metricLabel('st_borr')), v: formatYiFromYuan(d.st_borr) },
         { k: first4Han(metricLabel('lt_borr')), v: formatYiFromYuan(d.lt_borr) },
@@ -518,7 +527,8 @@ const IncomeChartCell = memo(function IncomeChartCell({
         { k: first4Han(metricLabel('trad_asset')), v: formatYiFromYuan(d.trad_asset) },
       );
     }
-    const rowStyle = { display: 'flex' as const, justifyContent: 'space-between' as const, gap: 6, lineHeight: '15px' };
+    /** DCF 明细行：标签与数值用中文冒号紧靠，不按整列两端对齐以免单列出现大缝隙 */
+    const dcfKvLineStyle = { lineHeight: '15px', overflowWrap: 'break-word' as const };
     const dcfHead = headRows[0];
     const mvHead = headRows[1];
     const periodFull = expandTooltipPeriod(String(label ?? ''));
@@ -537,6 +547,9 @@ const IncomeChartCell = memo(function IncomeChartCell({
     if (pg5 != null && Number.isFinite(pg5)) {
       extraLines.push(`阶段一：五年利润CAGR ${pg5.toFixed(2)}%（dcf_r 假设）`);
     }
+    if (metricKey === 'dcf_div') {
+      extraLines.push('基数：dividend_ttm（滚动四季之和，原版数据为「万元」，引擎内已折算为「元」代入 DCF）；阶段一默认 g1=15%');
+    }
     const hasExtra = extraLines.length > 0;
     return (
       <div
@@ -548,7 +561,10 @@ const IncomeChartCell = memo(function IncomeChartCell({
           fontSize: 10,
           lineHeight: '16px',
           color: '#e2e8f0',
-          maxWidth: 380,
+          /* 不超图表宽度：外层配合 Tooltip allowEscapeViewBox；内容区吃满外层限宽 */
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
           whiteSpace: 'normal',
           wordBreak: 'break-word',
         }}
@@ -558,7 +574,8 @@ const IncomeChartCell = memo(function IncomeChartCell({
             fontWeight: 600,
             marginBottom: hasExtra || d ? 6 : 0,
             fontSize: 11,
-            whiteSpace: metricKey === 'dcf_valuation' && headRows.length >= 3 ? 'normal' : 'nowrap',
+            /* 收窄 tooltip 时在框内折行，避免撑出图表 */
+            whiteSpace: 'normal',
           }}
         >
           {headline}
@@ -571,28 +588,23 @@ const IncomeChartCell = memo(function IncomeChartCell({
           </div>
         ) : null}
         {d ? (
-          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', width: '100%', minWidth: 0 }}>
             <div
               style={{
-                flex: 1,
+                flex: '1 1 0',
                 minWidth: 0,
                 borderRight: '1px solid #475569',
-                paddingRight: 10,
+                paddingRight: 8,
+                overflow: 'hidden',
               }}
             >
               {fcfRows.map((r: { k: string; v: string }, i: number) => (
-                <div key={`f${i}`} style={rowStyle}>
-                  <span>{r.k}</span>
-                  <span>{r.v}</span>
-                </div>
+                <div key={`f${i}`} style={dcfKvLineStyle}>{`${r.k}：${r.v}`}</div>
               ))}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: '1 1 0', minWidth: 0, overflow: 'hidden' }}>
               {ndRows.map((r: { k: string; v: string }, i: number) => (
-                <div key={`n${i}`} style={rowStyle}>
-                  <span>{r.k}</span>
-                  <span>{r.v}</span>
-                </div>
+                <div key={`n${i}`} style={dcfKvLineStyle}>{`${r.k}：${r.v}`}</div>
               ))}
             </div>
           </div>
@@ -996,7 +1008,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
   }
 
   // DCF：红线=默认阶段一15%；绿线=总市值；橙线=分类表 industry_growth（仅传入 industry_growth_pct 时）
-  if (metricKey === 'dcf_valuation' || metricKey === 'dcf_r') {
+  if (metricKey === 'dcf_valuation' || metricKey === 'dcf_r' || metricKey === 'dcf_div') {
     const showIndustryLine = metricKey === 'dcf_valuation' && chart.series.length >= 3;
     return (
       <div className="h-[190px] w-full rounded-md border border-slate-700 bg-slate-900 p-1 text-slate-100">
@@ -1005,7 +1017,11 @@ const IncomeChartCell = memo(function IncomeChartCell({
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
             <XAxis dataKey="xLabel" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} width={44} tickFormatter={formatYi} />
-            <Tooltip content={dcfDetailTooltip} />
+            <Tooltip
+              content={dcfDetailTooltip}
+              allowEscapeViewBox={{ x: false, y: true }}
+              wrapperStyle={{ maxWidth: '100%', pointerEvents: 'none' }}
+            />
             <Line
               type="monotone"
               dataKey="s0"
@@ -2209,6 +2225,8 @@ const ALL_SERIES_METRICS = [
   'dcf_equity_value_ttm',
   'dcf_equity_value_ttm_growth_r',
   'dcf_equity_value_ttm_growth_ind',
+  'dcf_equity_value_ttm_dividend',
+  'dividend_ttm',
   'fcff_ttm', 'c_pay_acq_const_fiolta_ttm', 'net_debt',
   'st_borr', 'lt_borr', 'st_bonds_payable', 'bond_payable', 'money_cap', 'trad_asset',
 ].join(',');
@@ -2658,6 +2676,50 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
         note:
           '与 DCF(TTM) 相同的 FCF、WACC、终值增长假设；阶段一复合增长率取引擎「利润近5年复合增长率」(profit_growth)，缺失时沿用默认 stage1（15%）。',
         dcfTooltipRows: dcfRTooltipRows,
+      };
+    }
+
+    // DCF（分红 TTM 为第 0 年现金流基数，与 definitions.dcf_equity_value_ttm_dividend 一致）
+    {
+      type DcfDivPt = { x: string; dcfYi: number; mvYi: number };
+      type DcfTooltipItem = NonNullable<MetricChart['dcfTooltipRows']>[number];
+      const divPts: DcfDivPt[] = [];
+      const divTooltipRows: DcfTooltipItem[] = [];
+      for (const r of pts) {
+        const x = formatDateYYMM(r?.period);
+        if (!x) continue;
+        const rawDcf = parseNum(r?.dcf_equity_value_ttm_dividend);
+        const dcfYi = rawDcf == null ? NaN : rawDcf / 1e8;
+        const rawMv = parseNum(r?.total_mv);
+        const mvYi = rawMv == null ? NaN : rawMv / 1e4;
+        divPts.push({ x, dcfYi, mvYi });
+        divTooltipRows.push({
+          n_cashflow_act_ttm: parseNum(r?.n_cashflow_act_ttm),
+          c_pay_acq_const_fiolta_ttm: parseNum(r?.c_pay_acq_const_fiolta_ttm),
+          fcff_ttm: parseNum(r?.fcff_ttm),
+          net_debt: parseNum(r?.net_debt),
+          st_borr: parseNum(r?.st_borr),
+          lt_borr: parseNum(r?.lt_borr),
+          st_bonds_payable: parseNum(r?.st_bonds_payable),
+          bond_payable: parseNum(r?.bond_payable),
+          money_cap: parseNum(r?.money_cap),
+          trad_asset: parseNum(r?.trad_asset),
+          dividend_ttm_yuan: (() => {
+            const wan = parseNum(r?.dividend_ttm);
+            return wan == null ? null : wan * 1e4;
+          })(),
+        });
+      }
+      const lastDcfDiv = [...divPts].reverse().find((p) => Number.isFinite(p.dcfYi))?.dcfYi;
+      const lastMvDiv = [...divPts].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      charts.dcf_div = {
+        x: divPts.map((p) => p.x),
+        series: [divPts.map((p) => p.dcfYi), divPts.map((p) => p.mvYi)],
+        labels: ['DCF股权价值(分红TTM基数,阶段一15%默认)(亿)', '总市值(亿)'],
+        latest: [fmt(lastDcfDiv ?? null, '亿'), fmt(lastMvDiv ?? null, '亿')],
+        note:
+          '现金流基数取分红TTM（滚动四季股息现金合计）；WACC、g1 默认、g2、预测年数及净负债调整与「DCF估值(TTM)」相同，仅替换 FCFF。',
+        dcfTooltipRows: divTooltipRows,
       };
     }
 

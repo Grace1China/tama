@@ -4,6 +4,10 @@ const nextConfig = {
   serverExternalPackages: ['duckdb'],
   eslint: { ignoreDuringBuilds: true },
   webpack: (config, { isServer }) => {
+    config.module.rules.push({
+      test: /\.ya?ml$/,
+      type: 'asset/source',
+    });
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push(({ request }, callback) => {

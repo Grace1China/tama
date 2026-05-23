@@ -12,6 +12,7 @@ const pageTitles: Record<string, string> = {
   '/incomeContrast': '利润对比',
   '/profit': '利润表',
   '/ths_index': '同花顺指数',
+  '/industryLink': '产业链分析',
 };
 
 export function PageTitle() {

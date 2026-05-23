@@ -501,9 +501,10 @@ export const metrics: MetricRegistry = {
   //   meta: { label: '每股分红（税前）', unit: 'CNY', precision: 4 },
   //   compute: ({ data, period }) => data.dividend?.[period]?.cash_div_tax ?? null,
   // },
+  // 口径：cash_div_tax 为每股含税现金分红（元/股）；Tushare 的 base_share 为基准股本「万股」。
+  // cash_div_tax * base_share = 当季现金分红额的「数值」，单位为万元（与 daily_basic.total_mv 的「万元」一致）。
   dividend_ttm:{
-    meta: { label: '分红TTM(滚动四季度单季之和)', unit: 'CNY', precision: 2 },
-    // compute: ({ data, period }) => data.balance[period]?.fix_assets ?? null,
+    meta: { label: '分红TTM(滚动四季度之和，万元)', unit: 'CNY', precision: 2 },
     compute: ({ period, data, engine }) => {
       const periods = lastNQuarters(period, 4);
       const values = periods.map((p) => {
@@ -675,6 +676,45 @@ export const metrics: MetricRegistry = {
 
       for (let t = 1; t <= projectionYears; t++) {
         currentFCF *= (1 + g1);
+        presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
+      }
+
+      const terminalValue = (currentFCF * (1 + g2)) / (wacc - g2);
+      const presentValueTV = terminalValue / Math.pow(1 + wacc, projectionYears);
+      const ev = presentValueFCF + presentValueTV;
+      return ev - netDebt;
+    },
+  },
+
+  /**
+   * 与 dcf_equity_value_ttm 相同的两阶段折现结构；第 0 年现金流基数为分红 TTM 折算为元（dividend_ttm 为万元 ×1e4）。
+   * FCFF/net_debt 均为财报元口径，此处必须与 dividend_ttm 的「万元」划清量纲后再贴现。
+   */
+  dcf_equity_value_ttm_dividend: {
+    deps: ['dividend_ttm'],
+    meta: { label: 'DCF股权价值(TTM分红基数)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine, params }) => {
+      const baseCtx = { stockCode, period, data, params };
+      const dividendWan = asNumber(engine.calculate('dividend_ttm', baseCtx));
+      const base0 = dividendWan != null ? dividendWan * 1e4 : null;
+      const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
+
+      if (base0 == null || base0 <= 0) {
+        return null;
+      }
+
+      const wacc = asNumber(params?.wacc) ?? 0.085;
+      const g1 = asNumber(params?.stage1_growth) ?? 0.15;
+      const g2 = asNumber(params?.terminal_growth) ?? 0.02;
+      const projectionYears = asNumber(params?.projection_years) ?? 5;
+
+      if (wacc <= g2) return null;
+
+      let presentValueFCF = 0;
+      let currentFCF = base0;
+
+      for (let t = 1; t <= projectionYears; t++) {
+        currentFCF *= 1 + g1;
         presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
       }
 
