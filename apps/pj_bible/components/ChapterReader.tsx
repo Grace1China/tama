@@ -18,6 +18,8 @@ interface ChapterReaderProps {
   startChapterId: number;
   /** 全本模式：章节不换页，连续流动 */
   wholeBook?: boolean;
+  /** /book/mobile/whole/... ：单列纵向阅读，不使用 CSS columns 横向分页 */
+  mobileReader?: boolean;
   /** 全部书卷列表，用于悬浮显示书卷选择区域 */
   allBooks?: Book[];
   /** 当前版本，用于切换和链接保留 */
@@ -26,7 +28,14 @@ interface ChapterReaderProps {
 
 const CLOSE_DELAY_MS = 200;
 
-export default function ChapterReader({ book, startChapterId, wholeBook, allBooks, version = 'cuvs' }: ChapterReaderProps) {
+export default function ChapterReader({
+  book,
+  startChapterId,
+  wholeBook,
+  mobileReader = false,
+  allBooks,
+  version = 'cuvs',
+}: ChapterReaderProps) {
   const [bookMenuOpen, setBookMenuOpen] = useState(false);
   const [chapterMenuOpen, setChapterMenuOpen] = useState(false);
   const [versionMenuOpen, setVersionMenuOpen] = useState(false);
@@ -35,6 +44,11 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
 
   const chapterPath = (b: Book, chId: number, v: string) => `/book/${b.id}/${chId}/${v}`;
   const wholePath = (b: Book, chId: number, v: string) => `/book/whole/${b.id}/${chId}/${v}`;
+  /** 移动端全本路由，保持书签与站内跳转落在同一版面 */
+  const wholeMobilePath = (b: Book, chId: number, v: string) =>
+    `/book/mobile/whole/${b.id}/${chId}/${v}`;
+  const wholeHref = (b: Book, chId: number, v: string) =>
+    mobileReader ? wholeMobilePath(b, chId, v) : wholePath(b, chId, v);
 
   const scheduleClose = () => {
     closeTimeoutRef.current = setTimeout(() => {
@@ -59,7 +73,8 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   const [scrollToPageRequest, setScrollToPageRequest] = useState<number | null>(null);
   const [showVerseNumbers, setShowVerseNumbers] = useState(false);
   /** 右侧小标题目录显隐（有目录数据时显示切换按钮） */
-  const [showTitleList, setShowTitleList] = useState(true);
+  /** 移动端全本路由默认收起右侧目录以省横向空间 */
+  const [showTitleList, setShowTitleList] = useState(!mobileReader);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   /** 用户点击 TOC 的 section，以点击为准高亮；滚动导致可见段变化时清除，改用滚动首可见 */
   const [lastClickedSectionId, setLastClickedSectionId] = useState<string | null>(null);
@@ -155,7 +170,11 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
     // console.log('scrollToSection 222 setLastClickedSectionId：', lastClickedSectionId,'anchorId:',anchorId);
     const el = document.getElementById(anchorId);
     if(el){
-    el?.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'start' });
+    el?.scrollIntoView({
+      behavior: 'instant',
+      block: mobileReader ? 'start' : 'nearest',
+      inline: mobileReader ? 'nearest' : 'start',
+    });
 
       // 2. 释放标记：
       // 如果 behavior 是 'instant'，滚动几乎是同步完成的
@@ -179,7 +198,13 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
   };
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col px-2">
+    <div
+      className={
+        mobileReader
+          ? 'mx-0 w-full max-w-none h-[calc(100vh-4rem)] flex flex-col px-2'
+          : 'max-w-6xl mx-auto h-[calc(100vh-4rem)] flex flex-col px-2'
+      }
+    >
       <div className="flex-shrink-0 pt-2 pb-2 flex flex-col gap-y-2">
         <div className="flex items-center justify-between gap-2 min-w-0">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
@@ -219,7 +244,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
                     <Link
                       key={b.id}
                       ref={b.id === book.id ? currentBookItemRef : undefined}
-                      href={wholeBook ? wholePath(b, firstChapterId(b), version) : chapterPath(b, firstChapterId(b), version)}
+                      href={wholeBook ? wholeHref(b, firstChapterId(b), version) : chapterPath(b, firstChapterId(b), version)}
                       className={`px-2 py-1.5 text-sm rounded hover:bg-blue-50 text-left ${
                         b.id === book.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                       }`}
@@ -269,7 +294,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
               {book.chapters.map((ch) => (
                 <Link
                   key={ch.id}
-                  href={wholeBook ? wholePath(book, ch.id, version) : chapterPath(book, ch.id, version)}
+                  href={wholeBook ? wholeHref(book, ch.id, version) : chapterPath(book, ch.id, version)}
                   className={`text-center px-2 py-1.5 text-sm rounded hover:bg-blue-50 ${
                     ch.id === startChapterId ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                   }`}
@@ -306,7 +331,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
               {VERSION_OPTIONS.map((opt) => (
                 <Link
                   key={opt.key}
-                  href={wholeBook ? wholePath(book, startChapterId, opt.key) : chapterPath(book, startChapterId, opt.key)}
+                  href={wholeBook ? wholeHref(book, startChapterId, opt.key) : chapterPath(book, startChapterId, opt.key)}
                   className={`block px-2 py-1.5 text-sm rounded hover:bg-blue-50 text-left ${
                     opt.key === version ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'
                   }`}
@@ -333,7 +358,8 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
         </div>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {/* 换页面组件 */}
-        {pageInfo.totalPages > 1 && (
+        {/* 移动端全本单列：无横向 CSS 分页，隐藏「上一页/下一页」 */}
+        {!mobileReader && pageInfo.totalPages > 1 && (
           <div className=" flex items-center gap-3 text-sm">
             <button
               type="button"
@@ -357,7 +383,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
           </div>
         )}
         {/* 显示节号开关 */}
-        <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none ml-2">
+        <label className={`flex items-center gap-1.5 text-sm cursor-pointer select-none ${mobileReader ? '' : 'ml-2'}`}>
           <span className="text-gray-600">显示节号</span>
           <button
             type="button"
@@ -377,8 +403,8 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
         </label>
         </div>
       </div>
-        {/* 书本内容 */}
-      <div className="flex-1 min-h-0 flex gap-4">
+        {/* 书本内容；移动端与 toolbar 共用 px-2，不再额外大卡边距 */}
+      <div className={`flex-1 min-h-0 flex ${mobileReader ? 'gap-2' : 'gap-4'}`}>
         <div className="flex-1 min-w-0">
           <VerseDisplay
             chapters={book.chapters}
@@ -391,6 +417,7 @@ export default function ChapterReader({ book, startChapterId, wholeBook, allBook
             paragraphInfo={paragraphInfo}
             wholeBook={wholeBook}
             showVerseNumbers={showVerseNumbers}
+            mobileReader={mobileReader}
           />
         </div>
         {showTitleList && tocSections.length > 0 && (

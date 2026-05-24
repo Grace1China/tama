@@ -20,6 +20,8 @@ interface VerseDisplayProps {
   wholeBook?: boolean;
   /** 是否显示每节经文编号 */
   showVerseNumbers?: boolean;
+  /** true：单列纵向滚动，不使用 CSS columns 与横向分页（移动端专用路由） */
+  mobileReader?: boolean;
 }
 
 export default function VerseDisplay({
@@ -33,6 +35,7 @@ export default function VerseDisplay({
   paragraphInfo,
   wholeBook,
   showVerseNumbers,
+  mobileReader = false,
 }: VerseDisplayProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -87,7 +90,7 @@ export default function VerseDisplay({
   useEffect(() => {
     if (!selectedWord) return;
     if (typeof window === 'undefined') return;
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (!wordPopupRef.current) return;
       const target = event.target as Node | null;
       if (target && wordPopupRef.current.contains(target)) {
@@ -99,8 +102,10 @@ export default function VerseDisplay({
       setSelectedWordPos(null);
     };
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [selectedWord]);
 
@@ -123,6 +128,23 @@ export default function VerseDisplay({
     if (!scroller || !onChapterChange || chaptersToShow.length === 0) return;
 
     const scrollerRect = scroller.getBoundingClientRect();
+
+    if (mobileReader) {
+      /** 纵向滚动：以视口竖直中线所在章为高亮当前章 */
+      const viewportCenterY = scrollerRect.top + scrollerRect.height / 2;
+      let visibleChapter: Chapter | null = chaptersToShow[0];
+      for (const chapter of chaptersToShow) {
+        const el = chapterRefsMap.current.get(chapter.id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= viewportCenterY) {
+          visibleChapter = chapter;
+        }
+      }
+      onChapterChange(visibleChapter);
+      return;
+    }
+
     const viewportCenter = scrollerRect.left + scrollerRect.width / 2;
 
     // Find the chapter whose content contains the viewport center
@@ -147,7 +169,7 @@ export default function VerseDisplay({
     const content = contentRef.current;
     if (!scroller || !content) return;
     const scrollerRect = scroller.getBoundingClientRect();
-    const findFirstVisible = (selector: string): string | null => {
+    const findFirstVisibleH = (selector: string): string | null => {
       const sections = content.querySelectorAll<HTMLElement>(selector);
       for (const el of sections) {
         const r = el.getBoundingClientRect();
@@ -157,9 +179,24 @@ export default function VerseDisplay({
       }
       return null;
     };
-    // console.log('findFirstVisible', findFirstVisible);
+    /** 纵向滚动时按竖直带状区域判断首可见标题 */
+    const findFirstVisibleV = (selector: string): string | null => {
+      const sections = content.querySelectorAll<HTMLElement>(selector);
+      const inset = Math.min(scrollerRect.height * 0.08, 48);
+      const bandTop = scrollerRect.top + inset;
+      const bandBottom = scrollerRect.bottom - inset;
+      for (const el of sections) {
+        const r = el.getBoundingClientRect();
+        if (r.bottom > bandTop && r.top < bandBottom) {
+          return el.id;
+        }
+      }
+      return null;
+    };
     // 优先使用段落标题（sect-xxx-xxx-...），找不到时再退回整章容器（ch-xxx）
-    const sectId = findFirstVisible('[id^="sect-"]');
+    const sectId = mobileReader
+      ? findFirstVisibleV('[id^="sect-"]')
+      : findFirstVisibleH('[id^="sect-"]');
     if (sectId) {
       // console.log('updateActiveSection 111', sectId);
       onActiveSectionId(sectId);
@@ -280,16 +317,21 @@ export default function VerseDisplay({
           }}
           className={wholeBook ? '' : 'break-after-avoid'}
           style={{
-            ...({paddingRight: '32px',paddingLeft: '32px'}),
-            ...(!wholeBook && chapterIndex > 0 ? { breakBefore: 'column' } : {}),
-            scrollSnapAlign: 'start',
+            /** 移动端与 ChapterReader 的 px-2 对齐，不再额外两侧 32px，避免经文比 toolbar 文字更「缩进」 */
+            ...(mobileReader ? {} : { paddingRight: '32px', paddingLeft: '32px' }),
+            ...(mobileReader
+              ? {}
+              : {
+                  ...(!wholeBook && chapterIndex > 0 ? { breakBefore: 'column' as const } : {}),
+                  scrollSnapAlign: 'start' as const,
+                }),
           }}
         >
           {hasParagraphs ? chapterContent : <>{chapterContent}</>}
         </div>
       );
     });
-  }, [chaptersToShow, paragraphInfo, wholeBook, showVerseNumbers]);
+  }, [chaptersToShow, paragraphInfo, wholeBook, showVerseNumbers, mobileReader]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -297,6 +339,21 @@ export default function VerseDisplay({
     if (!scroller || !content) return;
 
     const updateLayout = () => {
+      if (mobileReader) {
+        content.style.height = '';
+        content.style.maxHeight = '';
+        content.style.columnWidth = '';
+        content.style.columnGap = '';
+        content.style.columnFill = '';
+        setTotalPages(1);
+        setCurrentPage(0);
+        requestAnimationFrame(() => {
+          updateVisibleChapterRef.current();
+          updateActiveSection();
+        });
+        return;
+      }
+
       // Get container dimensions
       const containerWidth = scroller.clientWidth;
       const containerHeight = scroller.clientHeight;
@@ -346,7 +403,7 @@ export default function VerseDisplay({
     ro.observe(scroller);
 
     return () => ro.disconnect();
-  }, [chaptersToShow]);
+  }, [chaptersToShow, mobileReader]);
 
   const getPageWidth = (element: HTMLDivElement): number => {
     const computedStyle = window.getComputedStyle(element);
@@ -372,11 +429,13 @@ export default function VerseDisplay({
       // console.log('onScroll');
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const content = contentRef.current;
-        const effectivePageWidth = content
-          ? getEffectivePageWidth(scroller, content)
-          : getPageWidth(scroller);
-        setCurrentPage(Math.round(scroller.scrollLeft / effectivePageWidth));
+        if (!mobileReader) {
+          const content = contentRef.current;
+          const effectivePageWidth = content
+            ? getEffectivePageWidth(scroller, content)
+            : getPageWidth(scroller);
+          setCurrentPage(Math.round(scroller.scrollLeft / effectivePageWidth));
+        }
         updateVisibleChapterRef.current();
         updateActiveSection();
       });
@@ -387,9 +446,10 @@ export default function VerseDisplay({
       cancelAnimationFrame(raf);
       scroller.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [mobileReader]);
 
   const scrollToPage = (page: number) => {
+    if (mobileReader) return;
     const scroller = scrollerRef.current;
     const content = contentRef.current;
     if (!scroller || !content) return;
@@ -404,10 +464,14 @@ export default function VerseDisplay({
 
   useEffect(() => {
     if (scrollToPageRequest == null) return;
+    if (mobileReader) {
+      onScrollToPageRequestHandled?.();
+      return;
+    }
     scrollToPage(scrollToPageRequest);
     onScrollToPageRequestHandled?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅响应 scrollToPageRequest 变化，避免因回调引用重复滚动
-  }, [scrollToPageRequest]);
+  }, [scrollToPageRequest, mobileReader]);
 
   const handleSelectionLookup = async () => {
     if (typeof window === 'undefined') return;
@@ -478,19 +542,31 @@ export default function VerseDisplay({
     <div className="w-full h-full flex flex-col min-h-0">
       <div
         ref={scrollerRef}
-        className="bg-white rounded-lg shadow-sm flex-1 min-h-0 overflow-x-auto overflow-y-hidden scrollbar-hide"
-        style={{ scrollSnapType: 'x mandatory',overscrollBehaviorX: 'none' }}
-        onMouseUp={handleSelectionLookup}
+        className={
+          mobileReader
+            ? 'bg-white flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-hide touch-pan-y rounded-none shadow-none'
+            : 'bg-white rounded-lg shadow-sm flex-1 min-h-0 overflow-x-auto overflow-y-hidden scrollbar-hide'
+        }
+        style={
+          mobileReader
+            ? { overscrollBehaviorY: 'contain' }
+            : { scrollSnapType: 'x mandatory', overscrollBehaviorX: 'none' }
+        }
+        onPointerUp={handleSelectionLookup}
       >
         <div
           ref={contentRef}
-          className="text-lg leading-relaxed "
-          style={{
-            columnWidth: 'var(--page-width)',
-            columnGap: '2rem',
-            height: '100%',
-            columnFill: 'auto',
-          }}
+          className={`text-lg leading-relaxed ${mobileReader ? 'w-full max-w-full pb-8' : ''}`}
+          style={
+            mobileReader
+              ? undefined
+              : {
+                  columnWidth: 'var(--page-width)',
+                  columnGap: '2rem',
+                  height: '100%',
+                  columnFill: 'auto',
+                }
+          }
         >
           {verseSpans}
         </div>

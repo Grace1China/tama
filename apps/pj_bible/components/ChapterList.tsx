@@ -7,9 +7,15 @@ interface ChapterListProps {
   book: Book;
   /** 版本，用于生成章节链接路径，默认 cuvs */
   version?: string;
+  /** 窄屏书卷页为 true：章节格跳转移动端全本阅读（从该章起连续），与桌面单章 /book/id/ch/version 区分 */
+  preferMobileWhole?: boolean;
 }
 
-export default function ChapterList({ book, version = DEFAULT_VERSION }: ChapterListProps) {
+export default function ChapterList({
+  book,
+  version = DEFAULT_VERSION,
+  preferMobileWhole = false,
+}: ChapterListProps) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">章節</h2>
@@ -17,7 +23,11 @@ export default function ChapterList({ book, version = DEFAULT_VERSION }: Chapter
         {book.chapters.map((chapter) => (
           <Link
             key={chapter.id}
-            href={`/book/${book.id}/${chapter.id}/${version}`}
+            href={
+              preferMobileWhole
+                ? `/book/mobile/whole/${book.id}/${chapter.id}/${version}`
+                : `/book/${book.id}/${chapter.id}/${version}`
+            }
             className="block p-3 text-center bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 hover:border-blue-400 hover:bg-blue-50"
           >
             <span className="text-lg font-medium text-gray-900">
