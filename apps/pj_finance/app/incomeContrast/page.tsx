@@ -145,6 +145,8 @@ type MetricChart = {
     bond_payable: number | null;
     money_cap: number | null;
     trad_asset: number | null;
+    /** DCF净利基数列：与同季 n_income_attr_p_ttm 报表元口径一致 */
+    n_income_attr_p_ttm?: number | null;
     /** dcf_r 列：与引擎 profit_growth 一致（%；五年利润复合增长率） */
     profit_growth_5y_pct?: number | null;
     /** DCF(TTM) 列启用分类表行业增速时：与请求 industry_growth_pct 一致（%） */
@@ -171,6 +173,7 @@ type MetricKey =
   | 'dupont'
   | 'dcf_valuation'
   | 'dcf_r'
+  | 'dcf_r_ni'
   | 'dcf_div'
   | 'forecast_signal';
 
@@ -219,6 +222,7 @@ const METRIC_COLUMNS: Array<{ key: MetricKey; label: string }> = [
   { key: 'dupont', label: '杜邦分析' },
   { key: 'dcf_valuation', label: 'DCF估值(TTM)' },
   { key: 'dcf_r', label: 'DCF估值(五年利润增速)' },
+  { key: 'dcf_r_ni', label: 'DCF估值(净利TTM+利润增速)' },
   { key: 'dcf_div', label: 'DCF估值(分红TTM)' },
   { key: 'rev_mv', label: '营收和市值' },
   { key: 'cost_margin', label: '成本与毛利率' },
@@ -371,6 +375,7 @@ function emptyCharts(): Record<MetricKey, MetricChart> {
     dupont: emptyChart(),
     dcf_valuation: emptyChart(),
     dcf_r: emptyChart(),
+    dcf_r_ni: emptyChart(),
     dcf_div: emptyChart(),
     forecast_signal: emptyChart(),
   };
@@ -413,7 +418,13 @@ const IncomeChartCell = memo(function IncomeChartCell({
     chart.series.forEach((s, si) => {
       row[`s${si}`] = s[i] ?? null;
     });
-    if ((metricKey === 'dcf_valuation' || metricKey === 'dcf_r' || metricKey === 'dcf_div') && chart.dcfTooltipRows?.[i] != null) {
+    if (
+      (metricKey === 'dcf_valuation' ||
+        metricKey === 'dcf_r' ||
+        metricKey === 'dcf_r_ni' ||
+        metricKey === 'dcf_div') &&
+      chart.dcfTooltipRows?.[i] != null
+    ) {
       row._dcfDetail = chart.dcfTooltipRows[i];
     }
     return row;
@@ -511,6 +522,11 @@ const IncomeChartCell = memo(function IncomeChartCell({
     if (d) {
       if (metricKey === 'dcf_div') {
         fcfRows.push({ k: '分红TTM', v: formatYiFromYuan(d.dividend_ttm_yuan ?? null) });
+      } else if (metricKey === 'dcf_r_ni') {
+        fcfRows.push({
+          k: first4Han(metricLabel('n_income_attr_p_ttm')),
+          v: formatYiFromYuan(d.n_income_attr_p_ttm ?? null),
+        });
       } else {
         fcfRows.push(
           { k: first4Han(metricLabel('n_cashflow_act_ttm')), v: formatYiFromYuan(d.n_cashflow_act_ttm) },
@@ -544,8 +560,12 @@ const IncomeChartCell = memo(function IncomeChartCell({
     if (igCsv != null && Number.isFinite(igCsv)) {
       extraLines.push(`阶段一：申万分类 industry_growth ${igCsv}%（dcf_equity_value_ttm_growth_ind）`);
     }
-    if (pg5 != null && Number.isFinite(pg5)) {
-      extraLines.push(`阶段一：五年利润CAGR ${pg5.toFixed(2)}%（dcf_r 假设）`);
+    if ((metricKey === 'dcf_r' || metricKey === 'dcf_r_ni') && pg5 != null && Number.isFinite(pg5)) {
+      const baseHint =
+        metricKey === 'dcf_r'
+          ? '自由现金流基数、与 dcf_equity_value_ttm_growth_r 一致'
+          : '归母净利润TTM基数、与 dcf_equity_value_ttm_ni_growth_r 一致';
+      extraLines.push(`阶段一：五年利润CAGR ${pg5.toFixed(2)}%（${baseHint}）`);
     }
     if (metricKey === 'dcf_div') {
       extraLines.push('基数：dividend_ttm（滚动四季之和，原版数据为「万元」，引擎内已折算为「元」代入 DCF）；阶段一默认 g1=15%');
@@ -1008,7 +1028,7 @@ const IncomeChartCell = memo(function IncomeChartCell({
   }
 
   // DCF：红线=默认阶段一15%；绿线=总市值；橙线=分类表 industry_growth（仅传入 industry_growth_pct 时）
-  if (metricKey === 'dcf_valuation' || metricKey === 'dcf_r' || metricKey === 'dcf_div') {
+  if (metricKey === 'dcf_valuation' || metricKey === 'dcf_r' || metricKey === 'dcf_r_ni' || metricKey === 'dcf_div') {
     const showIndustryLine = metricKey === 'dcf_valuation' && chart.series.length >= 3;
     return (
       <div className="h-[190px] w-full rounded-md border border-slate-700 bg-slate-900 p-1 text-slate-100">
@@ -1522,8 +1542,11 @@ export default function IncomeContrastPage() {
       const row = params?.value as StockBasicGridValue | undefined;
       if (!row) return <div className="text-xs text-gray-400">—</div>;
       const hot = row.__hotConcepts;
+      const seq = (params.node?.rowIndex ?? 0) + 1;
       return (
-        <div className="space-y-1 py-1">
+        <div className="flex gap-2 py-1">
+          <div className="shrink-0 pt-0.5 w-6 text-right text-xs tabular-nums text-gray-400">{seq}</div>
+          <div className="min-w-0 flex-1 space-y-1">
           <button
             type="button"
             className="block w-full text-left font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
@@ -1562,6 +1585,7 @@ export default function IncomeContrastPage() {
                 热点：{hot.summary || '—'}
               </div>
             ) : null)}
+          </div>
         </div>
       );
     };
@@ -2224,6 +2248,7 @@ const ALL_SERIES_METRICS = [
   'netMargin_ttm', 'totalAsset_turnover_ttm', 'equity_multiplier_ttm', 'roe_dupont',
   'dcf_equity_value_ttm',
   'dcf_equity_value_ttm_growth_r',
+  'dcf_equity_value_ttm_ni_growth_r',
   'dcf_equity_value_ttm_growth_ind',
   'dcf_equity_value_ttm_dividend',
   'dividend_ttm',
@@ -2409,7 +2434,14 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
 
       const mv = calcFallbackCagr('total_mv');
       const rev = calcFallbackCagr('total_revenue_ttm');
-      const prof = calcFallbackCagr('n_income_attr_p_ttm');
+      // 与同页 profit_growth 序列及 DCF估值(五年利润增速) 同源：metrics.profit_growth（五年前同季后顺延后按实际相距年数算的 CAGR）。
+      // 仅当该行无 profit_growth 时才用锚点行的 TTM 点值按「5年→4年→…」回退推算，避免出现柱图≈四年点值 CAGR 与 DCF≈引擎口径不一致。
+      const profManual = calcFallbackCagr('n_income_attr_p_ttm');
+      const profFromMetric = parseNum(anchorPoint?.profit_growth);
+      const prof =
+        profFromMetric != null && Number.isFinite(profFromMetric)
+          ? { value: profFromMetric, years: 5 }
+          : profManual;
       const eqy = calcFallbackCagr('total_hldr_eqy_exc_min_int');
       const growthValuesRaw: Array<number | null> = [mv.value, rev.value, prof.value, eqy.value];
       const growthValues = growthValuesRaw.map((v) => (v == null ? NaN : v));
@@ -2674,8 +2706,50 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
         labels: ['DCF股权价值(五年利润增速阶段一)(亿)', '总市值(亿)'],
         latest: [fmt(lastDcfR ?? null, '亿'), fmt(lastMvR ?? null, '亿')],
         note:
-          '与 DCF(TTM) 相同的 FCF、WACC、终值增长假设；阶段一复合增长率取引擎「利润近5年复合增长率」(profit_growth)，缺失时沿用默认 stage1（15%）。',
+          '与 DCF(TTM) 相同的 FCF、WACC、终值增长假设；阶段一 g1 取 profit_growth：以五年前同季为锚，若该季净利润 TTM 不可算则从锚点后顺延至多 12 个季度再找基准，复合增长率按两点实际相距年份计算；仍为缺失时沿用 15%。',
         dcfTooltipRows: dcfRTooltipRows,
+      };
+    }
+
+    // DCF：阶段一 g1 = profit_growth（与上一列一致），现金流基数改为归母净利润 TTM（与 dcf_equity_value_ttm_ni_growth_r 一致）
+    {
+      type DcfRNiPt = { x: string; dcfYi: number; mvYi: number };
+      type DcfTooltipItem = NonNullable<MetricChart['dcfTooltipRows']>[number];
+      const dcfRNiPts: DcfRNiPt[] = [];
+      const dcfRNiTooltipRows: DcfTooltipItem[] = [];
+      for (const r of pts) {
+        const x = formatDateYYMM(r?.period);
+        if (!x) continue;
+        const rawDcf = parseNum(r?.dcf_equity_value_ttm_ni_growth_r);
+        const dcfYi = rawDcf == null ? NaN : rawDcf / 1e8;
+        const rawMv = parseNum(r?.total_mv);
+        const mvYi = rawMv == null ? NaN : rawMv / 1e4;
+        dcfRNiPts.push({ x, dcfYi, mvYi });
+        dcfRNiTooltipRows.push({
+          n_cashflow_act_ttm: parseNum(r?.n_cashflow_act_ttm),
+          c_pay_acq_const_fiolta_ttm: parseNum(r?.c_pay_acq_const_fiolta_ttm),
+          fcff_ttm: parseNum(r?.fcff_ttm),
+          net_debt: parseNum(r?.net_debt),
+          st_borr: parseNum(r?.st_borr),
+          lt_borr: parseNum(r?.lt_borr),
+          st_bonds_payable: parseNum(r?.st_bonds_payable),
+          bond_payable: parseNum(r?.bond_payable),
+          money_cap: parseNum(r?.money_cap),
+          trad_asset: parseNum(r?.trad_asset),
+          n_income_attr_p_ttm: parseNum(r?.n_income_attr_p_ttm),
+          profit_growth_5y_pct: parseNum(r?.profit_growth),
+        });
+      }
+      const lastDcfNi = [...dcfRNiPts].reverse().find((p) => Number.isFinite(p.dcfYi))?.dcfYi;
+      const lastMvNi = [...dcfRNiPts].reverse().find((p) => Number.isFinite(p.mvYi))?.mvYi;
+      charts.dcf_r_ni = {
+        x: dcfRNiPts.map((p) => p.x),
+        series: [dcfRNiPts.map((p) => p.dcfYi), dcfRNiPts.map((p) => p.mvYi)],
+        labels: ['DCF股权价值(净利TTM+五年利润增速)(亿)', '总市值(亿)'],
+        latest: [fmt(lastDcfNi ?? null, '亿'), fmt(lastMvNi ?? null, '亿')],
+        note:
+          '与「DCF估值(五年利润增速)」相同的 profit_growth 阶段一、WACC、终值假设与净负债调整；差异仅是将第 0 年现金流由 FCFF 换为「归母净利润 TTM」（元）；净利≤0 的时点不展示该股该期 DCF 值。',
+        dcfTooltipRows: dcfRNiTooltipRows,
       };
     }
 

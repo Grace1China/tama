@@ -13,6 +13,9 @@ export default function IndustryLinkPage() {
           <TabsTrigger value="lithium">锂电池产业链</TabsTrigger>
           <TabsTrigger value="ai">AI 产业</TabsTrigger>
           <TabsTrigger value="ai_compute">AI算力产业链</TabsTrigger>
+          <TabsTrigger value="tao">韬产业链</TabsTrigger>
+          <TabsTrigger value="sc_quantum">超导量子计算</TabsTrigger>
+          <TabsTrigger value="commercial_space">商业航天链</TabsTrigger>
         </TabsList>
         <TabsContent value="lithium" className="w-full flex flex-col">
           <IndustryChainBoard preset="lithium" />
@@ -22,6 +25,15 @@ export default function IndustryLinkPage() {
         </TabsContent>
         <TabsContent value="ai_compute" className="w-full flex flex-col">
           <IndustryChainBoard preset="ai_compute" />
+        </TabsContent>
+        <TabsContent value="tao" className="w-full flex flex-col">
+          <IndustryChainBoard preset="tao" />
+        </TabsContent>
+        <TabsContent value="sc_quantum" className="w-full flex flex-col">
+          <IndustryChainBoard preset="sc_quantum" />
+        </TabsContent>
+        <TabsContent value="commercial_space" className="w-full flex flex-col">
+          <IndustryChainBoard preset="commercial_space" />
         </TabsContent>
       </Tabs>
     </div>

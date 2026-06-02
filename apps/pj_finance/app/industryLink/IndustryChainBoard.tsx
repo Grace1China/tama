@@ -6,39 +6,62 @@ import React, {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   type Dispatch,
   type SetStateAction,
 } from 'react';
+import YAML from 'yaml';
 import ReactFlow, {
   ReactFlowProvider,
   Background,
-  Controls,
-  MiniMap,
+  PanOnScrollMode,
   addEdge,
   useEdgesState,
   useNodesState,
   useOnViewportChange,
   useReactFlow,
   useStore,
+  useStoreApi,
   MarkerType,
   type Connection,
   type Edge,
   type Node,
   type ReactFlowInstance,
+  type Viewport,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import { AI_COMPUTE_TAXONOMY, countAIComputeSubLanes } from './aiComputeTaxonomy';
+import aiComputeYamlRaw from './ai_compute_taxonomy.yaml';
+import aiIndustryYamlRaw from './ai_industry_taxonomy.yaml';
+import taoIndustryYamlRaw from './tao_industry_taxonomy.yaml';
+import scQuantumIndustryYamlRaw from './sc_quantum_industry_taxonomy.yaml';
+import commercialSpaceIndustryYamlRaw from './commercial_space_industry_taxonomy.yaml';
+import { AI_COMPUTE_TAXONOMY } from './aiComputeTaxonomy';
+import { COMMERCIAL_SPACE_INDUSTRY_TAXONOMY } from './commercialSpaceIndustryTaxonomy';
+import { SC_QUANTUM_INDUSTRY_TAXONOMY } from './scQuantumIndustryTaxonomy';
+import { TAO_INDUSTRY_TAXONOMY } from './taoIndustryTaxonomy';
 import {
   AI_INDUSTRY_TAXONOMY,
-  countAISubLanes,
+  buildFlowEdgesFromTaxonomy,
+  parseIndustryTaxonomyYaml,
+  pricingPowerFromCompanyInfo,
   type AIIndustryTaxonomyFile,
 } from './aiIndustryTaxonomy';
+import IndustryBoardYamlView from './IndustryBoardYamlView';
 import IndustryNode, { type IndustryNodeData } from './industry';
+import { tsCodeForCompanyName } from './industryCompanyTsCodes';
 import SwimLaneNode from './SwimLane';
+import { CompanyCardGestureZoom, CompanyCardZoomControls, CompanyCardZoomProvider } from './companyCardZoom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 /** 顶部 Tab 识别的产业链预设 */
-export type ChainAnalysisPreset = 'lithium' | 'ai' | 'ai_compute';
+export type ChainAnalysisPreset =
+  | 'lithium'
+  | 'ai'
+  | 'ai_compute'
+  | 'tao'
+  | 'sc_quantum'
+  | 'commercial_space';
 
 const nodeTypes = { industry: IndustryNode, swimLane: SwimLaneNode };
 
@@ -57,13 +80,23 @@ type SeedCompany = {
   pricingPower: IndustryNodeData['pricingPower'];
   competitiveAdvantage: string;
   valuationHint?: string;
+  tsCode?: string;
+  /** YAML info 块（韬产业链等） */
+  companyInfo?: Record<string, string>;
+  cardDetailVariant?: IndustryNodeData['cardDetailVariant'];
 };
 
-/** 一条泳道：父节点 id + 左翼标题 + 该行公司/分类占位数据 */
 export type BoardLayer = {
   parentId: string;
   tier: IndustryNodeData['category'];
+  /** 子泳道标题（画布条带主标题） */
   titleZh: string;
+  /** 根泳道标题；与 titleZh 不同时展示为分组前缀 */
+  groupTitleZh?: string;
+  /** 子泳道级产业链说明（产业位置、确定性、弹性等） */
+  subLaneInfo?: Record<string, string>;
+  /** 公司卡片起始 Y（屏幕像素）；含子泳道说明时自动加高 */
+  childTopScreenPx?: number;
   row: SeedCompany[];
 };
 
@@ -78,31 +111,180 @@ const SEED_COMPANIES: SeedCompany[] = [
   { id: 'ew', category: 'Downstream', label: '亿纬锂能', pricingPower: 'Low', competitiveAdvantage: '圆柱+储能+动力多场景', valuationHint: '利润弹性' },
 ];
 
-const GAP_X = 268;
-const NODE_CARD_OUTER_WIDTH = 232;
-
-/** AI 带子项多，收窄横向间距以利一排展示 */
-const GAP_X_AI = 142;
-const NODE_CARD_OUTER_WIDTH_AI = 220;
+/** 屏幕像素：公司卡片横向间距（zoom 时在流坐标中除以 zoom，屏幕观感不变） */
+const GAP_X_SCREEN = 268;
+const NODE_CARD_OUTER_WIDTH_SCREEN = 232;
+/** AI 预设卡片间距：须 ≥ 卡片宽度，避免折叠态头部横向重叠 */
+const NODE_CARD_OUTER_WIDTH_SCREEN_AI = 220;
+const GAP_X_SCREEN_AI = NODE_CARD_OUTER_WIDTH_SCREEN_AI + 12;
 
 const BOARD_LAYOUT: Record<
   ChainAnalysisPreset,
-  { gapX: number; nodeOuterWidth: number }
+  { gapXScreen: number; nodeOuterWidthScreen: number }
 > = {
-  lithium: { gapX: GAP_X, nodeOuterWidth: NODE_CARD_OUTER_WIDTH },
-  ai: { gapX: GAP_X_AI, nodeOuterWidth: NODE_CARD_OUTER_WIDTH_AI },
-  ai_compute: { gapX: GAP_X_AI, nodeOuterWidth: NODE_CARD_OUTER_WIDTH_AI },
+  lithium: { gapXScreen: GAP_X_SCREEN, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN },
+  ai: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
+  ai_compute: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
+  tao: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
+  sc_quantum: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
+  commercial_space: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
 };
 
-/** 公司卡片距泳道顶的屏幕像素（近似）；流坐标下边距 ≈ 本值 ÷ zoom，使标题栏高度不随缩放漂移 */
+/** 公司卡片距泳道顶部的屏幕像素（默认，无子泳道说明时） */
 const CHILD_TOP_SCREEN_PX = 52;
-/** 单层泳带高度 = （视窗在流坐标下的高度 ÷ 层数）× 该系数；>1 时总高度超出视窗，可平移/滚轮浏览 */
-const SWIM_LANE_BAND_HEIGHT_RATIO = 2;
-/** 行内居中时保证距泳道内壁的最小留白 */
-const ROW_INWARD_PAD_MIN = 32;
 
-/** 页面侧栏等区域预留的外层最小可视高度提示 */
-export const TOTAL_SWIM_LAYOUT_HEIGHT = 420;
+/** 子泳道有产业位置/确定性/弹性说明时，为公司卡片额外下移 */
+function computeSubLaneChildTopScreenPx(info?: Record<string, string>): number {
+  if (!info || Object.keys(info).length === 0) return CHILD_TOP_SCREEN_PX;
+  let top = CHILD_TOP_SCREEN_PX;
+  if (info.产业位置?.trim()) top += 16;
+  if (info.确定性?.trim() || info.弹性?.trim()) top += 14;
+  return top;
+}
+/**
+ * 单层泳道固定屏幕高度（px）；单行卡片时的默认高度，多行时按行数自动加高。
+ * 需容纳 CHILD_TOP + 公司卡片，可按视觉调大/调小。
+ */
+export const SWIM_LANE_BAND_SCREEN_PX = 220;
+
+/** 看板可视区域最大高度；内容超出时在画布内滚轮纵向浏览 */
+const SWIM_BOARD_VIEWPORT_MAX_CSS = 'min(980px, calc(100vh - 10rem))';
+
+/** 行内居中时距泳道左右内壁的最小屏幕留白 */
+const ROW_INWARD_PAD_SCREEN_MIN = 32;
+/** 折叠态公司卡片单行占用高度（屏幕像素） */
+const CARD_ROW_HEIGHT_SCREEN_PX = 72;
+/** 换行时行间距（屏幕像素） */
+const CARD_ROW_GAP_Y_SCREEN_PX = 8;
+/** 泳道底部留白（屏幕像素） */
+const LANE_BOTTOM_PAD_SCREEN_PX = 16;
+/** 估算画布宽（用于首屏高度 CSS，ResizeObserver 后会按真实宽度重算） */
+const ESTIMATED_PANE_WIDTH_PX = 1200;
+
+type BoardCardLayout = { gapXScreen: number; nodeOuterWidthScreen: number };
+
+/** 单行最多可放卡片数（不超出泳道宽） */
+function computeCardsPerRow(
+  laneWidth: number,
+  layout: BoardCardLayout,
+  padMin = ROW_INWARD_PAD_SCREEN_MIN,
+): number {
+  const { gapXScreen: gapX, nodeOuterWidthScreen: cardW } = layout;
+  const inner = laneWidth - 2 * padMin;
+  if (inner <= cardW) return 1;
+  return Math.max(1, Math.floor((inner - cardW) / gapX) + 1);
+}
+
+/** 泳道内公司卡片换行坐标 */
+function computeWrappedCardPositions(
+  count: number,
+  laneWidth: number,
+  layout: BoardCardLayout,
+  childTop: number,
+  padMin = ROW_INWARD_PAD_SCREEN_MIN,
+): { positions: { x: number; y: number }[]; rowCount: number } {
+  if (count <= 0) return { positions: [], rowCount: 0 };
+
+  const { gapXScreen: gapX, nodeOuterWidthScreen: cardW } = layout;
+  const perRow = computeCardsPerRow(laneWidth, layout, padMin);
+  const rowCount = Math.ceil(count / perRow);
+  const positions: { x: number; y: number }[] = [];
+  const rowStep = CARD_ROW_HEIGHT_SCREEN_PX + CARD_ROW_GAP_Y_SCREEN_PX;
+
+  for (let idx = 0; idx < count; idx++) {
+    const row = Math.floor(idx / perRow);
+    const col = idx % perRow;
+    const rowStartIdx = row * perRow;
+    const cardsInRow = Math.min(perRow, count - rowStartIdx);
+    const rowSpan = Math.max(0, cardsInRow - 1) * gapX + cardW;
+    const padStart = Math.max(padMin, (laneWidth - rowSpan) / 2);
+    positions.push({
+      x: padStart + col * gapX,
+      y: childTop + row * rowStep,
+    });
+  }
+
+  return { positions, rowCount };
+}
+
+/** 按卡片行数计算泳道高度（屏幕像素） */
+function computeLaneHeightScreenPx(rowCount: number, childTop = CHILD_TOP_SCREEN_PX): number {
+  if (rowCount <= 0) return SWIM_LANE_BAND_SCREEN_PX;
+  const cardRows =
+    rowCount * CARD_ROW_HEIGHT_SCREEN_PX + Math.max(0, rowCount - 1) * CARD_ROW_GAP_Y_SCREEN_PX;
+  return Math.max(
+    SWIM_LANE_BAND_SCREEN_PX,
+    childTop + cardRows + LANE_BOTTOM_PAD_SCREEN_PX,
+  );
+}
+
+/** 全部泳道内容总高（按换行后的各行高度累加） */
+export function computeSwimBoardCanvasHeightPx(
+  layers: BoardLayer[],
+  laneWidthPx: number,
+  layout: BoardCardLayout,
+): number {
+  if (layers.length === 0) return SWIM_LANE_BAND_SCREEN_PX;
+  return layers.reduce((sum, layer) => {
+    const childTop = layer.childTopScreenPx ?? CHILD_TOP_SCREEN_PX;
+    const { rowCount } = computeWrappedCardPositions(
+      layer.row.length,
+      laneWidthPx,
+      layout,
+      childTop,
+    );
+    return sum + computeLaneHeightScreenPx(rowCount, childTop);
+  }, 0);
+}
+
+/** 看板可视区域高度 CSS：内容总高与上限取较小值 */
+export function computeSwimBoardViewportHeightCss(
+  layers: BoardLayer[],
+  laneWidthPx: number,
+  layout: BoardCardLayout,
+): string {
+  const contentPx = computeSwimBoardCanvasHeightPx(layers, laneWidthPx, layout);
+  return `min(${contentPx}px, ${SWIM_BOARD_VIEWPORT_MAX_CSS})`;
+}
+
+/** 泳道固定缩放比：不可缩放，滚轮仅纵向平移浏览 */
+const SWIM_LANE_FIXED_ZOOM = 1;
+/** 首条泳道顶边流坐标：恒为 0，与画布上沿对齐 */
+const SWIM_LANE_TOP_FLOW = 0;
+
+export const TOTAL_SWIM_LAYOUT_HEIGHT = SWIM_LANE_BAND_SCREEN_PX;
+
+/** 泳道布局快照：供视口约束与节点重建共用 */
+type SwimLaneLayoutSnapshot = {
+  laneLeftFlow: number;
+  laneWidthFlow: number;
+  laneTopFlow: number;
+  bandHeightFlow: number;
+  layerCount: number;
+  paneWidthPx: number;
+  /** 可视区域（React Flow pane）高度 */
+  paneHeightPx: number;
+  /** 全部泳道内容总高（屏幕像素） */
+  contentHeightPx: number;
+  bandHeightScreenPx: number;
+  /** 视口 transform.y 下界（末泳道贴底）；上界见 computeViewportYBounds */
+  viewportYMax: number;
+  viewportYMin: number;
+};
+
+/** React Flow / d3 平移边界：流坐标内容矩形，高 = 全部泳道总高 */
+function computeSwimContentFlowExtent(
+  snap: Pick<SwimLaneLayoutSnapshot, 'paneWidthPx' | 'contentHeightPx'>,
+): [[number, number], [number, number]] {
+  return [
+    [0, 0],
+    [Math.max(snap.paneWidthPx, 1), Math.max(snap.contentHeightPx, 1)],
+  ];
+}
+
+type SwimLaneLayoutHost = HTMLElement & {
+  __swimLaneLayout?: SwimLaneLayoutSnapshot;
+};
 
 function laneParentId(layer: IndustryNodeData['category']): string {
   return `lane-${layer}`;
@@ -113,14 +295,31 @@ function buildBoardLayersLithium(): BoardLayer[] {
     parentId: laneParentId(layer),
     tier: layer,
     titleZh: LAYER_ZH[layer],
-    row: SEED_COMPANIES.filter((s) => s.category === layer),
+    row: SEED_COMPANIES.filter((s) => s.category === layer).map((s) => ({
+      ...s,
+      tsCode: tsCodeForCompanyName(s.label),
+    })),
   })).filter((l) => l.row.length > 0);
 }
 
-/** 自 taxonomy 扁平为多泳道 layer；relations 暂不画边 */
+/** 从 YAML info 解析可点击公告用的 ts_code */
+function tsCodeFromCompanyInfo(
+  info: Record<string, string>,
+  ts_code?: string,
+  companyName?: string,
+): string | undefined {
+  const raw = (ts_code ?? info.ts_code ?? info.tsCode ?? info.代码 ?? '').trim();
+  if (/^\d{6}\.(SZ|SH|BJ)$/i.test(raw)) return raw.toUpperCase();
+  if (companyName) {
+    const fromMap = tsCodeForCompanyName(companyName);
+    if (fromMap) return fromMap;
+  }
+  return undefined;
+}
+
 function buildBoardLayersFromTaxonomy(
   tax: AIIndustryTaxonomyFile,
-  nodeIdPrefix: 'aim' | 'aic',
+  nodeIdPrefix: 'aim' | 'aic' | 'lit' | 'tao' | 'scq' | 'csp',
 ): BoardLayer[] {
   const layers: BoardLayer[] = [];
   for (const lane of tax.lanes) {
@@ -130,14 +329,69 @@ function buildBoardLayersFromTaxonomy(
         parentId,
         tier: lane.tier,
         titleZh: sub.title,
-        row: sub.companies.map((c) => ({
-          id: `${nodeIdPrefix}-${c.id}`,
-          category: lane.tier,
-          label: c.name,
-          pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
-          competitiveAdvantage: `根泳道：${lane.title} · 关联数：${(c.relations ?? []).length}`,
-          valuationHint: `${lane.title}`,
-        })),
+        groupTitleZh: lane.title !== sub.title ? lane.title : undefined,
+        subLaneInfo: sub.info,
+        childTopScreenPx: computeSubLaneChildTopScreenPx(sub.info),
+        row: sub.companies.map((c) => {
+          const info = c.info ?? {};
+          const tsCode = tsCodeFromCompanyInfo(info, c.ts_code, c.name);
+
+          if (nodeIdPrefix === 'tao') {
+            return {
+              id: `${nodeIdPrefix}-${c.id}`,
+              category: lane.tier,
+              label: c.name,
+              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
+              competitiveAdvantage: '',
+              tsCode,
+              companyInfo: { ...info },
+              cardDetailVariant: 'tao' as const,
+            };
+          }
+
+          if (nodeIdPrefix === 'scq') {
+            return {
+              id: `${nodeIdPrefix}-${c.id}`,
+              category: lane.tier,
+              label: c.name,
+              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
+              competitiveAdvantage: '',
+              tsCode,
+              companyInfo: { ...info },
+              cardDetailVariant: 'sc_quantum' as const,
+            };
+          }
+
+          if (nodeIdPrefix === 'csp') {
+            return {
+              id: `${nodeIdPrefix}-${c.id}`,
+              category: lane.tier,
+              label: c.name,
+              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
+              competitiveAdvantage: '',
+              tsCode,
+              companyInfo: { ...info },
+              cardDetailVariant: 'commercial_space' as const,
+            };
+          }
+
+          const competitiveAdvantage =
+            info.竞争优势 ??
+            info.competitive_advantage ??
+            info.competitiveAdvantage ??
+            `根泳道：${lane.title} · 关联数：${(c.relations ?? []).length}`;
+          const valuationHint =
+            info.估值提示 ?? info.valuation_hint ?? info.valuationHint ?? lane.title;
+          return {
+            id: `${nodeIdPrefix}-${c.id}`,
+            category: lane.tier,
+            label: c.name,
+            pricingPower: pricingPowerFromCompanyInfo(info),
+            competitiveAdvantage: String(competitiveAdvantage),
+            valuationHint: String(valuationHint),
+            tsCode,
+          };
+        }),
       });
     }
   }
@@ -147,55 +401,207 @@ function buildBoardLayersFromTaxonomy(
 export function buildBoardLayersForPreset(preset: ChainAnalysisPreset): BoardLayer[] {
   if (preset === 'lithium') return buildBoardLayersLithium();
   if (preset === 'ai_compute') return buildBoardLayersFromTaxonomy(AI_COMPUTE_TAXONOMY, 'aic');
+  if (preset === 'tao') return buildBoardLayersFromTaxonomy(TAO_INDUSTRY_TAXONOMY, 'tao');
+  if (preset === 'sc_quantum') return buildBoardLayersFromTaxonomy(SC_QUANTUM_INDUSTRY_TAXONOMY, 'scq');
+  if (preset === 'commercial_space') {
+    return buildBoardLayersFromTaxonomy(COMMERCIAL_SPACE_INDUSTRY_TAXONOMY, 'csp');
+  }
   return buildBoardLayersFromTaxonomy(AI_INDUSTRY_TAXONOMY, 'aim');
+}
+
+function nodeIdPrefixForPreset(
+  preset: ChainAnalysisPreset,
+): 'aim' | 'aic' | 'lit' | 'tao' | 'scq' | 'csp' {
+  if (preset === 'ai_compute') return 'aic';
+  if (preset === 'ai') return 'aim';
+  if (preset === 'tao') return 'tao';
+  if (preset === 'sc_quantum') return 'scq';
+  if (preset === 'commercial_space') return 'csp';
+  return 'lit';
+}
+
+function buildLithiumDefaultYaml(): string {
+  const layers = buildBoardLayersLithium();
+  const edges = createSeedEdgesLithium();
+  const labelById = Object.fromEntries(SEED_COMPANIES.map((c) => [c.id, c.label]));
+  const seedById = Object.fromEntries(SEED_COMPANIES.map((c) => [c.id, c]));
+  const linksBySourceId: Record<string, Record<string, string>> = {};
+  for (const e of edges) {
+    if (!linksBySourceId[e.source]) linksBySourceId[e.source] = {};
+    linksBySourceId[e.source][labelById[e.target]] = '上下游';
+  }
+  const categoryMap: Record<string, unknown[]> = {};
+  for (const layer of layers) {
+    categoryMap[layer.titleZh] = layer.row.map((c) => {
+      const seed = seedById[c.id];
+      const linkMap = linksBySourceId[c.id];
+      const info: Record<string, string> = {
+        定价权: seed.pricingPower,
+        竞争优势: seed.competitiveAdvantage,
+      };
+      if (seed.valuationHint) info.估值提示 = seed.valuationHint;
+      const body: Record<string, unknown> = { info };
+      if (linkMap && Object.keys(linkMap).length > 0) body.link = linkMap;
+      return { [c.label]: body };
+    });
+  }
+  return YAML.stringify(categoryMap);
+}
+
+function builtinTaxonomyForPreset(preset: ChainAnalysisPreset): AIIndustryTaxonomyFile {
+  if (preset === 'ai_compute') return AI_COMPUTE_TAXONOMY;
+  if (preset === 'ai') return AI_INDUSTRY_TAXONOMY;
+  if (preset === 'tao') return TAO_INDUSTRY_TAXONOMY;
+  if (preset === 'sc_quantum') return SC_QUANTUM_INDUSTRY_TAXONOMY;
+  if (preset === 'commercial_space') return COMMERCIAL_SPACE_INDUSTRY_TAXONOMY;
+  return parseIndustryTaxonomyYaml(buildLithiumDefaultYaml());
+}
+
+export function defaultYamlTextForPreset(preset: ChainAnalysisPreset): string {
+  if (preset === 'ai') return String(aiIndustryYamlRaw);
+  if (preset === 'ai_compute') return String(aiComputeYamlRaw);
+  if (preset === 'tao') return String(taoIndustryYamlRaw);
+  if (preset === 'sc_quantum') return String(scQuantumIndustryYamlRaw);
+  if (preset === 'commercial_space') return String(commercialSpaceIndustryYamlRaw);
+  return buildLithiumDefaultYaml();
+}
+
+function buildBoardLayersFromYamlTaxonomy(
+  preset: ChainAnalysisPreset,
+  tax: AIIndustryTaxonomyFile,
+): BoardLayer[] {
+  return buildBoardLayersFromTaxonomy(tax, nodeIdPrefixForPreset(preset));
+}
+
+const LAYOUT_MERGE_EPS = 0.2;
+const SNAP_FLOW_COORD = (v: number) => Math.round(v * 32) / 32;
+
+/** 屏幕像素 → 流坐标（zoom 越大流坐标越小，屏幕尺寸保持不变） */
+function screenToFlowSize(screenPx: number, zoom: number): number {
+  const zm = zoom > 0 && Number.isFinite(zoom) ? zoom : 1;
+  return screenPx / zm;
+}
+
+/** 读取 React Flow 画布尺寸（client 宽高 = 可视区域，与泳道屏幕宽对齐） */
+function readPaneMetrics(dom: HTMLElement): { width: number; height: number; rect: DOMRect } {
+  const rect = dom.getBoundingClientRect();
+  return {
+    width: Math.max(dom.clientWidth, 1),
+    height: Math.max(dom.clientHeight, 1),
+    rect,
+  };
+}
+
+/**
+ * 泳道宽度控制：始终等于 React Flow 画布 clientWidth（屏幕像素）。
+ * 画布变宽/变窄、或 zoom 改变时，由 SwimlaneViewportSync + ResizeObserver 重新调用。
+ */
+export function computeLaneWidthScreenPx(paneWidthPx: number): number {
+  return Math.max(paneWidthPx, 1);
+}
+
+/** 泳道流坐标宽 = 画布 clientWidth ÷ zoom；屏幕投影后恒等于画布宽 */
+export function computeLaneWidthFlow(paneWidthPx: number, zoom: number): number {
+  const zm = Math.max(Number.isFinite(zoom) ? zoom : 1, 1e-4);
+  return Math.max(computeLaneWidthScreenPx(paneWidthPx) / zm, 1);
+}
+
+/** 泳道左缘：视口横向锁定 x=0 时固定为 0，与画布左缘对齐 */
+export function computeLaneLeftFlow(_viewport: Viewport): number {
+  return 0;
+}
+
+/**
+ * 根据画布像素尺寸与 zoom 计算泳道流坐标布局。
+ * 宽度：动态铺满 .react-flow 根元素 client 宽；高度：按各泳道换行后的行数累加。
+ */
+function computeSwimLaneLayout(
+  paneWidthPx: number,
+  paneViewportHeightPx: number,
+  layers: BoardLayer[],
+  layout: BoardCardLayout,
+  viewport: Viewport,
+): SwimLaneLayoutSnapshot | null {
+  if (layers.length < 1 || paneWidthPx < 2 || paneViewportHeightPx < 2) return null;
+
+  const zm = Math.max(Number.isFinite(viewport.zoom) ? viewport.zoom : 1, 1e-4);
+  const laneWidthFlow = computeLaneWidthFlow(paneWidthPx, zm);
+  const contentHeightPx = computeSwimBoardCanvasHeightPx(layers, laneWidthFlow, layout);
+
+  const snap: SwimLaneLayoutSnapshot = {
+    laneLeftFlow: computeLaneLeftFlow(viewport),
+    laneWidthFlow,
+    laneTopFlow: SWIM_LANE_TOP_FLOW,
+    bandHeightFlow: Math.max(SNAP_FLOW_COORD(screenToFlowSize(SWIM_LANE_BAND_SCREEN_PX, zm)), 1),
+    layerCount: layers.length,
+    paneWidthPx,
+    paneHeightPx: paneViewportHeightPx,
+    contentHeightPx,
+    bandHeightScreenPx: SWIM_LANE_BAND_SCREEN_PX,
+    viewportYMax: 0,
+    viewportYMin: 0,
+  };
+  const bounds = computeViewportYBounds(snap);
+  snap.viewportYMax = bounds.maxY;
+  snap.viewportYMin = bounds.minY;
+  return snap;
+}
+
+/** 视口 transform.y 上下界：首泳道贴顶 / 末泳道贴底（与 translateExtent 配合） */
+function computeViewportYBounds(snap: SwimLaneLayoutSnapshot): { minY: number; maxY: number } {
+  const maxY = 0;
+  const minY =
+    snap.contentHeightPx <= snap.paneHeightPx ? maxY : snap.paneHeightPx - snap.contentHeightPx;
+  return { minY, maxY };
 }
 
 function buildGroupedNodes(
   layers: BoardLayer[],
-  laneLeftFlow: number,
-  laneWidthFlow: number,
-  laneTopFlow: number,
-  laneBandHeightFlow: number,
-  layout: { gapX: number; nodeOuterWidth: number },
-  viewportZoom: number,
+  snap: SwimLaneLayoutSnapshot,
+  layout: BoardCardLayout,
 ): Node[] {
-  const zm = viewportZoom > 0 ? viewportZoom : 1;
-  const lanesW = Math.max(1, Math.abs(laneWidthFlow));
-  const laneH = Math.max(1, Math.abs(laneBandHeightFlow));
-  const laneLeftCanvas = laneLeftFlow;
-  const { gapX: GX, nodeOuterWidth: NOW } = layout;
-  const childTopFlow = CHILD_TOP_SCREEN_PX / zm;
+  const lanesW = snap.laneWidthFlow;
+  const rowPadMinFlow = ROW_INWARD_PAD_SCREEN_MIN;
 
   const parents: Node[] = [];
   const children: Node[] = [];
   const lastIdx = Math.max(0, layers.length - 1);
+  let cumulativeTopY = snap.laneTopFlow;
 
   layers.forEach((layerMeta, layerIdx) => {
     const row = layerMeta.row;
     const n = row.length;
-
     const pid = layerMeta.parentId;
+    const childTopFlow = layerMeta.childTopScreenPx ?? CHILD_TOP_SCREEN_PX;
     const roundingMode = layerIdx === 0 ? 'top' : layerIdx === lastIdx ? 'bottom' : 'mid';
     const dividerBottom = layerIdx < lastIdx;
+    const { positions, rowCount } = computeWrappedCardPositions(
+      n,
+      lanesW,
+      layout,
+      childTopFlow,
+      rowPadMinFlow,
+    );
+    const laneHeightScreen = computeLaneHeightScreenPx(rowCount, childTopFlow);
+    const laneH = laneHeightScreen;
+    const laneTopY = cumulativeTopY;
 
-    const rowSpan = Math.max(0, n - 1) * GX + NOW;
-    const padStartWithinLane = Math.max(ROW_INWARD_PAD_MIN, (lanesW - rowSpan) / 2);
-
-    const laneTopY = laneTopFlow + layerIdx * laneH;
-
-    // 即使没有公司卡片也要生成泳道矩形，否则会少条带（极简 YAML 五根只剩空行时已发生）
     parents.push({
       id: pid,
       type: 'swimLane',
-      position: { x: laneLeftCanvas, y: laneTopY },
+      position: { x: 0, y: laneTopY },
       style: {
         width: lanesW,
+        minWidth: lanesW,
+        maxWidth: lanesW,
         height: laneH,
         zIndex: 0,
         overflow: 'hidden',
       },
       data: {
         title: layerMeta.titleZh,
+        groupTitle: layerMeta.groupTitleZh,
+        subLaneInfo: layerMeta.subLaneInfo,
         dividerBottom,
         roundingMode,
       },
@@ -205,18 +611,14 @@ function buildGroupedNodes(
       connectable: false,
     });
 
-    if (n === 0) return;
-
     row.forEach((s, idx) => {
+      const pos = positions[idx];
       children.push({
         id: s.id,
         type: 'industry',
         parentId: pid,
         extent: 'parent',
-        position: {
-          x: padStartWithinLane + idx * GX,
-          y: childTopFlow,
-        },
+        position: pos,
         zIndex: 1,
         data: {
           label: s.label,
@@ -225,19 +627,22 @@ function buildGroupedNodes(
           competitiveAdvantage: s.competitiveAdvantage,
           valuationHint: s.valuationHint,
           laneClip: { w: lanesW, h: laneH },
+          cardWidthScreen: layout.nodeOuterWidthScreen,
+          tsCode: s.tsCode,
+          companyInfo: s.companyInfo,
+          cardDetailVariant: s.cardDetailVariant,
         },
+        draggable: true,
+        selectable: false,
+        connectable: false,
       });
     });
+
+    cumulativeTopY += laneH;
   });
 
   return [...parents, ...children];
 }
-
-/** 版面比较容差（流坐标）；合并时过小变化复用引用减少 company 卡片重挂载闪动 */
-const LAYOUT_MERGE_EPS = 0.2;
-
-/** 缩放过程中流坐标极小抖动会引发每帧更新，量化后多数帧可复用上一条 layout */
-const SNAP_FLOW_COORD = (v: number) => Math.round(v * 32) / 32;
 
 function numFromStyle(style: Node['style'], key: string): number | undefined {
   if (!style) return undefined;
@@ -250,14 +655,11 @@ function laneStyleClose(a: Node['style'], b: Node['style']): boolean {
   const ra = (a ?? {}) as Record<string, unknown>;
   const rb = (b ?? {}) as Record<string, unknown>;
   if (String(ra.overflow ?? '') !== String(rb.overflow ?? '')) return false;
-  if (String(ra.borderRadius ?? '') !== String(rb.borderRadius ?? '')) return false;
   const aw = numFromStyle(a, 'width') ?? NaN;
   const bw = numFromStyle(b, 'width') ?? NaN;
   const ah = numFromStyle(a, 'height') ?? NaN;
   const bh = numFromStyle(b, 'height') ?? NaN;
-  return (
-    Math.abs(aw - bw) < LAYOUT_MERGE_EPS && Math.abs(ah - bh) < LAYOUT_MERGE_EPS
-  );
+  return Math.abs(aw - bw) < LAYOUT_MERGE_EPS && Math.abs(ah - bh) < LAYOUT_MERGE_EPS;
 }
 
 function industryLaneClipClose(da: unknown, db: unknown): boolean {
@@ -270,10 +672,46 @@ function industryLaneClipClose(da: unknown, db: unknown): boolean {
   );
 }
 
+function industryNodeBizDataClose(da: unknown, db: unknown): boolean {
+  const a = da as IndustryNodeData | undefined;
+  const b = db as IndustryNodeData | undefined;
+  if (!a || !b) return false;
+  const infoA = JSON.stringify(a.companyInfo ?? {});
+  const infoB = JSON.stringify(b.companyInfo ?? {});
+  return (
+    a.label === b.label &&
+    a.category === b.category &&
+    a.pricingPower === b.pricingPower &&
+    a.competitiveAdvantage === b.competitiveAdvantage &&
+    (a.valuationHint ?? '') === (b.valuationHint ?? '') &&
+    (a.tsCode ?? '') === (b.tsCode ?? '') &&
+    (a.cardDetailVariant ?? 'default') === (b.cardDetailVariant ?? 'default') &&
+    infoA === infoB &&
+    (a.cardWidthScreen ?? 0) === (b.cardWidthScreen ?? 0)
+  );
+}
+
 function mergeNodesPreservingStableRefs(prev: Node[], nextBuilt: Node[]): Node[] {
   const prevMap = new Map(prev.map((n) => [n.id, n]));
   return nextBuilt.map((nb) => {
     const pb = prevMap.get(nb.id);
+    /** 用户拖过位的公司卡片：布局同步时保留 position，仅更新 laneClip 等随泳道变化的字段 */
+    if (
+      pb &&
+      pb.type === 'industry' &&
+      nb.type === 'industry' &&
+      pb.parentId === nb.parentId &&
+      industryNodeBizDataClose(pb.data, nb.data)
+    ) {
+      return {
+        ...nb,
+        position: pb.position,
+        data: {
+          ...(pb.data as IndustryNodeData),
+          laneClip: (nb.data as IndustryNodeData).laneClip,
+        },
+      };
+    }
     if (
       pb &&
       pb.type === nb.type &&
@@ -281,7 +719,9 @@ function mergeNodesPreservingStableRefs(prev: Node[], nextBuilt: Node[]): Node[]
       Math.abs(pb.position.x - nb.position.x) < LAYOUT_MERGE_EPS &&
       Math.abs(pb.position.y - nb.position.y) < LAYOUT_MERGE_EPS &&
       laneStyleClose(pb.style, nb.style) &&
-      (pb.type !== 'industry' || industryLaneClipClose(pb.data, nb.data))
+      (pb.type !== 'industry' ||
+        (industryLaneClipClose(pb.data, nb.data) &&
+          industryNodeBizDataClose(pb.data, nb.data)))
     ) {
       return pb;
     }
@@ -311,101 +751,99 @@ function createSeedEdgesLithium(): Edge[] {
   ];
 }
 
+/** 约束视口：zoom 固定、横向 x=0、纵向限制在首/末泳道之间 */
+function clampViewportToSwimLanes(
+  vp: Viewport,
+  snap: SwimLaneLayoutSnapshot,
+  setViewport: (v: Viewport, opts?: { duration?: number }) => void,
+) {
+  const zm = SWIM_LANE_FIXED_ZOOM;
+  const { minY, maxY } = computeViewportYBounds(snap);
+  const nextY = Math.min(maxY, Math.max(minY, vp.y));
+  const nextX = 0;
+  if (
+    Math.abs(vp.x - nextX) > 1e-6 ||
+    Math.abs(vp.y - nextY) > 1e-6 ||
+    Math.abs(vp.zoom - zm) > 1e-6
+  ) {
+    setViewport({ x: nextX, y: nextY, zoom: zm }, { duration: 0 });
+  }
+}
+
 function SwimlaneViewportSync({
-  preset,
   layers,
   layout,
   setNodes,
   laneLayoutSyncNotifierRef,
 }: {
-  preset: ChainAnalysisPreset;
   layers: BoardLayer[];
-  layout: { gapX: number; nodeOuterWidth: number };
+  layout: { gapXScreen: number; nodeOuterWidthScreen: number };
   setNodes: Dispatch<SetStateAction<Node[]>>;
-  /** 锂电 fitView/setViewport 后由外部触发一次对齐；AI 图谱若随视口平移每次都重锚泳道左上，会与滚轮平移抵消导致无法下移浏览 */
-  laneLayoutSyncNotifierRef?: React.MutableRefObject<(() => void) | null>;
+  laneLayoutSyncNotifierRef: React.MutableRefObject<(() => void) | null>;
 }) {
-  const { screenToFlowPosition, getViewport } = useReactFlow();
+  const { getViewport, setViewport } = useReactFlow();
+  const storeApi = useStoreApi();
   const domNode = useStore((s) => s.domNode);
-  const zoomLevel = useStore((s) => s.transform[2]);
   const rafRef = useRef<number | null>(null);
-  /** 锂电全量对齐；AI 仅 zoom 时使用 dimensions，且不覆盖 full */
   const pendingSyncKindRef = useRef<'full' | 'dimensions' | null>(null);
-  const lastAppliedRef = useRef<{ lx: number; w: number; ty: number; bh: number } | null>(null);
-  /** 非锂电：竖向锚点固定在流坐标（滚轮/pan Y 不改变），缩放时仅靠改泳道宽高流坐标以保持屏幕占位不变 */
-  const frozenLaneTopRef = useRef<number | null>(null);
-  /** 仅在 zoomLevel 抖动时触发 dimensions 对齐；首帧不写 prev */
-  const prevZoomForDimSyncRef = useRef<number | null>(null);
+  const lastAppliedRef = useRef<SwimLaneLayoutSnapshot | null>(null);
   const layerCount = layers.length;
 
   useLayoutEffect(() => {
     lastAppliedRef.current = null;
-    frozenLaneTopRef.current = null;
-    prevZoomForDimSyncRef.current = null;
   }, [domNode, layerCount]);
 
   const runSyncLanes = useCallback(
-    (modeIn: 'full' | 'dimensions') => {
+    (_modeIn: 'full' | 'dimensions') => {
       if (!(domNode instanceof HTMLElement)) return;
       if (layerCount < 1) return;
-      const pane = domNode.getBoundingClientRect();
-      const pl = pane.left;
-      const pt = pane.top;
-      const pr = pane.width;
-      const pb = pane.height;
-      if (pr < 2 || pb < 2) return;
 
-      const zm = Math.max(Number.isFinite(getViewport().zoom) ? getViewport().zoom : 1, 1e-4);
+      const { width: paneW, height: paneH } = readPaneMetrics(domNode);
+      const vp = getViewport();
+      /** zoom 固定为 1，横向 x=0；纵向 y 由滚轮控制 */
+      if (
+        Math.abs(vp.x) > 1e-6 ||
+        Math.abs(vp.zoom - SWIM_LANE_FIXED_ZOOM) > 1e-6
+      ) {
+        setViewport({ x: 0, y: vp.y, zoom: SWIM_LANE_FIXED_ZOOM }, { duration: 0 });
+      }
+      const vpLocked = getViewport();
 
-      const leftMid = screenToFlowPosition({ x: pl, y: pt + pb / 2 });
-      const rightMid = screenToFlowPosition({ x: pl + pr, y: pt + pb / 2 });
-      const laneLeft = Math.min(leftMid.x, rightMid.x);
-      const laneW = Math.max(Math.abs(rightMid.x - leftMid.x), 1);
+      const snap = computeSwimLaneLayout(paneW, paneH, layers, layout, vpLocked);
+      if (!snap) return;
 
-      const topMid = screenToFlowPosition({ x: pl + pr / 2, y: pt });
-      const botMid = screenToFlowPosition({ x: pl + pr / 2, y: pt + pb });
-      const viewportTopFlow = Math.min(topMid.y, botMid.y);
-      const viewportHFlow = Math.max(Math.abs(botMid.y - topMid.y), 1);
-      const bandHRaw = (viewportHFlow / layerCount) * SWIM_LANE_BAND_HEIGHT_RATIO;
-
-      const laneLeftQ = SNAP_FLOW_COORD(laneLeft);
-      const laneWQ = Math.max(SNAP_FLOW_COORD(laneW), 1);
-      const viewportTopQ = SNAP_FLOW_COORD(viewportTopFlow);
-      const bandHQ = Math.max(SNAP_FLOW_COORD(bandHRaw), 1);
-
-      let mode = modeIn;
-      if (preset !== 'lithium' && mode === 'dimensions' && frozenLaneTopRef.current === null)
-        mode = 'full';
-
-      const laneTopQ =
-        preset !== 'lithium' && mode === 'dimensions' && frozenLaneTopRef.current !== null
-          ? frozenLaneTopRef.current
-          : viewportTopQ;
-
-      if (preset !== 'lithium' && mode === 'full') frozenLaneTopRef.current = laneTopQ;
+      const applyContentExtent = (s: SwimLaneLayoutSnapshot) => {
+        const extent = computeSwimContentFlowExtent(s);
+        storeApi.getState().setTranslateExtent(extent);
+        storeApi.getState().setNodeExtent(extent);
+      };
 
       const prev = lastAppliedRef.current;
       if (
         prev &&
-        Math.abs(prev.lx - laneLeftQ) < LAYOUT_MERGE_EPS &&
-        Math.abs(prev.w - laneWQ) < LAYOUT_MERGE_EPS &&
-        Math.abs(prev.ty - laneTopQ) < LAYOUT_MERGE_EPS &&
-        Math.abs(prev.bh - bandHQ) < LAYOUT_MERGE_EPS
-      )
+        Math.abs(prev.paneWidthPx - snap.paneWidthPx) < 0.5 &&
+        Math.abs(prev.paneHeightPx - snap.paneHeightPx) < 0.5 &&
+        Math.abs(prev.contentHeightPx - snap.contentHeightPx) < 0.5 &&
+        Math.abs(prev.laneLeftFlow - snap.laneLeftFlow) < LAYOUT_MERGE_EPS &&
+        Math.abs(prev.laneWidthFlow - snap.laneWidthFlow) < LAYOUT_MERGE_EPS &&
+        Math.abs(prev.bandHeightFlow - snap.bandHeightFlow) < LAYOUT_MERGE_EPS &&
+        prev.layerCount === snap.layerCount
+      ) {
+        (domNode as SwimLaneLayoutHost).__swimLaneLayout = snap;
+        applyContentExtent(snap);
+        clampViewportToSwimLanes(getViewport(), snap, setViewport);
         return;
-      lastAppliedRef.current = { lx: laneLeftQ, w: laneWQ, ty: laneTopQ, bh: bandHQ };
-      const nextBuilt = buildGroupedNodes(
-        layers,
-        laneLeftQ,
-        laneWQ,
-        laneTopQ,
-        bandHQ,
-        layout,
-        zm,
-      );
+      }
+
+      lastAppliedRef.current = snap;
+      (domNode as SwimLaneLayoutHost).__swimLaneLayout = snap;
+      applyContentExtent(snap);
+
+      const nextBuilt = buildGroupedNodes(layers, snap, layout);
       setNodes((p) => mergeNodesPreservingStableRefs(p, nextBuilt));
+      clampViewportToSwimLanes(getViewport(), snap, setViewport);
     },
-    [domNode, screenToFlowPosition, getViewport, preset, setNodes, layers, layout, layerCount],
+    [domNode, getViewport, setViewport, storeApi, setNodes, layers, layout, layerCount],
   );
 
   const flushQueuedSync = useCallback(() => {
@@ -415,32 +853,12 @@ function SwimlaneViewportSync({
     if (kind !== null) runSyncLanes(kind);
   }, [runSyncLanes]);
 
-  /** 外层容器变更 / 锂电拖拽视口：全量重对齐 */
   const scheduleFullSync = useCallback(() => {
     pendingSyncKindRef.current = 'full';
-    if (rafRef.current == null)
-      rafRef.current = requestAnimationFrame(() => {
-        flushQueuedSync();
-      });
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(flushQueuedSync);
+    }
   }, [flushQueuedSync]);
-
-  /** 仅 zoom 变了：在非锂电模式下重算泳道流坐标宽高，使屏幕上泳带占位近似不变（公司卡片仍按流坐标缩放） */
-  const scheduleDimensionsOnlySync = useCallback(() => {
-    if (preset === 'lithium') return;
-    if (pendingSyncKindRef.current !== 'full') pendingSyncKindRef.current = 'dimensions';
-    if (rafRef.current == null)
-      rafRef.current = requestAnimationFrame(() => {
-        flushQueuedSync();
-      });
-  }, [preset, flushQueuedSync]);
-
-  useEffect(() => {
-    if (preset === 'lithium') return;
-    const z = zoomLevel;
-    const prev = prevZoomForDimSyncRef.current;
-    prevZoomForDimSyncRef.current = z;
-    if (prev != null && Math.abs(prev - z) > 1e-6) scheduleDimensionsOnlySync();
-  }, [zoomLevel, preset, scheduleDimensionsOnlySync]);
 
   useLayoutEffect(() => {
     scheduleFullSync();
@@ -451,21 +869,12 @@ function SwimlaneViewportSync({
 
   useLayoutEffect(() => {
     if (!(domNode instanceof HTMLElement) || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver(() => {
-      scheduleFullSync();
-    });
+    const ro = new ResizeObserver(() => scheduleFullSync());
     ro.observe(domNode);
     return () => ro.disconnect();
   }, [domNode, scheduleFullSync]);
 
-  /** 锂电：fitView / 拖拽画布后仍需按视窗重算泳带；AI：视口 XY 不重算锚点（见 scheduleDimensionsOnlySync） */
-  useOnViewportChange({
-    onChange: preset === 'lithium' ? scheduleFullSync : undefined,
-    onEnd: preset === 'lithium' ? scheduleFullSync : undefined,
-  });
-
   useEffect(() => {
-    if (!laneLayoutSyncNotifierRef) return undefined;
     laneLayoutSyncNotifierRef.current = scheduleFullSync;
     return () => {
       laneLayoutSyncNotifierRef.current = null;
@@ -475,65 +884,69 @@ function SwimlaneViewportSync({
   return null;
 }
 
-/** AI 图谱：滚轮在主区域纵向平移视口。须在 capture 阶段拦截：RF/d3-zoom 在子节点上冒泡前就 consume 掉 wheel，导致冒泡监听无效。 */
-function AiViewportWheelPan({ preset }: { preset: ChainAnalysisPreset }) {
+/** 缩放或平移后约束视口范围（仅纵向、zoom 固定） */
+function SwimLaneViewportClamp() {
   const { getViewport, setViewport } = useReactFlow();
   const domNode = useStore((s) => s.domNode);
 
-  useEffect(() => {
-    if (preset === 'lithium') return undefined;
+  const clamp = useCallback(() => {
+    if (!(domNode instanceof HTMLElement)) return;
+    const snap = (domNode as SwimLaneLayoutHost).__swimLaneLayout;
+    if (!snap) return;
+    clampViewportToSwimLanes(getViewport(), snap, setViewport);
+  }, [domNode, getViewport, setViewport]);
 
-    const onWheelCapture = (e: WheelEvent) => {
-      if (!(domNode instanceof HTMLElement)) return;
-      const t = e.target;
-      if (!(t instanceof Node) || !domNode.contains(t)) return;
-      if (e.ctrlKey || e.metaKey) return;
-
-      const dominant = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      if (!dominant) return;
-
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      const vp = getViewport();
-      setViewport({ x: vp.x, y: vp.y - dominant, zoom: vp.zoom }, { duration: 0 });
-    };
-
-    /** capture + passive:false 早于子元素上的滚轮缩放逻辑 */
-    window.addEventListener('wheel', onWheelCapture, { passive: false, capture: true });
-    return () => window.removeEventListener('wheel', onWheelCapture, true);
-  }, [preset, domNode, getViewport, setViewport]);
+  useOnViewportChange({ onChange: clamp, onEnd: clamp });
 
   return null;
 }
 
-function FlowContent({ preset }: { preset: ChainAnalysisPreset }) {
-  const rfRef = useRef<ReactFlowInstance | null>(null);
-  /** 非锂电：onInit setViewport / fitView 之后补跑一次泳带对齐（不再监听每次视口平移，以免抵消滚轮） */
+function FlowContent({
+  preset,
+  layers,
+  flowEdges,
+}: {
+  preset: ChainAnalysisPreset;
+  layers: BoardLayer[];
+  flowEdges: Edge[];
+}) {
   const laneLayoutSyncNotifierRef = useRef<(() => void) | null>(null);
-  const layers = useMemo(() => buildBoardLayersForPreset(preset), [preset]);
   const layout = BOARD_LAYOUT[preset];
-  const initialNodes = buildGroupedNodes(layers, 0, 1024, 0, 200, layout, 1);
+  const boardContentHeightPx = computeSwimBoardCanvasHeightPx(
+    layers,
+    ESTIMATED_PANE_WIDTH_PX,
+    layout,
+  );
+  const initialLaneWidth = ESTIMATED_PANE_WIDTH_PX;
+  const initialContentHeightPx = computeSwimBoardCanvasHeightPx(layers, initialLaneWidth, layout);
+  const initialContentExtent = useMemo(
+    (): [[number, number], [number, number]] => [
+      [0, 0],
+      [initialLaneWidth, initialContentHeightPx],
+    ],
+    [initialLaneWidth, initialContentHeightPx],
+  );
+  const initialSnap: SwimLaneLayoutSnapshot = {
+    laneLeftFlow: 0,
+    laneWidthFlow: initialLaneWidth,
+    laneTopFlow: SWIM_LANE_TOP_FLOW,
+    bandHeightFlow: SWIM_LANE_BAND_SCREEN_PX,
+    layerCount: layers.length,
+    paneWidthPx: initialLaneWidth,
+    paneHeightPx: Math.min(boardContentHeightPx, 600),
+    contentHeightPx: initialContentHeightPx,
+    bandHeightScreenPx: SWIM_LANE_BAND_SCREEN_PX,
+    viewportYMax: 0,
+    viewportYMin: 0,
+  };
+  const initialNodes = buildGroupedNodes(layers, initialSnap, layout);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(
-    preset === 'lithium' ? createSeedEdgesLithium() : [],
-  );
+  const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
-  const onFlowInit = useCallback(
-    (inst: ReactFlowInstance) => {
-      rfRef.current = inst;
-      requestAnimationFrame(() => {
-        /** 锂电保持 fitView；AI 图谱层数多时 fitView 会整体缩小导致条带过扁，仅用 zoom=1 + 下移浏览 */
-        if (preset === 'lithium') {
-          inst.fitView({ padding: 0, duration: 0 });
-        } else {
-          inst.setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 0 });
-          /** 等泳道 Sync 挂载并把 scheduleSync 挂到 ref 后再对齐一帧（双 rAF 晚于子组件 effect） */
-          requestAnimationFrame(() => laneLayoutSyncNotifierRef.current?.());
-        }
-      });
-    },
-    [preset],
-  );
+  const onFlowInit = useCallback((inst: ReactFlowInstance) => {
+    inst.setViewport({ x: 0, y: 0, zoom: SWIM_LANE_FIXED_ZOOM }, { duration: 0 });
+    requestAnimationFrame(() => laneLayoutSyncNotifierRef.current?.());
+  }, []);
 
   const onConnect = useCallback(
     (c: Connection) => setEdges((eds) => addEdge({ ...c, animated: false }, eds)),
@@ -551,8 +964,21 @@ function FlowContent({ preset }: { preset: ChainAnalysisPreset }) {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       fitView={false}
-      /** 锂电滚轮缩放；AI 图谱用滚轮纵向平移交子组件 AiViewportWheelPan（passive:false） */
-      zoomOnScroll={preset === 'lithium'}
+      minZoom={SWIM_LANE_FIXED_ZOOM}
+      maxZoom={SWIM_LANE_FIXED_ZOOM}
+      translateExtent={initialContentExtent}
+      nodeExtent={initialContentExtent}
+      nodesDraggable
+      nodeDragThreshold={2}
+      elementsSelectable={false}
+      panOnDrag={false}
+      zoomOnScroll={false}
+      zoomOnPinch={false}
+      zoomOnDoubleClick={false}
+      panOnScroll
+      panOnScrollMode={PanOnScrollMode.Vertical}
+      panOnScrollSpeed={1}
+      preventScrolling
       connectionLineStyle={{ stroke: '#94a3b8', strokeWidth: 2 }}
       defaultEdgeOptions={{
         markerEnd: { type: MarkerType.ArrowClosed, color: '#64748b', width: 16, height: 16 },
@@ -560,78 +986,163 @@ function FlowContent({ preset }: { preset: ChainAnalysisPreset }) {
       }}
       proOptions={{ hideAttribution: true }}
     >
-      <AiViewportWheelPan preset={preset} />
+      <SwimLaneViewportClamp />
       <SwimlaneViewportSync
-        preset={preset}
         layers={layers}
         layout={layout}
         setNodes={setNodes}
-        laneLayoutSyncNotifierRef={preset !== 'lithium' ? laneLayoutSyncNotifierRef : undefined}
+        laneLayoutSyncNotifierRef={laneLayoutSyncNotifierRef}
       />
+      <CompanyCardGestureZoom />
       <Background gap={18} />
-      <Controls />
-      <MiniMap zoomable pannable />
     </ReactFlow>
   );
 }
 
-function IndustryChainFlow({ preset }: { preset: ChainAnalysisPreset }) {
+function IndustryChainFlow({
+  preset,
+  layers,
+  flowKey,
+  flowEdges,
+}: {
+  preset: ChainAnalysisPreset;
+  layers: BoardLayer[];
+  flowKey: string;
+  flowEdges: Edge[];
+}) {
   return (
-    <div className="h-full w-full min-h-0 min-w-0">
-      <ReactFlowProvider key={preset}>
-        <FlowContent preset={preset} />
-      </ReactFlowProvider>
-    </div>
+    <CompanyCardZoomProvider key={flowKey}>
+      <div className="relative h-full w-full min-h-0 min-w-0">
+        <ReactFlowProvider key={flowKey}>
+          <FlowContent preset={preset} layers={layers} flowEdges={flowEdges} />
+        </ReactFlowProvider>
+        <CompanyCardZoomControls />
+      </div>
+    </CompanyCardZoomProvider>
   );
 }
 
-const AI_SWIM_LANE_COUNT = countAISubLanes();
-
 export default function IndustryChainBoard({ preset }: { preset: ChainAnalysisPreset }) {
-  const isLithium = preset === 'lithium';
-  const isAi = preset === 'ai';
-  const isAiCompute = preset === 'ai_compute';
+  const defaultYaml = useMemo(() => defaultYamlTextForPreset(preset), [preset]);
+  const [yamlDraft, setYamlDraft] = useState(defaultYaml);
+  const [lastAppliedYaml, setLastAppliedYaml] = useState<string | null>(null);
+  const [yamlApplied, setYamlApplied] = useState<AIIndustryTaxonomyFile | null>(null);
+  const [yamlParseError, setYamlParseError] = useState<string | null>(null);
+  const [yamlSaving, setYamlSaving] = useState(false);
+  const [flowRevision, setFlowRevision] = useState(0);
+
+  useEffect(() => {
+    setYamlDraft(defaultYaml);
+    setLastAppliedYaml(null);
+    setYamlApplied(null);
+    setYamlParseError(null);
+    setFlowRevision((r) => r + 1);
+  }, [preset, defaultYaml]);
+
+  const pendingApply = yamlDraft !== (lastAppliedYaml ?? defaultYaml);
+
+  const handleYamlDraftChange = useCallback((next: string) => {
+    setYamlDraft(next);
+    setYamlParseError(null);
+  }, []);
+
+  const handleYamlApply = useCallback(async () => {
+    let tax: AIIndustryTaxonomyFile;
+    try {
+      tax = parseIndustryTaxonomyYaml(yamlDraft);
+    } catch (err) {
+      setYamlParseError(err instanceof Error ? err.message : String(err));
+      return;
+    }
+
+    setYamlSaving(true);
+    setYamlParseError(null);
+    try {
+      const res = await fetch('/api/industry-link/taxonomy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset, content: yamlDraft }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setYamlParseError(payload.error ?? `保存 YAML 失败 (${res.status})`);
+        return;
+      }
+
+      setYamlApplied(tax);
+      setLastAppliedYaml(yamlDraft);
+      setFlowRevision((r) => r + 1);
+    } catch (err) {
+      setYamlParseError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setYamlSaving(false);
+    }
+  }, [yamlDraft, preset]);
+
+  const handleYamlReset = useCallback(() => {
+    const d = defaultYamlTextForPreset(preset);
+    setYamlDraft(d);
+    setYamlApplied(null);
+    setLastAppliedYaml(null);
+    setYamlParseError(null);
+    setFlowRevision((r) => r + 1);
+  }, [preset]);
+
+  const activeTaxonomy = useMemo(
+    () => yamlApplied ?? builtinTaxonomyForPreset(preset),
+    [preset, yamlApplied],
+  );
+
+  const layers = useMemo(
+    () => buildBoardLayersFromYamlTaxonomy(preset, activeTaxonomy),
+    [preset, activeTaxonomy],
+  );
+
+  const flowEdges = useMemo(
+    () => buildFlowEdgesFromTaxonomy(activeTaxonomy, nodeIdPrefixForPreset(preset)) as Edge[],
+    [activeTaxonomy, preset],
+  );
+
+  const boardViewportHeightCss = computeSwimBoardViewportHeightCss(
+    layers,
+    ESTIMATED_PANE_WIDTH_PX,
+    BOARD_LAYOUT[preset],
+  );
+  const flowKey = `${preset}-${flowRevision}`;
+
   return (
     <div className="flex w-full min-h-0 flex-col gap-2">
-      {/* min-h-0：内部 React Flow 在窄父级下可收缩；不用 flex-1：避免 Tab 版面纵向撑开产生大块空白 */}
-      <div className="shrink-0 space-y-1 text-sm text-muted-foreground">
-        {isLithium && (
-          <>
-            <p>
-              泳道矩形按 <code className="rounded bg-muted px-1 py-px text-xs">.react-flow</code> 根的浏览器包围盒对齐
-              <code className="rounded bg-muted px-1 py-px text-xs">screenToFlowPosition</code>
-              ，使视觉上铺满画布；纵向均等分画布高度；
-              <code className="rounded bg-muted px-1 py-px text-xs">fitView</code> padding 已关。</p>
-            <p className="text-xs">
-              锂电池示例：上下游三层泳道，带示例企业与连线。卡片经 <code className="rounded bg-muted px-1 py-px text-xs">laneClip</code> 防越层盖住下一泳道。
-            </p>
-          </>
-        )}
-        {(isAi || isAiCompute) && (
-          <p className="text-xs">
-            泳带内容高于一屏时，请在画布区域使用滚轮纵向平移视口；画布缩放（如 Ctrl+滚轮或触控板捏合）时泳道在屏幕上的占位大致不变，公司卡片随之放大缩小便于阅读。
-          </p>
-        )}
-        {isAi && (
-          <p className="text-xs">
-            AI产业链 YAML 当前仅列根泳道：
-            {AI_INDUSTRY_TAXONOMY.lanes.map((l) => l.title).join('、')}；共 {AI_SWIM_LANE_COUNT}{' '}
-            条同名子泳带占位；公司与关联边待 YAML 再扩展。
-          </p>
-        )}
-        {isAiCompute && (
-          <p className="text-xs">
-            AI算力产业链 YAML：根泳道 {AI_COMPUTE_TAXONOMY.lanes.map((l) => l.title).join('、')}；共{' '}
-            {countAIComputeSubLanes()} 条泳带占位；公司与关联待 YAML 扩展。
-          </p>
-        )}
-      </div>
-      <div
-        style={{ minHeight: Math.min(TOTAL_SWIM_LAYOUT_HEIGHT, 980) }}
-        className="relative min-h-[420px] h-[min(980px,calc(100vh-10rem))] w-full overflow-hidden rounded-md border border-border bg-muted/20"
-      >
-        <IndustryChainFlow preset={preset} />
-      </div>
+      <Tabs defaultValue="graph" className="flex w-full flex-col gap-2">
+        <TabsList className="h-9 w-fit shrink-0">
+          <TabsTrigger value="graph">图形视图</TabsTrigger>
+          <TabsTrigger value="yaml">YAML 编辑器</TabsTrigger>
+        </TabsList>
+        <TabsContent value="graph" className="mt-0 focus-visible:outline-none">
+          <div
+            style={{ height: boardViewportHeightCss }}
+            className="relative min-h-[420px] w-full overflow-hidden rounded-md border border-border bg-muted/20"
+          >
+            <IndustryChainFlow
+              preset={preset}
+              layers={layers}
+              flowKey={flowKey}
+              flowEdges={flowEdges}
+            />
+          </div>
+        </TabsContent>
+        <TabsContent value="yaml" className="mt-0 focus-visible:outline-none">
+          <IndustryBoardYamlView
+            yamlText={yamlDraft}
+            heightCss={boardViewportHeightCss}
+            onDraftChange={handleYamlDraftChange}
+            onApply={handleYamlApply}
+            onReset={handleYamlReset}
+            parseError={yamlParseError}
+            pendingApply={pendingApply}
+            saving={yamlSaving}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

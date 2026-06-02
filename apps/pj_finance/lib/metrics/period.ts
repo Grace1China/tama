@@ -30,6 +30,22 @@ export function prevQuarter(period: string): Period {
   return formatPeriod(year, (quarter - 1) as Quarter);
 }
 
+/** 下一季（较早 period 顺延到较近报告期时使用） */
+export function nextQuarter(period: string): Period {
+  const { year, quarter } = parsePeriod(period);
+  if (quarter === 4) {
+    return formatPeriod(year + 1, 1);
+  }
+  return formatPeriod(year, (quarter + 1) as Quarter);
+}
+
+/** 从 earlier 到 later 相距的季度数（须 later 不早于 earlier） */
+export function quartersFromEarlierToLater(earlier: string, later: string): number {
+  const pa = parsePeriod(earlier);
+  const pb = parsePeriod(later);
+  return (pb.year - pa.year) * 4 + (pb.quarter - pa.quarter);
+}
+
 export function sameQuarterLastYear(period: string): Period {
   const { year, quarter } = parsePeriod(period);
   return formatPeriod(year - 1, quarter);

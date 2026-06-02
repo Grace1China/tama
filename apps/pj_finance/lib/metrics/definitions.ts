@@ -1,5 +1,5 @@
 import type { MetricRegistry, MetricValue } from '@/lib/metrics/engine';
-import { lastNQuarters, prevQuarter, sameQuarterLastYear } from '@/lib/metrics/period';
+import { lastNQuarters, nextQuarter, prevQuarter, quartersFromEarlierToLater, sameQuarterLastYear } from '@/lib/metrics/period';
 
 function safeDivide(numerator: MetricValue, denominator: MetricValue): MetricValue {
   if (numerator == null || denominator == null || denominator === 0) {
@@ -16,6 +16,11 @@ function shiftSameQuarter(period: string, yearsBack: number): string {
   return `${year - yearsBack}Q${q}`;
 }
 
+/**
+ * 复合年均增长率 CAGR（百分数）：在两端均为同一口径时点值的前提下，
+ * 按 (当期/基期)^(1/年数) - 1 换算为百分比。
+ * past≤0、比值为负或非有限时会返回 null，避免无法开方或对数语境下的歧义。
+ */
 function cagrPct(current: MetricValue, past: MetricValue, years: number): MetricValue {
   if (current == null || past == null) return null;
   if (past === 0) return null;
@@ -586,9 +591,31 @@ export const metrics: MetricRegistry = {
           ? n_income_attr_p_ttm
           : engine.calculate('n_income_attr_p_ttm', { stockCode, period: currentPeriod, data, params })
       );
-      const pastPeriod = shiftSameQuarter(currentPeriod, years);
-      const past = engine.calculate('n_income_attr_p_ttm', { stockCode, period: pastPeriod, data, params });
-      return cagrPct(current, asNumber(past), years);
+      if (current == null) return null;
+
+      /** 五年前同季为锚点；该季若无完整净利润 TTM（缺季报）则顺延，最多回看若干季后取首个可算期，年数按实际相距季度折算 */
+      const MAX_FORWARD_PROBE = 12;
+      const anchorPast = shiftSameQuarter(currentPeriod, years);
+      let probe: string = anchorPast;
+      let pastPeriodFound: string | null = null;
+      let past: MetricValue = null;
+
+      for (let i = 0; i <= MAX_FORWARD_PROBE; i++) {
+        if (quartersFromEarlierToLater(currentPeriod, probe) > 0) break;
+        const rawPast = engine.calculate('n_income_attr_p_ttm', { stockCode, period: probe, data, params });
+        const pv = asNumber(rawPast);
+        if (pv != null && quartersFromEarlierToLater(probe, currentPeriod) >= 4) {
+          pastPeriodFound = probe;
+          past = pv;
+          break;
+        }
+        probe = nextQuarter(probe);
+      }
+
+      if (pastPeriodFound == null) return null;
+      const effectiveYears = quartersFromEarlierToLater(pastPeriodFound, currentPeriod) / 4;
+      if (!(effectiveYears > 0)) return null;
+      return cagrPct(current, past, effectiveYears);
     },
   },
   net_assets_growth: {
@@ -726,13 +753,13 @@ export const metrics: MetricRegistry = {
   },
 
   /**
-   * 与 dcf_equity_value_ttm 相同折现结构；阶段一复合增长率 g1 由各期计算好的 profit_growth（利润近 N 年 CAGR，默认 5 年）换算为小数代入。
+   * 与 dcf_equity_value_ttm 相同折现结构；阶段一复合增长率 g1 由 profit_growth（利润近 N 年复合增长率，锚点可取五年前同季，缺季报时在锚点后顺延若干季再算 CAGR，年数按实际相距季度）换算为小数代入。
    * profit_growth 为空时沿用 params.stage1_growth，默认 15%。
    */
   dcf_equity_value_ttm_growth_r: {
     deps: ['profit_growth'],
     meta: { label: 'DCF股权价值(TTM,五年利润增速)', unit: 'CNY', precision: 2 },
-    compute: ({ period, stockCode, data, engine, params }) => {
+    compute: ({ period, stockCode, data, engine, params, profit_growth }) => {
       const baseCtx = { stockCode, period, data, params };
       const fcf0 = asNumber(engine.calculate('fcff_ttm', baseCtx));
       const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
@@ -742,7 +769,7 @@ export const metrics: MetricRegistry = {
       }
 
       const wacc = asNumber(params?.wacc) ?? 0.085;
-      const profitGrowthPct = asNumber(engine.calculate('profit_growth', baseCtx));
+      const profitGrowthPct = asNumber(profit_growth);
       const g1 =
         profitGrowthPct != null
           ? profitGrowthPct / 100
@@ -754,6 +781,48 @@ export const metrics: MetricRegistry = {
 
       let presentValueFCF = 0;
       let currentFCF = fcf0;
+
+      for (let t = 1; t <= projectionYears; t++) {
+        currentFCF *= 1 + g1;
+        presentValueFCF += currentFCF / Math.pow(1 + wacc, t);
+      }
+
+      const terminalValue = (currentFCF * (1 + g2)) / (wacc - g2);
+      const presentValueTV = terminalValue / Math.pow(1 + wacc, projectionYears);
+      const ev = presentValueFCF + presentValueTV;
+      return ev - netDebt;
+    },
+  },
+
+  /**
+   * 与 dcf_equity_value_ttm_growth_r 相同：阶段一 g1 取 profit_growth；仅将第 0 年现金流基数由 FCFF 换为「归母净利润 TTM」（元）。
+   * 与同列其他 DCF 一致减净负债；净利≤0 时返回 null，便于与生利企业对比展示。
+   */
+  dcf_equity_value_ttm_ni_growth_r: {
+    deps: ['profit_growth'],
+    meta: { label: 'DCF股权价值(归母净利TTM,五年利润增速)', unit: 'CNY', precision: 2 },
+    compute: ({ period, stockCode, data, engine, params, profit_growth }) => {
+      const baseCtx = { stockCode, period, data, params };
+      const base0 = asNumber(engine.calculate('n_income_attr_p_ttm', baseCtx));
+      const netDebt = asNumber(engine.calculate('net_debt', baseCtx)) ?? 0;
+
+      if (base0 == null || base0 <= 0) {
+        return null;
+      }
+
+      const wacc = asNumber(params?.wacc) ?? 0.085;
+      const profitGrowthPct = asNumber(profit_growth);
+      const g1 =
+        profitGrowthPct != null
+          ? profitGrowthPct / 100
+          : (asNumber(params?.stage1_growth) ?? 0.15);
+      const g2 = asNumber(params?.terminal_growth) ?? 0.02;
+      const projectionYears = asNumber(params?.projection_years) ?? 5;
+
+      if (wacc <= g2) return null;
+
+      let presentValueFCF = 0;
+      let currentFCF = base0;
 
       for (let t = 1; t <= projectionYears; t++) {
         currentFCF *= 1 + g1;

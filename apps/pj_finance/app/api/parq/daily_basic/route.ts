@@ -74,7 +74,8 @@ async function queryParquetFile(
       const conn = db.connect();
 
       const fromClause = `FROM read_parquet('${absolutePath.replace(/'/g, "''")}')`;
-      const tradeDateExpr = `STRPTIME(CAST(trade_date AS VARCHAR), '%Y%m%d')`;
+      /** 兼容 parquet 中 trade_date 为 DATE（ISO 字符串）或 VARCHAR（YYYYMMDD） */
+      const tradeDateExpr = `COALESCE(TRY_STRPTIME(CAST(trade_date AS VARCHAR), '%Y%m%d')::DATE, TRY_CAST(trade_date AS DATE))`;
       let whereClause = 'WHERE 1=1';
       const conditions: string[] = [];
 

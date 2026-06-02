@@ -2,9 +2,15 @@ import React, { memo } from 'react';
 import type { NodeProps } from 'reactflow';
 import { useStore } from 'reactflow';
 
+import { getLevelColor } from './levelColor';
+
 /** 泳道父容器（React Flow parent）；须显式宽高；三层竖向拼接时 roundingMode 控制圆角与分割 */
 export type SwimLaneNodeData = {
   title: string;
+  /** 第一层根泳道名；与 title（子泳道）不同时展示 */
+  groupTitle?: string;
+  /** 子泳道级产业链说明（产业位置、确定性、弹性等） */
+  subLaneInfo?: Record<string, string>;
   /** 层底部分割线（最下一层一般 false，避免与画布底重复） */
   dividerBottom?: boolean;
   roundingMode?: 'top' | 'mid' | 'bottom' | 'single';
@@ -35,6 +41,11 @@ function SwimLaneNode({ data }: NodeProps<SwimLaneNodeData>) {
   const pr = PAD_RIGHT_SCREEN_PX * inv;
   const pb = PAD_BOTTOM_SCREEN_PX * inv;
   const pl = PAD_LEFT_SCREEN_PX * inv;
+
+  const lanePos = data.subLaneInfo?.产业位置?.trim();
+  const certainty = data.subLaneInfo?.确定性?.trim();
+  const elasticity = data.subLaneInfo?.弹性?.trim();
+
   return (
     <div
       style={{
@@ -58,14 +69,61 @@ function SwimLaneNode({ data }: NodeProps<SwimLaneNodeData>) {
           /** 整块泳道仍随画布 zoom，仅标题局部 counter-scale（原点左上）抵消视觉缩放 */
           transform: `scale(${inv})`,
           transformOrigin: 'top left',
-          fontSize: '11px',
-          fontWeight: 700,
-          letterSpacing: '0.14em',
-          color: '#64748b',
+          fontFamily: 'sans-serif',
         }}
         className="dark:text-slate-400"
       >
-        {data.title}
+        {data.groupTitle ? (
+          <div
+            style={{
+              fontSize: '9px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              color: '#94a3b8',
+              marginBottom: '2px',
+            }}
+          >
+            {data.groupTitle}
+          </div>
+        ) : null}
+        <div
+          style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.14em',
+            color: '#64748b',
+          }}
+        >
+          {data.title}
+        </div>
+        {lanePos ? (
+          <div
+            style={{
+              marginTop: '4px',
+              fontSize: '10px',
+              lineHeight: 1.35,
+              color: '#475569',
+              maxWidth: '92%',
+            }}
+          >
+            <span style={{ color: '#64748b' }}>产业位置：</span>
+            {lanePos}
+          </div>
+        ) : null}
+        {certainty || elasticity ? (
+          <div style={{ marginTop: '3px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            {certainty ? (
+              <span style={{ fontSize: '10px', fontWeight: 700, color: getLevelColor(certainty) }}>
+                {certainty}
+              </span>
+            ) : null}
+            {elasticity ? (
+              <span style={{ fontSize: '10px', fontWeight: 700, color: getLevelColor(elasticity) }}>
+                {elasticity}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
