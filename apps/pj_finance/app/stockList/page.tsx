@@ -5,8 +5,9 @@ import DataGrid, { type CSVData } from '../components/DataGrid';
 import SparkLine from '../components/SparkLine';
 
 function KlineCellRenderer(params: any) {
-  const tsCode = params.value;
-  if (!tsCode) return <span className="text-[10px] text-gray-300">—</span>;
+  // AG Grid React v31 传递 ICellRendererParams 作为 props
+  const tsCode: string = params?.value ?? params?.data?.ts_code ?? '';
+  if (!tsCode) return null;
   return <SparkLine tsCode={tsCode} width={150} height={48} />;
 }
 
