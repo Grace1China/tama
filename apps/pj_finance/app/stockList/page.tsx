@@ -28,9 +28,10 @@ export default function StockListPage() {
     if (!rawData) return null;
     return {
       ...rawData,
+      originalHeaders: [...(rawData.originalHeaders || []), '_kline'],
       data: rawData.data.map((row: any) => ({
         ...row,
-        _kline: row.ts_code, // 传给 SparkLine 的股票代码
+        _kline: row.ts_code,
       })),
     };
   }, [rawData]);
