@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import DataGrid from '../components/DataGrid';
 import PriceChart from '../components/PriceChart';
+import KLineChart from '../components/KLineChart';
 import { Input } from '@/components/ui/input';
 
 export default function IndicatorPage() {
@@ -47,6 +48,11 @@ export default function IndicatorPage() {
       {/* 股价走势图 */}
       {selectedTsCode && (
         <PriceChart tsCode={selectedTsCode} apiPath={"/api/parq/daily_pro_bar"} />
+      )}
+
+      {/* K线图 */}
+      {selectedTsCode && (
+        <KLineChart tsCode={selectedTsCode} />
       )}
 
       {/* 数据表格 */}
