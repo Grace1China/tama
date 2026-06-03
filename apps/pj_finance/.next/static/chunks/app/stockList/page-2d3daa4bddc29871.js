@@ -1,0 +1,31 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[433],{32021:function(e,t,n){Promise.resolve().then(n.bind(n,47082))},47082:function(e,t,n){"use strict";n.r(t),n.d(t,{default:function(){return o}});var i=n(57437),l=n(2265),r=n(90674);let s=new Map;function a(e){let{tsCode:t,width:n=150,height:r=48}=e,[a,c]=(0,l.useState)(null),[o,u]=(0,l.useState)(!1),[y,d]=(0,l.useState)(!1),f=(0,l.useRef)(!0);if((0,l.useEffect)(()=>{if(f.current=!0,!t)return;let e=s.get(t);if(e){c(e);return}let n=!1;return u(!0),d(!1),(async()=>{try{let e="/api/parq/bfqDir?ts_code=".concat(encodeURIComponent(t),"&page=1&size=10000&sortField=trade_date&sortDir=asc"),i=await fetch(e),l=await i.json();if(!i.ok)throw Error(l.message);if(n)return;let r=l.data||[],a=[];for(let e of r)null!=e.close&&a.push(Number(e.close));if(0===a.length){f.current&&(c(null),u(!1));return}let o={prices:a,firstPrice:a[0],lastPrice:a[a.length-1]};s.set(t,o),f.current&&c(o)}catch(e){f.current&&d(!0)}finally{f.current&&u(!1)}})(),()=>{n=!0}},[t]),o)return(0,i.jsx)("div",{style:{width:n,height:r},className:"flex items-center justify-center",children:(0,i.jsx)("div",{className:"w-3 h-3 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"})});if(y||!a)return(0,i.jsx)("div",{style:{width:n,height:r},className:"flex items-center justify-center text-[10px] text-gray-300",children:"—"});let{prices:x,firstPrice:h,lastPrice:p}=a,k=p>=h?"#ef5350":"#26a69a";if(x.length<2)return(0,i.jsx)("div",{style:{width:n,height:r},className:"flex items-center justify-center text-[10px] text-gray-300",children:"—"});let m=Math.min(...x),g=Math.max(...x)-m||1,j=.05*g,v=m-j,w=g+2*j,_=e=>e/(x.length-1)*(n-2)+1,N=e=>r-(e-v)/w*(r-2)-1,b=x.map((e,t)=>"".concat(_(t),",").concat(N(e))).join(" "),Z=(p-h)/h*100;return(0,i.jsxs)("div",{className:"flex items-center gap-2",style:{width:n},children:[(0,i.jsxs)("svg",{width:n,height:r,className:"shrink-0",children:[(0,i.jsx)("polygon",{points:"".concat(_(0),",").concat(r," ").concat(b," ").concat(_(x.length-1),",").concat(r),fill:k,fillOpacity:.1}),(0,i.jsx)("polyline",{points:b,fill:"none",stroke:k,strokeWidth:1.2,strokeLinejoin:"round"})]}),(0,i.jsxs)("span",{className:"text-[11px] font-medium shrink-0",style:{color:Z>=0?"#ef5350":"#26a69a"},children:[Z>=0?"+":"",Z.toFixed(1),"%"]})]})}function c(e){let t=e.value;return t?(0,i.jsx)(a,{tsCode:t,width:150,height:48}):(0,i.jsx)("span",{className:"text-[10px] text-gray-300",children:"—"})}function o(){let[e,t]=(0,l.useState)(null);(0,l.useEffect)(()=>{let e=!1;return fetch("/api/csv/stockList?page=1&size=10000").then(e=>e.json()).then(n=>{e||t(n)}).catch(()=>{}),()=>{e=!0}},[]);let n=(0,l.useMemo)(()=>e?{...e,originalHeaders:[...e.originalHeaders||[],"_kline"],data:e.data.map(e=>({...e,_kline:e.ts_code}))}:null,[e]);return n?(0,i.jsx)(r.Z,{category:"stockList",title:"股票列表",useServerPagination:!1,localData:n,columnOrder:["ts_code","symbol","name","_kline"],fieldLabelMap:{_kline:"K线"},customCellRenderers:{_kline:c},columnWidthByField:{_kline:200},rowHeight:52,cellStyleByField:{_kline:{display:"flex",alignItems:"center",overflow:"visible"}}}):(0,i.jsx)("div",{className:"flex items-center justify-center h-96",children:(0,i.jsx)("p",{className:"text-gray-500",children:"加载中..."})})}},16343:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("ArrowDown",[["path",{d:"M12 5v14",key:"s699le"}],["path",{d:"m19 12-7 7-7-7",key:"1idqje"}]])},44639:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("ArrowUp",[["path",{d:"m5 12 7-7 7 7",key:"hav0vg"}],["path",{d:"M12 19V5",key:"x0mq9r"}]])},92165:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("Download",[["path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",key:"ih7n3h"}],["polyline",{points:"7 10 12 15 17 10",key:"2ggqvy"}],["line",{x1:"12",x2:"12",y1:"15",y2:"3",key:"1vk2je"}]])},70127:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("Maximize2",[["polyline",{points:"15 3 21 3 21 9",key:"mznyad"}],["polyline",{points:"9 21 3 21 3 15",key:"1avn1i"}],["line",{x1:"21",x2:"14",y1:"3",y2:"10",key:"ota7mn"}],["line",{x1:"3",x2:"10",y1:"21",y2:"14",key:"1atl0r"}]])},12391:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("Minimize2",[["polyline",{points:"4 14 10 14 10 20",key:"11kfnr"}],["polyline",{points:"20 10 14 10 14 4",key:"rlmsce"}],["line",{x1:"14",x2:"21",y1:"10",y2:"3",key:"o5lafz"}],["line",{x1:"3",x2:"10",y1:"21",y2:"14",key:"1atl0r"}]])},88530:function(e,t,n){"use strict";n.d(t,{Z:function(){return i}});/**
+ * @license lucide-react v0.460.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */let i=(0,n(82715).Z)("SlidersHorizontal",[["line",{x1:"21",x2:"14",y1:"4",y2:"4",key:"obuewd"}],["line",{x1:"10",x2:"3",y1:"4",y2:"4",key:"1q6298"}],["line",{x1:"21",x2:"12",y1:"12",y2:"12",key:"1iu8h1"}],["line",{x1:"8",x2:"3",y1:"12",y2:"12",key:"ntss68"}],["line",{x1:"21",x2:"16",y1:"20",y2:"20",key:"14d8ph"}],["line",{x1:"12",x2:"3",y1:"20",y2:"20",key:"m0wm8r"}],["line",{x1:"14",x2:"14",y1:"2",y2:"6",key:"14e1ph"}],["line",{x1:"8",x2:"8",y1:"10",y2:"14",key:"1i6ji0"}],["line",{x1:"16",x2:"16",y1:"18",y2:"22",key:"1lctlv"}]])}},function(e){e.O(0,[967,453,65,945,68,674,971,23,744],function(){return e(e.s=32021)}),_N_E=e.O()}]);
