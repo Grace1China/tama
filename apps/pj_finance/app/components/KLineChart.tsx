@@ -213,6 +213,50 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     setRangeEnd(toYMD(endDate));
   }, [fullData]);
 
+  // 滑轨坐标计算（基于 fullData 全量日期范围）
+  const sliderFromIdx = useCallback((ymd: string) => {
+    const idx = fullData.findIndex((d) => String(d.trade_date) >= ymd);
+    return idx >= 0 ? idx : 0;
+  }, [fullData]);
+  const sliderToIdx = useCallback((ymd: string) => {
+    const idx = fullData.findIndex((d) => String(d.trade_date) > ymd);
+    return idx > 0 ? idx - 1 : Math.max(fullData.length - 1, 0);
+  }, [fullData]);
+
+  const sliderStartIdx = rangeStart ? sliderFromIdx(rangeStart) : 0;
+  const sliderEndIdx = rangeEnd ? sliderToIdx(rangeEnd) : Math.max(fullData.length - 1, 0);
+  const sliderLen = Math.max(fullData.length, 1);
+
+  const sliderToPct = useCallback((idx: number) => (idx / Math.max(sliderLen - 1, 1)) * 100, [sliderLen]);
+  const sliderFromPct = useCallback((pct: number) => Math.round((pct / 100) * Math.max(sliderLen - 1, 0)), [sliderLen]);
+
+  const onSliderMouseDown = useCallback((which: 'start' | 'end') => (e: React.MouseEvent) => {
+    e.preventDefault();
+    setDragging(which);
+  }, []);
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: MouseEvent) => {
+      const el = sliderRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+      const idx = sliderFromPct(pct);
+      const ymd = String(fullData[idx]?.trade_date ?? '');
+      if (!ymd) return;
+      if (dragging === 'start' && ymd < (rangeEnd || '99999999')) setRangeStart(ymd);
+      if (dragging === 'end' && ymd > (rangeStart || '00000000')) setRangeEnd(ymd);
+    };
+    const onUp = () => setDragging(null);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [dragging, fullData, rangeStart, rangeEnd, sliderFromPct]);
+
   if (!tsCode) {
     return (
       <div className="w-full flex items-center justify-center border border-gray-200 rounded-lg bg-gray-50" style={{ height }}>
@@ -251,51 +295,6 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     ? ((data[data.length - 1].close - data[0].close) / data[0].close * 100).toFixed(2)
     : null;
   const totalH = h;
-
-  // 滑轨坐标计算（基于 fullData 全量日期范围，用 trade_date 的索引映射）
-  const sliderFromIdx = useCallback((ymd: string) => {
-    const idx = fullData.findIndex((d) => String(d.trade_date) >= ymd);
-    return idx >= 0 ? idx : 0;
-  }, [fullData]);
-  const sliderToIdx = useCallback((ymd: string) => {
-    const idx = fullData.findIndex((d) => String(d.trade_date) > ymd);
-    return idx > 0 ? idx - 1 : Math.max(fullData.length - 1, 0);
-  }, [fullData]);
-
-  const sliderStartIdx = rangeStart ? sliderFromIdx(rangeStart) : 0;
-  const sliderEndIdx = rangeEnd ? sliderToIdx(rangeEnd) : Math.max(fullData.length - 1, 0);
-  const sliderLen = Math.max(fullData.length, 1);
-
-  const sliderToPct = useCallback((idx: number) => (idx / Math.max(sliderLen - 1, 1)) * 100, [sliderLen]);
-  const sliderFromPct = useCallback((pct: number) => Math.round((pct / 100) * Math.max(sliderLen - 1, 0)), [sliderLen]);
-
-  // 滑轨拖拽
-  const onSliderMouseDown = useCallback((which: 'start' | 'end') => (e: React.MouseEvent) => {
-    e.preventDefault();
-    setDragging(which);
-  }, []);
-
-  useEffect(() => {
-    if (!dragging) return;
-    const onMove = (e: MouseEvent) => {
-      const el = sliderRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-      const idx = sliderFromPct(pct);
-      const ymd = String(fullData[idx]?.trade_date ?? '');
-      if (!ymd) return;
-      if (dragging === 'start' && ymd < (rangeEnd || '99999999')) setRangeStart(ymd);
-      if (dragging === 'end' && ymd > (rangeStart || '00000000')) setRangeEnd(ymd);
-    };
-    const onUp = () => setDragging(null);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, [dragging, fullData, rangeStart, rangeEnd, sliderFromPct]);
 
   return (
     <div ref={containerRef} className="w-full border border-gray-200 rounded-lg bg-white relative" style={{ height: totalH }}>
@@ -447,38 +446,8 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
         </div>
       )}
 
-      {/* 范围滑轨 */}
-      <div
-        ref={sliderRef}
-        className="relative flex items-center px-3 border-t border-gray-100 bg-gray-50 select-none"
-        style={{ height: sliderH, marginLeft: margin.left, marginRight: margin.right }}
-      >
-        {/* 轨道 */}
-        <div className="absolute left-3 right-3 h-1.5 bg-gray-200 rounded-full" />
-        {/* 选中范围 */}
-        <div
-          className="absolute h-1.5 bg-blue-400 rounded-full"
-          style={{ left: `calc(${sliderToPct(sliderStartIdx)}% + 12px)`, width: `calc(${sliderToPct(sliderEndIdx) - sliderToPct(sliderStartIdx)}%)` }}
-        />
-        {/* 左滑块 */}
-        <div
-          className="absolute w-3 h-5 bg-white border-2 border-blue-500 rounded-sm cursor-ew-resize shadow hover:border-blue-600 z-10"
-          style={{ left: `calc(${sliderToPct(sliderStartIdx)}% + 12px - 6px)` }}
-          onMouseDown={onSliderMouseDown('start')}
-        />
-        {/* 右滑块 */}
-        <div
-          className="absolute w-3 h-5 bg-white border-2 border-blue-500 rounded-sm cursor-ew-resize shadow hover:border-blue-600 z-10"
-          style={{ left: `calc(${sliderToPct(sliderEndIdx)}% + 12px - 6px)` }}
-          onMouseDown={onSliderMouseDown('end')}
-        />
-        {/* 起止标签 */}
-        <span className="absolute text-[10px] text-gray-400" style={{ left: 0, bottom: 2 }}>{rangeStart ? fmtDate(rangeStart) : ''}</span>
-        <span className="absolute text-[10px] text-gray-400" style={{ right: 0, bottom: 2 }}>{rangeEnd ? fmtDate(rangeEnd) : ''}</span>
-      </div>
-
       {/* 日期范围控制栏 */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-t border-gray-100 bg-gray-50 rounded-b-lg" style={{ height: barH }}>
+      <div className="flex items-center gap-2 px-3 py-1.5 border-t border-gray-100 bg-gray-50" style={{ height: barH }}>
         <span className="text-[11px] text-gray-500 shrink-0">时间:</span>
         {PRESETS.map((p) => (
           <button
@@ -513,6 +482,36 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
           placeholder="结束"
           className="text-[11px] w-[72px] px-1.5 py-0.5 border border-gray-300 rounded shrink-0 text-center"
         />
+      </div>
+
+      {/* 范围滑轨 */}
+      <div
+        ref={sliderRef}
+        className="relative flex items-center px-3 border-t border-gray-100 bg-gray-50 select-none rounded-b-lg"
+        style={{ height: sliderH, marginLeft: margin.left, marginRight: margin.right }}
+      >
+        {/* 轨道 */}
+        <div className="absolute left-3 right-3 h-1.5 bg-gray-200 rounded-full" />
+        {/* 选中范围 */}
+        <div
+          className="absolute h-1.5 bg-blue-400 rounded-full"
+          style={{ left: `calc(${sliderToPct(sliderStartIdx)}% + 12px)`, width: `calc(${sliderToPct(sliderEndIdx) - sliderToPct(sliderStartIdx)}%)` }}
+        />
+        {/* 左滑块 */}
+        <div
+          className="absolute w-3 h-5 bg-white border-2 border-blue-500 rounded-sm cursor-ew-resize shadow hover:border-blue-600 z-10"
+          style={{ left: `calc(${sliderToPct(sliderStartIdx)}% + 12px - 6px)` }}
+          onMouseDown={onSliderMouseDown('start')}
+        />
+        {/* 右滑块 */}
+        <div
+          className="absolute w-3 h-5 bg-white border-2 border-blue-500 rounded-sm cursor-ew-resize shadow hover:border-blue-600 z-10"
+          style={{ left: `calc(${sliderToPct(sliderEndIdx)}% + 12px - 6px)` }}
+          onMouseDown={onSliderMouseDown('end')}
+        />
+        {/* 起止标签 */}
+        <span className="absolute text-[10px] text-gray-400" style={{ left: 0, bottom: 2 }}>{rangeStart ? fmtDate(rangeStart) : ''}</span>
+        <span className="absolute text-[10px] text-gray-400" style={{ right: 0, bottom: 2 }}>{rangeEnd ? fmtDate(rangeEnd) : ''}</span>
       </div>
     </div>
   );
