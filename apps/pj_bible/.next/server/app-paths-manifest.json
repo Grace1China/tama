@@ -6,7 +6,7 @@
   "/book/[bookId]/[chapterId]/page": "app/book/[bookId]/[chapterId]/page.js",
   "/page": "app/page.js",
   "/book/[bookId]/page": "app/book/[bookId]/page.js",
-  "/book/mobile/whole/[bookId]/[chapterId]/[version]/page": "app/book/mobile/whole/[bookId]/[chapterId]/[version]/page.js",
   "/book/[bookId]/[chapterId]/[version]/page": "app/book/[bookId]/[chapterId]/[version]/page.js",
+  "/book/mobile/whole/[bookId]/[chapterId]/[version]/page": "app/book/mobile/whole/[bookId]/[chapterId]/[version]/page.js",
   "/book/whole/[bookId]/[chapterId]/[version]/page": "app/book/whole/[bookId]/[chapterId]/[version]/page.js"
 }

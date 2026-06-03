@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/book/[bookId]/[chapterId]/[version]":{},"/book/[bookId]":{},"/book/whole/[bookId]/[chapterId]/[version]":{},"/book/mobile/whole/[bookId]/[chapterId]/[version]":{}}}
+{"version":1,"functions":{"/book/[bookId]/[chapterId]/[version]":{},"/book/[bookId]":{},"/book/mobile/whole/[bookId]/[chapterId]/[version]":{},"/book/whole/[bookId]/[chapterId]/[version]":{}}}
