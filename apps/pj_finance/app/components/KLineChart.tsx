@@ -18,7 +18,7 @@ interface KLineChartProps {
   height?: number;
 }
 
-/** 格式化 YYYYMMDD → YY/MM */
+/** 格式化 YYYYMMDD → YY/MM/DD */
 function fmtDate(ymd: string): string {
   if (!/^\d{8}$/.test(ymd)) return ymd;
   return `${ymd.slice(2, 4)}/${ymd.slice(4, 6)}/${ymd.slice(6, 8)}`;
@@ -29,17 +29,47 @@ function fmtYi(v: number): string {
   return (v / 10000).toFixed(2) + '亿';
 }
 
+/** 从 YYYYMMDD 字符串生成 Date */
+function toDate(ymd: string): Date {
+  const y = Number(ymd.slice(0, 4));
+  const m = Number(ymd.slice(4, 6)) - 1;
+  const d = Number(ymd.slice(6, 8));
+  return new Date(y, m, d);
+}
+
+/** 从 Date 生成 YYYYMMDD */
+function toYMD(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}${m}${day}`;
+}
+
+/** 预设时间跨度 */
+const PRESETS: { label: string; months: number }[] = [
+  { label: '1月', months: 1 },
+  { label: '3月', months: 3 },
+  { label: '6月', months: 6 },
+  { label: '1年', months: 12 },
+  { label: '3年', months: 36 },
+  { label: '全部', months: 0 },
+];
+
 export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [data, setData] = useState<OHLCData[]>([]);
+  const [fullData, setFullData] = useState<OHLCData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [chartDims, setChartDims] = useState({ w: 800, h: height });
 
-  // 拉取数据
+  // 日期范围（YYYYMMDD 字符串）
+  const [rangeStart, setRangeStart] = useState('');
+  const [rangeEnd, setRangeEnd] = useState('');
+
+  // 拉取全量数据
   useEffect(() => {
-    if (!tsCode) { setData([]); return; }
+    if (!tsCode) { setFullData([]); setRangeStart(''); setRangeEnd(''); return; }
     let cancelled = false;
     const fetchData = async () => {
       setLoading(true);
@@ -53,7 +83,12 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
         const rows: OHLCData[] = (json.data || []).filter(
           (r: any) => r.open != null && r.high != null && r.low != null && r.close != null
         );
-        setData(rows);
+        setFullData(rows);
+        // 默认显示全部
+        if (rows.length > 0) {
+          setRangeStart(String(rows[0].trade_date));
+          setRangeEnd(String(rows[rows.length - 1].trade_date));
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : '获取数据失败');
       } finally {
@@ -63,6 +98,17 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     fetchData();
     return () => { cancelled = true; };
   }, [tsCode]);
+
+  // 按日期范围过滤
+  const data = useMemo(() => {
+    if (!rangeStart && !rangeEnd) return fullData;
+    return fullData.filter((d) => {
+      const date = String(d.trade_date);
+      if (rangeStart && date < rangeStart) return false;
+      if (rangeEnd && date > rangeEnd) return false;
+      return true;
+    });
+  }, [fullData, rangeStart, rangeEnd]);
 
   // 响应容器尺寸
   useEffect(() => {
@@ -99,10 +145,10 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
 
   const { w, h } = chartDims;
   const margin = { top: 10, right: 50, bottom: 30, left: 55 };
-  const volH = Math.round(h * 0.18);
-  const mainH = h - margin.top - margin.bottom - volH - 6;
+  const barH = 36; // 日期控制栏高度
+  const volH = Math.round((h - barH) * 0.18);
+  const mainH = h - barH - margin.top - margin.bottom - volH - 6;
   const mainW = w - margin.left - margin.right;
-  const volW = mainW;
   const chartH = mainH + volH + 6;
 
   const toX = useCallback((i: number) => margin.left + (i / Math.max(data.length - 1, 1)) * mainW, [margin.left, mainW, data.length]);
@@ -122,7 +168,7 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     return ticks;
   }, [priceRange]);
 
-  // X 轴标签（每年一个）
+  // X 轴标签
   const xLabels = useMemo(() => {
     const labels: { idx: number; label: string }[] = [];
     let lastYear = '';
@@ -140,7 +186,6 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const mx = e.clientX - rect.left;
-    // 找到最近的 candle
     let bestIdx = 0;
     let bestDist = Infinity;
     for (let i = 0; i < data.length; i++) {
@@ -150,6 +195,20 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
     }
     setHoverIdx(bestIdx);
   }, [data, toX, candleGap]);
+
+  // 日期控制
+  const handlePreset = useCallback((months: number) => {
+    if (months === 0 || !fullData.length) {
+      setRangeStart(String(fullData[0]?.trade_date ?? ''));
+      setRangeEnd(String(fullData[fullData.length - 1]?.trade_date ?? ''));
+      return;
+    }
+    const endDate = toDate(String(fullData[fullData.length - 1].trade_date));
+    const startDate = new Date(endDate);
+    startDate.setMonth(startDate.getMonth() - months);
+    setRangeStart(toYMD(startDate));
+    setRangeEnd(toYMD(endDate));
+  }, [fullData]);
 
   if (!tsCode) {
     return (
@@ -188,9 +247,10 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
   const changePct = data.length >= 2
     ? ((data[data.length - 1].close - data[0].close) / data[0].close * 100).toFixed(2)
     : null;
+  const totalH = h;
 
   return (
-    <div ref={containerRef} className="w-full border border-gray-200 rounded-lg bg-white relative" style={{ height }}>
+    <div ref={containerRef} className="w-full border border-gray-200 rounded-lg bg-white relative" style={{ height: totalH }}>
       {/* 标题栏 */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
         <h3 className="text-sm font-semibold">
@@ -207,8 +267,8 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
       {/* SVG 图表 */}
       <svg
         width="100%"
-        height={h - 34}
-        viewBox={`0 0 ${w} ${h - 34}`}
+        height={totalH - 34 - barH}
+        viewBox={`0 0 ${w} ${totalH - 34 - barH}`}
         onMouseMove={onMouseMove}
         onMouseLeave={() => setHoverIdx(null)}
       >
@@ -274,15 +334,13 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
 
           return (
             <g key={`candle-${i}`}>
-              {/* 影线 */}
               <line x1={centerX} y1={highY} x2={centerX} y2={lowY} stroke={color} strokeWidth={1} />
-              {/* 实体 */}
               <rect
                 x={x}
                 y={bodyTop}
                 width={candleW}
                 height={bodyH}
-                fill={green ? color : color}
+                fill={color}
                 stroke={color}
                 strokeWidth={0.5}
               />
@@ -303,7 +361,6 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
               x2={margin.left + mainW} y2={toY(hoverD.close)}
               stroke="#333" strokeWidth={0.5} strokeDasharray="3,3"
             />
-            {/* 当日竖线高亮 */}
             <rect
               x={toX(hoverIdx)}
               y={margin.top}
@@ -341,6 +398,44 @@ export default function KLineChart({ tsCode, height = 420 }: KLineChartProps) {
           </div>
         </div>
       )}
+
+      {/* 日期范围控制栏 */}
+      <div className="flex items-center gap-2 px-3 py-1.5 border-t border-gray-100 bg-gray-50 rounded-b-lg" style={{ height: barH }}>
+        <span className="text-[11px] text-gray-500 shrink-0">时间:</span>
+        {PRESETS.map((p) => (
+          <button
+            key={p.label}
+            type="button"
+            onClick={() => handlePreset(p.months)}
+            className="text-[11px] px-2 py-0.5 rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-800 shrink-0"
+          >
+            {p.label}
+          </button>
+        ))}
+        <input
+          type="text"
+          value={rangeStart ? fmtDate(rangeStart) : ''}
+          onChange={(e) => {
+            let raw = e.target.value.replace(/\D/g, '');
+            if (raw.length === 6) raw = '20' + raw; // YYMMDD → YYYYMMDD
+            if (raw.length === 8 && /^\d{8}$/.test(raw)) setRangeStart(raw);
+          }}
+          placeholder="起始"
+          className="text-[11px] w-[72px] px-1.5 py-0.5 border border-gray-300 rounded shrink-0 text-center"
+        />
+        <span className="text-[11px] text-gray-400">—</span>
+        <input
+          type="text"
+          value={rangeEnd ? fmtDate(rangeEnd) : ''}
+          onChange={(e) => {
+            let raw = e.target.value.replace(/\D/g, '');
+            if (raw.length === 6) raw = '20' + raw;
+            if (raw.length === 8 && /^\d{8}$/.test(raw)) setRangeEnd(raw);
+          }}
+          placeholder="结束"
+          className="text-[11px] w-[72px] px-1.5 py-0.5 border border-gray-300 rounded shrink-0 text-center"
+        />
+      </div>
     </div>
   );
 }
