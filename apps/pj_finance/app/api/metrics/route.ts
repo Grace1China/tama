@@ -12,9 +12,17 @@ export const dynamic = 'force-dynamic';
 
 type RawRow = Record<string, unknown>;
 
+/** DuckDB DATE 列可能返回 Date 对象或字符串，统一归一化为 YYYYMMDD 数字串 */
+function toDateDigits(value: unknown): string {
+  if (value instanceof Date && !isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10).replace(/-/g, '');
+  }
+  return String(value ?? '').replace(/\D/g, '');
+}
+
 function normalizeEndDateToPeriod(endDate: unknown): string | null {
   if (endDate == null) return null;
-  const text = String(endDate).replace(/\D/g, '');
+  const text = toDateDigits(endDate);
   if (!/^\d{8}$/.test(text)) return null;
   const year = text.slice(0, 4);
   const mmdd = text.slice(4);
@@ -30,14 +38,14 @@ function normalizeEndDateToPeriod(endDate: unknown): string | null {
 
 function normalizeDividendEndDateToPeriod(endDate: unknown): string | null {
   if (endDate == null) return null;
-  const text = String(endDate).replace(/\D/g, '');
+  const text = toDateDigits(endDate);
   // dividend.end_date 有时只给年份（如 2023），默认归到年末 Q4
   if (/^\d{4}$/.test(text)) return `${text}Q4`;
   return normalizeEndDateToPeriod(endDate);
 }
 
 function endDateSortKey(endDate: unknown): number {
-  const text = String(endDate ?? '').replace(/\D/g, '');
+  const text = toDateDigits(endDate);
   if (/^\d{8}$/.test(text)) return Number(text);
   return 0;
 }
@@ -372,7 +380,7 @@ function toResult(metricName: string, value: MetricValue) {
 }
 
 function normalizeTradeDateToPeriod(tradeDate: unknown): string | null {
-  const text = String(tradeDate ?? '').replace(/\D/g, '');
+  const text = toDateDigits(tradeDate);
   if (!/^\d{8}$/.test(text)) return null;
   const year = Number(text.slice(0, 4));
   const mm = Number(text.slice(4, 6));
@@ -382,7 +390,7 @@ function normalizeTradeDateToPeriod(tradeDate: unknown): string | null {
 }
 
 function tradeDateSortKey(tradeDate: unknown): number {
-  const text = String(tradeDate ?? '').replace(/\D/g, '');
+  const text = toDateDigits(tradeDate);
   return /^\d{8}$/.test(text) ? Number(text) : 0;
 }
 
