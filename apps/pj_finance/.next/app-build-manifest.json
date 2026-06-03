@@ -100,7 +100,7 @@
       "static/chunks/68-c8a764a0493bde19.js",
       "static/chunks/268-78bf8ea3d9cff7f1.js",
       "static/chunks/674-0b5dbf8a838a870d.js",
-      "static/chunks/527-c6562c62b303ffa3.js",
+      "static/chunks/527-8125fbfc162cced5.js",
       "static/chunks/app/indicator/page-06bd15663af93f38.js"
     ],
     "/industryLink/page": [
@@ -134,6 +134,21 @@
       "static/chunks/674-0b5dbf8a838a870d.js",
       "static/chunks/app/income1/page-299404332b5ca928.js"
     ],
+    "/multiDims/page": [
+      "static/chunks/webpack-232628107d75699b.js",
+      "static/chunks/fd9d1056-c81e5987937a01a3.js",
+      "static/chunks/23-6f693d828e91a12e.js",
+      "static/chunks/main-app-40c05c8f9f059715.js",
+      "static/chunks/app/multiDims/page-9f3451c91dd5b343.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-232628107d75699b.js",
+      "static/chunks/fd9d1056-c81e5987937a01a3.js",
+      "static/chunks/23-6f693d828e91a12e.js",
+      "static/chunks/main-app-40c05c8f9f059715.js",
+      "static/chunks/231-f2d153396e06a78c.js",
+      "static/chunks/app/page-4b7b3942058ed312.js"
+    ],
     "/incomeContrast/page": [
       "static/chunks/webpack-232628107d75699b.js",
       "static/chunks/fd9d1056-c81e5987937a01a3.js",
@@ -149,21 +164,6 @@
       "static/chunks/242-15f7f5bd050d6433.js",
       "static/chunks/app/incomeContrast/page-0fda454fc9441f03.js"
     ],
-    "/page": [
-      "static/chunks/webpack-232628107d75699b.js",
-      "static/chunks/fd9d1056-c81e5987937a01a3.js",
-      "static/chunks/23-6f693d828e91a12e.js",
-      "static/chunks/main-app-40c05c8f9f059715.js",
-      "static/chunks/231-f2d153396e06a78c.js",
-      "static/chunks/app/page-4b7b3942058ed312.js"
-    ],
-    "/multiDims/page": [
-      "static/chunks/webpack-232628107d75699b.js",
-      "static/chunks/fd9d1056-c81e5987937a01a3.js",
-      "static/chunks/23-6f693d828e91a12e.js",
-      "static/chunks/main-app-40c05c8f9f059715.js",
-      "static/chunks/app/multiDims/page-9f3451c91dd5b343.js"
-    ],
     "/stockList/page": [
       "static/chunks/webpack-232628107d75699b.js",
       "static/chunks/fd9d1056-c81e5987937a01a3.js",
@@ -175,7 +175,7 @@
       "static/chunks/945-9079dbe55fe0efc6.js",
       "static/chunks/68-c8a764a0493bde19.js",
       "static/chunks/674-0b5dbf8a838a870d.js",
-      "static/chunks/527-c6562c62b303ffa3.js",
+      "static/chunks/527-8125fbfc162cced5.js",
       "static/chunks/app/stockList/page-3c50a3681dd9193d.js"
     ],
     "/sw2021/page": [
