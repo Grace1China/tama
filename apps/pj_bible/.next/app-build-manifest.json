@@ -46,15 +46,6 @@
       "static/chunks/231-35544bdc19137a90.js",
       "static/chunks/app/book/[bookId]/page-f4fde79975aae248.js"
     ],
-    "/book/[bookId]/[chapterId]/[version]/page": [
-      "static/chunks/webpack-cb86a99cd2f791d1.js",
-      "static/chunks/fd9d1056-8ec88eabf8483b26.js",
-      "static/chunks/23-adce08e569ebd77d.js",
-      "static/chunks/main-app-34c8c8da26f2469d.js",
-      "static/chunks/231-35544bdc19137a90.js",
-      "static/chunks/441-ac45b987ac4972fe.js",
-      "static/chunks/app/book/[bookId]/[chapterId]/[version]/page-f70daed618f18d52.js"
-    ],
     "/book/mobile/whole/[bookId]/[chapterId]/[version]/page": [
       "static/chunks/webpack-cb86a99cd2f791d1.js",
       "static/chunks/fd9d1056-8ec88eabf8483b26.js",
@@ -72,6 +63,15 @@
       "static/chunks/231-35544bdc19137a90.js",
       "static/chunks/441-ac45b987ac4972fe.js",
       "static/chunks/app/book/whole/[bookId]/[chapterId]/[version]/page-69fdec4b119de569.js"
+    ],
+    "/book/[bookId]/[chapterId]/[version]/page": [
+      "static/chunks/webpack-cb86a99cd2f791d1.js",
+      "static/chunks/fd9d1056-8ec88eabf8483b26.js",
+      "static/chunks/23-adce08e569ebd77d.js",
+      "static/chunks/main-app-34c8c8da26f2469d.js",
+      "static/chunks/231-35544bdc19137a90.js",
+      "static/chunks/441-ac45b987ac4972fe.js",
+      "static/chunks/app/book/[bookId]/[chapterId]/[version]/page-f70daed618f18d52.js"
     ]
   }
 }
