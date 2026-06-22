@@ -1,0 +1,33 @@
+"use strict";(()=>{var e={};e.id=4401,e.ids=[4401],e.modules={82563:e=>{e.exports=require("duckdb")},20399:e=>{e.exports=require("next/dist/compiled/next-server/app-page.runtime.prod.js")},30517:e=>{e.exports=require("next/dist/compiled/next-server/app-route.runtime.prod.js")},57147:e=>{e.exports=require("fs")},71017:e=>{e.exports=require("path")},73837:e=>{e.exports=require("util")},59796:e=>{e.exports=require("zlib")},48161:(e,t,r)=>{r.r(t),r.d(t,{originalPathname:()=>E,patchFetch:()=>b,requestAsyncStorage:()=>_,routeModule:()=>m,serverHooks:()=>S,staticGenerationAsyncStorage:()=>$});var a={};r.r(a),r.d(a,{GET:()=>q,dynamic:()=>f});var n=r(49303),o=r(88716),s=r(60670),i=r(87070),u=r(59796),d=r.n(u),l=r(73837),c=r(82563),p=r(51305);let f="force-dynamic",g=(0,l.promisify)(d().gzip);async function h(e,t){let{bfq:r,adj:a}=(0,p.EZ)(),n=new URLSearchParams(e.startsWith("?")?e.slice(1):e),o=n.get("ts_code"),s=n.get("sortField"),i=n.get("sortDir"),u=n.get("start_date"),d=n.get("end_date"),l=Number.isFinite(t?.page)?t.page:1,f=Math.max(1,Math.floor(Number.isFinite(t?.size)?t.size:50)),g={bfqPath:r,adjPath:a,tsCode:o,startDate:u,endDate:d,sortCol:s&&/^[a-zA-Z0-9_]+$/.test(s)?s:"trade_date",sortDir:i?.toUpperCase()==="ASC"?"ASC":"DESC",limit:f,offset:(Math.max(1,Math.floor(l))-1)*f},h=(0,p.un)(g),q=(0,p.LW)(g);return new Promise((e,t)=>{try{let r=new c.Database(":memory:"),a=r.connect();a.all(h,(n,o)=>{if(n){a.close(),r.close(),t(Error(`DuckDB count query error: ${n.message}`));return}let s=Number(o?.[0]?.cnt??0);a.all(q,(n,o)=>{if(n){a.close(),r.close(),t(Error(`DuckDB query error: ${n.message}`));return}if(!o||0===o.length){a.close(),r.close(),e({headers:[],originalHeaders:[],data:[],totalRows:s});return}let i=Object.keys(o[0]),u=o.map(e=>{let t={};return i.forEach(r=>{t[r]="trade_date"===r?function(e){if(null==e)return"";if(e instanceof Date){let t=e.getFullYear(),r=String(e.getMonth()+1).padStart(2,"0"),a=String(e.getDate()).padStart(2,"0");return`${t}${r}${a}`}let t=String(e).trim();if(/^\d{8}$/.test(t))return t;let r=t.match(/^(\d{4})-(\d{2})-(\d{2})/);return r?`${r[1]}${r[2]}${r[3]}`:t}(e[r]):e[r]}),t});a.close(),r.close(),e({headers:i,originalHeaders:i,data:u,totalRows:s})})})}catch(e){t(Error(`Failed to initialize DuckDB: ${e instanceof Error?e.message:String(e)}`))}})}async function q(e){try{let t=(e.headers.get("accept-encoding")||"").includes("gzip"),r=new URL(e.url),a=Number(r.searchParams.get("page")??"1"),n=Number(r.searchParams.get("size")??"50"),o=new URLSearchParams(r.searchParams);o.delete("page"),o.delete("size"),o.delete("file");let s=o.toString()?`?${o.toString()}`:"",u=await h(s,{page:a,size:n}),d={category:"qfqDir",filename:"qfqDir",headers:u.headers,originalHeaders:u.originalHeaders,data:u.data,totalRows:u.totalRows},l=JSON.stringify(d),c=Buffer.byteLength(l,"utf8");if(t&&c>1024){let e=await g(l);return new i.NextResponse(e,{status:200,headers:{"Content-Type":"application/json","Content-Encoding":"gzip","Content-Length":e.length.toString()}})}return i.NextResponse.json(d)}catch(e){return console.error("Error querying qfqDir:",e),i.NextResponse.json({error:"Failed to query qfq daily",message:e instanceof Error?e.message:String(e)},{status:500})}}let m=new n.AppRouteRouteModule({definition:{kind:o.x.APP_ROUTE,page:"/api/parq/qfqDir/route",pathname:"/api/parq/qfqDir",filename:"route",bundlePath:"app/api/parq/qfqDir/route"},resolvedPagePath:"/home/runner/work/tama/tama/apps/pj_finance/app/api/parq/qfqDir/route.ts",nextConfigOutput:"",userland:a}),{requestAsyncStorage:_,staticGenerationAsyncStorage:$,serverHooks:S}=m,E="/api/parq/qfqDir/route";function b(){return(0,s.patchFetch)({serverHooks:S,staticGenerationAsyncStorage:$})}},51305:(e,t,r)=>{r.d(t,{EZ:()=>i,LW:()=>g,fL:()=>c,un:()=>f});var a=r(71017),n=r.n(a),o=r(65523);function s(e){return n().resolve(e).replace(/\\/g,"/").replace(/'/g,"''")}function i(){return{bfq:s((0,o.dc)()),adj:s((0,o.Q8)())}}function u(e){return e.replace(/'/g,"''")}function d(e){let t=e.trim();return/^\d{8}$/.test(t)?`${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6,8)}`:/^\d{4}-\d{2}-\d{2}$/.test(t)?t:null}function l(e){return`${e} * a.adj_factor / l.latest_adj`}function c(e,t){let r=t&&t.length>0?`WHERE ts_code IN (${t.map(e=>`'${u(e)}'`).join(", ")})`:"";return`
+    latest_adj AS (
+      SELECT ts_code, adj_factor AS latest_adj
+      FROM (
+        SELECT
+          ts_code,
+          adj_factor,
+          ROW_NUMBER() OVER (PARTITION BY ts_code ORDER BY trade_date DESC) AS rn
+        FROM read_parquet('${e}')
+        ${r}
+      ) t
+      WHERE rn = 1
+    )`}function p(e){let{bfqPath:t,adjPath:r}=e,a=function(e){let t=[];if(e.tsCode?t.push(`b.ts_code = '${u(e.tsCode)}'`):e.tsCodes&&e.tsCodes.length>0&&t.push(`b.ts_code IN (${e.tsCodes.map(e=>`'${u(e)}'`).join(", ")})`),e.startDate){let r=d(e.startDate);r&&t.push(`b.trade_date >= DATE '${r.replace(/'/g,"''")}'`)}if(e.endDate){let r=d(e.endDate);r&&t.push(`b.trade_date <= DATE '${r.replace(/'/g,"''")}'`)}return t.length>0?`WHERE ${t.join(" AND ")}`:""}(e),n=e.tsCode?[e.tsCode]:e.tsCodes;return`
+    ${c(r,n)},
+    qfq AS (
+      SELECT
+        b.ts_code,
+        b.trade_date,
+        ${l("b.open")} AS open,
+        ${l("b.high")} AS high,
+        ${l("b.low")} AS low,
+        ${l("b.close")} AS close,
+        ${l("b.pre_close")} AS pre_close,
+        ${l("b.change")} AS change,
+        b.pct_chg,
+        b.vol,
+        b.amount
+      FROM read_parquet('${t}') b
+      INNER JOIN read_parquet('${r}') a
+        ON b.ts_code = a.ts_code AND b.trade_date = a.trade_date
+      INNER JOIN latest_adj l ON b.ts_code = l.ts_code
+      ${a}
+    )`}function f(e){return`WITH ${p(e)} SELECT COUNT(*) AS cnt FROM qfq`}function g(e){let t=e.sortCol&&/^[a-zA-Z0-9_]+$/.test(e.sortCol)?e.sortCol:"trade_date",r="ASC"===e.sortDir?"ASC":"DESC",a=Math.max(1,Math.floor(e.limit??50)),n=Math.max(0,Math.floor(e.offset??0));return`WITH ${p(e)} SELECT * FROM qfq ORDER BY ${t} ${r} LIMIT ${a} OFFSET ${n}`}},65523:(e,t,r)=>{r.d(t,{JW:()=>l,Q8:()=>p,dc:()=>c,eh:()=>u,iR:()=>d});var a=r(57147),n=r.n(a),o=r(71017),s=r.n(o);let i=s().join(process.cwd(),"temp/tuShare");function u(...e){let t=[];for(let r of e){let e=s().join(i,r);if(t.push(e),n().existsSync(e))return e}throw Error(`Parquet file not found: ${t.join(" | ")}`)}function d(e){return"full"===e?u("daily_basic.parquet"):u("daily_basic_ss.parquet","daily_basic.parquet")}function l(){return u("balancesheet_vip_ss.parquet","balanceSheet_vip.parquet")}function c(){return u("bfqDir.parquet")}function p(){return u("adjFactor.parquet","adjFactor_ss.parquet")}}};var t=require("../../../../webpack-runtime.js");t.C(e);var r=e=>t(t.s=e),a=t.X(0,[8948,5972],()=>r(48161));module.exports=a})();
