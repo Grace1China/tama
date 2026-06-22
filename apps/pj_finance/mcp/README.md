@@ -85,6 +85,8 @@ the unauthenticated plaintext endpoint directly to the internet.
 
 ## Tools
 
+### 通用金融数据
+
 - `cninfo_list_disclosures(ts_code, limit?)`
   - Uses the existing server-side `p_info3085` helper.
   - Accepts `600176.SH` or `600176`.
@@ -107,8 +109,13 @@ the unauthenticated plaintext endpoint directly to the internet.
   - Safe whitelist query; no arbitrary SQL input.
   - Tables: `income`, `cashflow`, `balance`, `fina_indicator`, `daily_basic`, `sw_daily`, `index_member_all`, `index_classify_SW2021`.
 
+### 产业链
+
+- `industry_taxonomy_list()`
+  - Lists enabled taxonomy IDs, labels, display order, and unique company counts.
+
 - `industry_taxonomy_get(id)`
-  - Reads one taxonomy YAML from `app/industryLink/taxonomies`.
+  - Reads one complete taxonomy YAML from `app/industryLink/taxonomies`.
 
 - `industry_company_context(company_name)`
   - Scans all taxonomy YAML files.
@@ -141,9 +148,6 @@ the unauthenticated plaintext endpoint directly to the internet.
   - `apply=false` by default: collect annual-report evidence and generate an evidence draft only.
   - `apply=true`: requires complete `analysis_fields` and writes those researched conclusions back into the selected taxonomy YAML.
   - Raw keyword-hit slices are evidence, not analysis, and cannot be written directly to taxonomy YAML.
-
-- `tao_company_evidence(company_name, year?, apply?)`
-  - Backward-compatible alias for `industry_company_evidence({ taxonomy_id: "tao", ... })`.
 
 Example tool arguments:
 

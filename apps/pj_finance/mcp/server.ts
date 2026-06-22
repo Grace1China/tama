@@ -138,8 +138,20 @@ const tools = [
     },
   },
   {
+    name: 'industry_taxonomy_list',
+    description: '列出当前启用的产业链 taxonomy，包括 id、名称、顺序和公司数量。',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
+  },
+  {
     name: 'industry_taxonomy_get',
-    description: '读取某个产业链 yaml。',
+    description: '按 taxonomy id 读取一个产业链 YAML 的完整结构。',
     inputSchema: {
       type: 'object',
       properties: {
@@ -147,16 +159,24 @@ const tools = [
       },
       required: ['id'],
     },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+    },
   },
   {
     name: 'industry_company_context',
-    description: '返回公司所在产业链、二级赛道、入选理由、弹性因子等上下文。',
+    description: '跨全部 taxonomy 查找公司，返回所在产业链、阶段、子赛道、入选理由、弹性因子和风险。',
     inputSchema: {
       type: 'object',
       properties: {
         company_name: { type: 'string' },
       },
       required: ['company_name'],
+    },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
     },
   },
   {
@@ -168,6 +188,10 @@ const tools = [
         taxonomy_id: { type: 'string', description: '如 optical_communication、copper、tao' },
       },
       required: ['taxonomy_id'],
+    },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
     },
   },
   {
@@ -186,11 +210,16 @@ const tools = [
         },
         max_weight: { type: 'number', description: '单一成分权重上限，默认 0.10' },
         base_value: { type: 'number', description: '基点，默认 1000' },
-        output_path: { type: 'string', description: '可选；必须位于 pj_finance 目录内，默认 temp/industry_chain_index/<id>.parquet' },
+        output_path: { type: 'string', description: '可选；必须位于 pj_finance 目录内，默认 mcp/data/industry_chain_index/<id>_<日期>.parquet' },
         price_parquet: { type: 'string', description: '可选本地测试/缓存行情，字段需含 ts_code/trade_date/close；不传则用 Tushare 前复权行情' },
         market_cap_parquet: { type: 'string', description: '可选本地市值表，字段需含 ts_code/trade_date/circ_mv' },
       },
       required: ['taxonomy_id', 'start_date', 'end_date'],
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      openWorldHint: true,
     },
   },
   {
@@ -218,18 +247,10 @@ const tools = [
       },
       required: ['taxonomy_id', 'company_name'],
     },
-  },
-  {
-    name: 'tao_company_evidence',
-    description: '兼容旧入口：等同于 industry_company_evidence({ taxonomy_id: "tao", ... })，一次只处理一个韬链公司。',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        company_name: { type: 'string', description: '如 中际旭创；一次只处理一个公司，避免批量触发巨潮反爬' },
-        year: { type: 'number', description: '年报年份，默认2025' },
-        apply: { type: 'boolean', description: '是否回写 tao.yaml，默认 false' },
-      },
-      required: ['company_name'],
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      openWorldHint: true,
     },
   },
 ];
@@ -679,6 +700,42 @@ function listTaxonomyIds(): string[] {
     .map((name) => name.replace(/\.ya?ml$/i, ''));
 }
 
+function countTaxonomyCompanies(taxonomy: Record<string, unknown>): number {
+  const names = new Set<string>();
+  for (const [stage, stageValue] of Object.entries(taxonomy)) {
+    if (stage === 'meta') continue;
+    for (const trackValue of Object.values(asObject(stageValue))) {
+      const companies = Array.isArray(asObject(trackValue)['公司']) ? asObject(trackValue)['公司'] as unknown[] : [];
+      for (const item of companies) {
+        for (const companyName of Object.keys(asObject(item))) names.add(companyName);
+      }
+    }
+  }
+  return names.size;
+}
+
+async function industryTaxonomyList() {
+  const items: Array<{
+    id: string;
+    label: string;
+    order: number;
+    company_count: number;
+  }> = [];
+  for (const id of listTaxonomyIds()) {
+    const taxonomy = await readTaxonomyById(id);
+    const meta = asObject(taxonomy.meta);
+    if (meta.enabled === false) continue;
+    items.push({
+      id,
+      label: String(meta.label ?? id),
+      order: Number.isFinite(Number(meta.order)) ? Number(meta.order) : 999,
+      company_count: countTaxonomyCompanies(taxonomy),
+    });
+  }
+  items.sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, 'zh-Hans-CN'));
+  return { count: items.length, taxonomies: items };
+}
+
 function scanCompany(node: unknown, companyName: string, trail: string[], taxonomyMeta: Record<string, unknown>, out: unknown[]) {
   if (!node || typeof node !== 'object') return;
   for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
@@ -1123,10 +1180,6 @@ async function industryCompanyEvidence(args: Record<string, unknown>) {
   };
 }
 
-async function taoCompanyEvidence(args: Record<string, unknown>) {
-  return industryCompanyEvidence({ ...args, taxonomy_id: 'tao' });
-}
-
 async function callTool(name: string, args: Record<string, unknown>): Promise<ToolResult> {
   switch (name) {
     case 'cninfo_list_disclosures': return textResult(await cninfoListDisclosures(args));
@@ -1134,12 +1187,12 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<To
     case 'cninfo_search_pdf': return textResult(await cninfoSearchPdf(args));
     case 'finance_metrics': return textResult(await financeMetrics(args));
     case 'parquet_query': return textResult(await parquetQuery(args));
+    case 'industry_taxonomy_list': return textResult(await industryTaxonomyList());
     case 'industry_taxonomy_get': return textResult(await industryTaxonomyGet(args));
     case 'industry_company_context': return textResult(await industryCompanyContext(args));
     case 'industry_chain_index_preview': return textResult(await industryChainIndexPreview(args));
     case 'industry_chain_index_build': return textResult(await industryChainIndexBuild(args));
     case 'industry_company_evidence': return textResult(await industryCompanyEvidence(args));
-    case 'tao_company_evidence': return textResult(await taoCompanyEvidence(args));
     default: throw new Error(`unknown tool: ${name}`);
   }
 }

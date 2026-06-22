@@ -34,5 +34,6 @@ info:
 
 ## MCP 工具
 
+- `industry_taxonomy_list()`：列出可用产业链和公司数量。
 - `industry_chain_index_preview(taxonomy_id)`：查看成分、缺失代码和覆盖字段。
 - `industry_chain_index_build(...)`：拉取行情、计算指数并写入 parquet。
