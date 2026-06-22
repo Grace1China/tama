@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "npm run dev:finance & npm run dev:bible",
     "dev:finance": "npm run dev -w pj_finance",
+    "dev:finance:stack": "bash scripts/dev-pj-finance.sh",
     "dev:bible": "npm run dev -w pj_bible",
     "build": "npm run build -ws --if-present",
     "build:finance": "npm run build -w pj_finance",

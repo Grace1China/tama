@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FactorEventImpact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "event_id",
+    "chain_id",
+    "sub_lane_title",
+    "impact_direction",
+    "impact_strength"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^imp_[a-zA-Z0-9_]+$" },
+    "event_id": { "type": "string", "pattern": "^evt_[0-9]{8}_[a-z0-9_]+_[a-zA-Z0-9]+$" },
+    "chain_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "sub_lane_title": { "type": "string", "minLength": 1 },
+    "impact_direction": { "type": "string", "enum": ["positive", "negative", "neutral", "mixed"] },
+    "impact_strength": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "rationale": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

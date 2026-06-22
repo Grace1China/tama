@@ -6,7 +6,7 @@ import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { GridReadyEvent, IDatasource } from 'ag-grid-community';
-import { ArrowDown, ArrowUp, Download, Maximize2, Minimize2, SlidersHorizontal } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronsDown, ChevronsUp, Download, Maximize2, Minimize2, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +56,10 @@ interface DataGridProps {
   columnWidthByField?: Record<string, number>;
   /** 按字段覆盖单元格样式（如 Recharts Tooltip 需 overflow:visible） */
   cellStyleByField?: Record<string, CSSProperties>;
+  /** 自定义渲染列禁止换行（如基本信息单行展示） */
+  nowrapCellFields?: string[];
+  /** 自定义渲染列占满行高（如基本信息内 K 线图） */
+  fullHeightCellFields?: string[];
   /** 固定在左侧的列（英文字段名） */
   pinnedLeftFields?: string[];
   /** 行 ID 提取函数，启用后 Ag-Grid 可做增量更新 */
@@ -69,6 +73,8 @@ interface DataGridProps {
   clientSortResetKey?: string;
   /** 为 false 时关闭行动画，减轻批量数据更新时的视觉抖动 */
   animateRows?: boolean;
+  /** 为 true 时在有数据后自动进入浏览器全屏（仅触发一次） */
+  autoFullscreen?: boolean;
 }
 
 function getColVisibilityKey(category: string, tabId?: string): string {
@@ -127,11 +133,14 @@ export default function DataGrid({
   uniformColumnWidth,
   columnWidthByField,
   cellStyleByField,
+  nowrapCellFields,
+  fullHeightCellFields,
   pinnedLeftFields,
   getRowId,
   tightChrome = false,
   clientSortResetKey,
   animateRows = true,
+  autoFullscreen = false,
 }: DataGridProps) {
   const [csvData, setCsvData] = useState<CSVData | null>(localData ?? null);
   const [loading, setLoading] = useState(false);
@@ -224,6 +233,8 @@ export default function DataGrid({
     return () => cancelAnimationFrame(id);
   }, [isGridFullscreen]);
 
+  const autoFullscreenTriggeredRef = useRef(false);
+
   const toggleGridFullscreen = useCallback(async () => {
     const el = fsShellRef.current;
     if (!el) return;
@@ -246,6 +257,16 @@ export default function DataGrid({
       /* 浏览器拒绝全屏等 */
     }
   }, []);
+
+  useEffect(() => {
+    if (!autoFullscreen || autoFullscreenTriggeredRef.current) return;
+    if (loading || !csvData?.data?.length) return;
+    autoFullscreenTriggeredRef.current = true;
+    const id = window.requestAnimationFrame(() => {
+      void toggleGridFullscreen();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [autoFullscreen, loading, csvData, toggleGridFullscreen]);
 
   const getApiUrl = useCallback((page: number, size: number, sortQuery = '', filterQuery = '') => {
     const basePath = apiPath || `/api/csv/${category}`;
@@ -529,7 +550,7 @@ export default function DataGrid({
     setColDirty(true);
   }, [csvData]);
   const resetToDefault = useCallback(() => { setHiddenFields(defaultHiddenFields ?? new Set()); setColDirty(true); }, [defaultHiddenFields]);
-  const moveField = useCallback((field: string, direction: 'up' | 'down') => {
+  const moveField = useCallback((field: string, direction: 'up' | 'down' | 'top' | 'bottom') => {
     if (!csvData || !csvData.headers || csvData.headers.length === 0) return;
     const originalHeaders = csvData.originalHeaders || csvData.headers;
     const present = new Set(originalHeaders);
@@ -541,11 +562,25 @@ export default function DataGrid({
           : [...originalHeaders];
     const idx = baseOrder.indexOf(field);
     if (idx === -1) return;
-    if (direction === 'up' && idx === 0) return;
-    if (direction === 'down' && idx === baseOrder.length - 1) return;
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    [baseOrder[idx], baseOrder[swapIdx]] = [baseOrder[swapIdx], baseOrder[idx]];
-    setCustomColumnOrder(baseOrder);
+
+    let nextOrder: string[];
+    if (direction === 'top') {
+      if (idx === 0) return;
+      nextOrder = [field, ...baseOrder.filter((f) => f !== field)];
+    } else if (direction === 'bottom') {
+      if (idx === baseOrder.length - 1) return;
+      nextOrder = [...baseOrder.filter((f) => f !== field), field];
+    } else if (direction === 'up') {
+      if (idx === 0) return;
+      nextOrder = [...baseOrder];
+      [nextOrder[idx - 1], nextOrder[idx]] = [nextOrder[idx], nextOrder[idx - 1]];
+    } else {
+      if (idx === baseOrder.length - 1) return;
+      nextOrder = [...baseOrder];
+      [nextOrder[idx], nextOrder[idx + 1]] = [nextOrder[idx + 1], nextOrder[idx]];
+    }
+
+    setCustomColumnOrder(nextOrder);
     setColDirty(true);
   }, [csvData, customColumnOrder, columnOrder]);
 
@@ -575,14 +610,21 @@ export default function DataGrid({
       const mapping = valueMappings?.[field];
       const useYi = yiFields?.has(field);
       const customRenderer = customCellRenderers?.[field];
+      const nowrap = nowrapCellFields?.includes(field) ?? false;
+      const fullHeight = fullHeightCellFields?.includes(field) ?? false;
 
       let formatterProps: Record<string, any> = {};
       if (customRenderer) {
         formatterProps = {
           cellRenderer: customRenderer,
-          autoHeight: true,
-          wrapText: true,
-          ...(cellStyleByField?.[field] ? { cellStyle: cellStyleByField[field] } : {}),
+          autoHeight: !nowrap && !fullHeight,
+          wrapText: !nowrap,
+          ...(fullHeight ? { cellClass: 'ag-cell-full-height' } : {}),
+          cellStyle: {
+            ...(nowrap ? { whiteSpace: 'nowrap' as const, overflow: 'visible' } : {}),
+            ...(fullHeight ? { height: '100%', padding: 0 } : {}),
+            ...(cellStyleByField?.[field] ?? {}),
+          },
         };
       } else if (mapping) {
         formatterProps = {
@@ -657,7 +699,7 @@ export default function DataGrid({
     }
 
     return defs;
-  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, columnWidthByField, cellStyleByField, pinnedLeftFields]);
+  }, [csvData, columnAfter, columnOrder, customColumnOrder, fieldLabelMap, hiddenFields, valueMappings, yiFields, customCellRenderers, uniformColumnWidth, columnWidthByField, cellStyleByField, nowrapCellFields, fullHeightCellFields, pinnedLeftFields]);
 
   // 默认列配置
   const defaultColDef = useMemo(() => ({
@@ -950,7 +992,10 @@ export default function DataGrid({
             </div>
           </div> */}
 
-          <div className="pointer-events-none absolute right-2 top-2 z-30 flex flex-row items-center gap-2">
+          <div
+            className="pointer-events-none absolute z-30 flex flex-row items-center gap-2"
+            style={{ top: 'calc(100% - 41px)', left: 19 }}
+          >
             <div className="relative pointer-events-auto" ref={colSelectorRef}>
               <Button
                 variant="outline"
@@ -962,7 +1007,7 @@ export default function DataGrid({
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
               {colSelectorOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-72 max-h-96 flex flex-col">
+                <div className="absolute left-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-72 max-h-96 flex flex-col">
                   <div className="p-2 border-b border-gray-100 flex gap-1">
                     <input
                       type="text"
@@ -1011,7 +1056,16 @@ export default function DataGrid({
                             {(fieldLabelMap?.[col.field] || col.headerName.split('\n')[0])}
                             <span className="text-gray-400 ml-1">{col.field}</span>
                           </span>
-                          <span className="ml-auto inline-flex items-center gap-1">
+                          <span className="ml-auto inline-flex shrink-0 items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveField(col.field, 'top'); }}
+                              className="text-gray-500 hover:text-gray-800"
+                              title="置顶"
+                              aria-label="置顶"
+                            >
+                              <ChevronsUp className="h-3.5 w-3.5" />
+                            </button>
                             <button
                               type="button"
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveField(col.field, 'up'); }}
@@ -1029,6 +1083,15 @@ export default function DataGrid({
                               aria-label="下移"
                             >
                               <ArrowDown className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveField(col.field, 'bottom'); }}
+                              className="text-gray-500 hover:text-gray-800"
+                              title="置底"
+                              aria-label="置底"
+                            >
+                              <ChevronsDown className="h-3.5 w-3.5" />
                             </button>
                           </span>
                         </label>

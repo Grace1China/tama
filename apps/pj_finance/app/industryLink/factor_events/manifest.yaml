@@ -1,0 +1,69 @@
+meta:
+  id: factor_events
+  label: 产业链因子事件库
+  version: 0.1.0
+  storage: jsonl
+  updated_at: 2026-06-15
+
+files:
+  raw_messages:
+    path: data/raw_messages.jsonl
+    schema: schemas/raw_message.schema.json
+    primary_key: id
+    unique_keys:
+    - raw_hash
+  events:
+    path: data/events.jsonl
+    schema: schemas/factor_event.schema.json
+    primary_key: id
+    unique_keys:
+    - dedupe_key
+    foreign_keys:
+    - field: raw_message_id
+      references: raw_messages.id
+  impacts:
+    path: data/impacts.jsonl
+    schema: schemas/factor_event_impact.schema.json
+    primary_key: id
+    foreign_keys:
+    - field: event_id
+      references: events.id
+
+enums:
+  direction:
+  - positive
+  - negative
+  - neutral
+  - mixed
+  status:
+  - pending
+  - confirmed
+  - rejected
+  - archived
+  event_type:
+  - guidance_up
+  - guidance_down
+  - price_breakout
+  - price_pullback
+  - supply_disruption
+  - supply_recovery
+  - demand_validation
+  - demand_weakness
+  - policy_support
+  - policy_tightening
+  - inventory_cycle_up
+  - inventory_cycle_down
+  - manual_note
+
+taxonomy_refs:
+  factor_dir: ../factor_taxonomy/factors
+  chain_dir: ../taxonomies
+  impact_sub_lane_rule: impacts.sub_lane_title must exactly match taxonomy second-level title
+
+collection:
+  channels: collection_channels.yaml
+  enabled_channels:
+  - llm_web_search
+  - deepseek_candidates
+  - manual
+  - cninfo_disclosure

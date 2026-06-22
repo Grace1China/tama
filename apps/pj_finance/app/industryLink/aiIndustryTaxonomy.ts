@@ -1,10 +1,8 @@
 /**
- * AI 产业链泳道 YAML 解析与运行时只读常量
- * - 数据结构见 ai_industry_taxonomy.yaml
+ * 产业链泳道 YAML 解析工具
  */
 
 import YAML from 'yaml';
-import taxonomyYamlRaw from './ai_industry_taxonomy.yaml';
 
 /** 与 IndustryChainBoard、产业链节点 category 配色对齐 */
 export type AISegmentTier = 'Upstream' | 'Midstream' | 'Downstream';
@@ -328,7 +326,7 @@ function isNestedSubLaneMap(val: unknown): boolean {
   return entries.every(([, v]) => parseSubLaneBlock(v) != null);
 }
 
-const TAXONOMY_META_KEYS = new Set(['version', 'name', 'description', 'lanes']);
+const TAXONOMY_META_KEYS = new Set(['version', 'name', 'description', 'meta', 'lanes']);
 
 function taxonomyContentEntries(record: Record<string, unknown>): [string, unknown][] {
   return Object.entries(record).filter(([k]) => !TAXONOMY_META_KEYS.has(k));
@@ -583,20 +581,10 @@ export function parseIndustryTaxonomyYaml(raw: string): AIIndustryTaxonomyFile {
   throw new Error('产业链 taxonomy YAML: 未知根类型');
 }
 
-export const AI_INDUSTRY_TAXONOMY: AIIndustryTaxonomyFile =
-  typeof taxonomyYamlRaw === 'string'
-    ? parseIndustryTaxonomyYaml(taxonomyYamlRaw)
-    : parseIndustryTaxonomyYaml(String(taxonomyYamlRaw));
-
-/** 扁平：第二层子泳道数量（与 React Flow 条带行数对应） */
-export function countAISubLanes(): number {
-  return AI_INDUSTRY_TAXONOMY.lanes.reduce((n, lane) => n + lane.sub_lanes.length, 0);
-}
-
-/** 扁平：所有公司 id→节点，便于校验证 relations.target_id */
-export function companyById(): Map<string, AICompanyNode> {
+/** 所有公司 id→节点，便于校验证 relations.target_id */
+export function companyById(taxonomy: AIIndustryTaxonomyFile): Map<string, AICompanyNode> {
   const m = new Map<string, AICompanyNode>();
-  for (const lane of AI_INDUSTRY_TAXONOMY.lanes) {
+  for (const lane of taxonomy.lanes) {
     for (const sub of lane.sub_lanes) {
       for (const c of sub.companies) {
         m.set(c.id, c);
@@ -607,9 +595,11 @@ export function companyById(): Map<string, AICompanyNode> {
 }
 
 /** 展开所有定向关联边（来源公司 id → 目标 id）供后续画连线 */
-export function listCompanyRelationEdges(): { from_id: string; to_id: string; relation_zh: string }[] {
+export function listCompanyRelationEdges(
+  taxonomy: AIIndustryTaxonomyFile,
+): { from_id: string; to_id: string; relation_zh: string }[] {
   const edges: { from_id: string; to_id: string; relation_zh: string }[] = [];
-  const known = companyById();
+  const known = companyById(taxonomy);
   for (const [, c] of known) {
     for (const r of c.relations ?? []) {
       if (!r?.target_id) continue;

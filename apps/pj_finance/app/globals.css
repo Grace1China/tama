@@ -125,6 +125,19 @@ a {
   border-radius: 0 !important;
 }
 
+/* 自定义渲染列（如股票基本信息 K 线）占满行高 */
+.embed-flat-grid .ag-cell-full-height,
+.embed-flat-grid .ag-cell-full-height .ag-cell-wrapper,
+.embed-flat-grid .ag-cell-full-height .ag-cell-value {
+  height: 100%;
+}
+.embed-flat-grid .ag-cell-full-height .ag-cell-wrapper,
+.embed-flat-grid .ag-cell-full-height .ag-cell-value {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .loading {
   text-align: center;
   padding: 40px;

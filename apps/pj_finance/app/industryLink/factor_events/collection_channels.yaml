@@ -1,0 +1,120 @@
+meta:
+  id: factor_event_collection_channels
+  label: 因子事件原始消息采集渠道
+  version: 0.1.0
+  updated_at: 2026-06-15
+
+channels:
+- id: llm_web_search
+  label: 大模型联网搜索
+  enabled: true
+  maturity: ready
+  output: data/raw_messages.jsonl
+  prompt: prompts/llm_web_search_raw_messages.md
+  script: scripts/append_raw_messages_jsonl.mjs
+  source_value: llm_web_search
+  description: 使用元宝、ChatGPT、Perplexity 等带联网搜索能力的大模型，按提示词搜索最新消息，并输出 raw_messages JSONL。
+  input:
+  - factor_id
+  - query_scope
+  - lookback_window
+  - max_items
+  advantages:
+  - 不需要先自建新闻爬虫、RSS、研报源和反爬处理。
+  - 适合快速覆盖最新新闻、公告解读、海外公司 capex、商品供需和政策线索。
+  requirements:
+  - 每条消息必须给出 source_url 或可追溯出处。
+  - content 只存摘要和关键事实，不存大段原文。
+  - 输出后仍需人工抽查，避免搜索摘要误读或来源质量不足。
+  dedupe_basis:
+  - source
+  - source_url
+  - title
+  - published_at
+  - content
+
+- id: deepseek_candidates
+  label: DeepSeek 候选消息
+  enabled: true
+  maturity: ready
+  output: candidates/{factor_id}_raw_messages.candidates.jsonl
+  prompt: prompts/deepseek_candidate_raw_messages.md
+  script: scripts/collect_deepseek_candidates.mjs
+  source_value: deepseek_candidates
+  description: 使用 DeepSeek API 按因子提示词生成候选 raw_messages。候选结果不直接入库，需由 Codex/人工联网验证来源后再导入正式 raw_messages。
+  input:
+  - factor_id
+  - query_scope
+  - lookback_window
+  - max_items
+  dependencies:
+  - DEEPSEEK_API_KEY
+  requirements:
+  - DeepSeek 输出必须包含 source_url 或明确出处线索。
+  - Codex 验证前不要直接写入 data/raw_messages.jsonl。
+  limitation:
+  - DeepSeek API 本身按标准 Chat API 调用；若未另接搜索服务，不应假定它拥有实时联网搜索。
+  - 适合生成候选线索、搜索关键词、结构化摘要；最终事实和链接需要二次验证。
+
+- id: manual
+  label: 手动录入
+  enabled: true
+  maturity: ready
+  output: data/raw_messages.jsonl
+  script: scripts/append_raw_message.mjs
+  source_value: manual
+  description: 用于临时输入新闻、研报摘要、会议纪要、电话会要点、聊天中整理出的线索。
+  dedupe_basis:
+  - source
+  - source_url
+  - title
+  - published_at
+  - content
+
+- id: cninfo_disclosure
+  label: 巨潮公告标题
+  enabled: true
+  maturity: ready
+  output: data/raw_messages.jsonl
+  script: scripts/collect_cninfo_disclosures.mjs
+  source_value: cninfo_disclosure
+  description: 通过项目已有的巨潮 p_info3085 接口采集单个 A 股公司的公告标题和披露日期。
+  input:
+  - ts_code
+  - scode
+  limitation:
+  - 当前先采集公告标题与原始字段，不下载 PDF 正文。
+  - 更适合捕捉定期报告、重大事项、订单、投资、产能、回购等公告触发信号。
+
+- id: tushare_news
+  label: Tushare 新闻/公告/研报
+  enabled: false
+  maturity: planned
+  output: data/raw_messages.jsonl
+  source_value: tushare_news
+  description: 可用于采集 A 股公告、新闻、研报或资讯类接口，取决于本地 TUSHARE_TOKEN 权限。
+  dependencies:
+  - TUSHARE_TOKEN
+  - tushare Python package
+  note: 接入前需要先做接口权限冒烟测试，再决定具体 API 和字段映射。
+
+- id: rss_news
+  label: RSS/网站新闻
+  enabled: false
+  maturity: planned
+  output: data/raw_messages.jsonl
+  source_value: rss_news
+  description: 可接公开 RSS 或指定财经新闻站点列表，适合宏观、商品、海外 AI capex 等消息。
+  dependencies:
+  - feed list
+  - network access
+  note: 需要先确定白名单来源，避免低质量噪音进入事件池。
+
+- id: research_summary
+  label: 研报摘要/本地文件
+  enabled: false
+  maturity: planned
+  output: data/raw_messages.jsonl
+  source_value: research_summary
+  description: 可把人工整理的研报摘要、PDF 摘要或 Markdown 笔记转为 raw_messages。
+  note: 建议只存摘要和出处，不直接沉淀大段版权文本。

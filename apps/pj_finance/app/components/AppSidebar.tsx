@@ -39,6 +39,7 @@ const categories = [
   { id: 'cashflowStatement', name: '现金流量表', path: '/cashflowStatement', icon: FileText },
   { id: 'ths_index', name: '同花顺指数', path: '/ths_index', icon: BarChart3 },
   { id: 'sw2021', name: '申万行业分类2021', path: '/sw2021', icon: FolderTree },
+  { id: 'swIndustry', name: '申万行业分析', path: '/swIndustry', icon: TrendingUp },
   { id: 'tuShare', name: 'TuShare 目录', path: '/tuShare', icon: FolderTree },
   { id: 'holdings', name: '持仓看板', path: '/holdings', icon: Briefcase },
   { id: 'approval', name: '调仓审批', path: '/approval', icon: ClipboardCheck },

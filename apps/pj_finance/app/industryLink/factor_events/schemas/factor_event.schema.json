@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FactorEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "factor_id",
+    "raw_message_id",
+    "event_type",
+    "title",
+    "summary",
+    "direction",
+    "strength",
+    "confidence",
+    "detected_at",
+    "status",
+    "dedupe_key"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^evt_[0-9]{8}_[a-z0-9_]+_[a-zA-Z0-9]+$" },
+    "factor_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "raw_message_id": { "type": "string", "pattern": "^raw_[0-9]{8}_[a-zA-Z0-9]+$" },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "guidance_up",
+        "guidance_down",
+        "price_breakout",
+        "price_pullback",
+        "supply_disruption",
+        "supply_recovery",
+        "demand_validation",
+        "demand_weakness",
+        "policy_support",
+        "policy_tightening",
+        "inventory_cycle_up",
+        "inventory_cycle_down",
+        "manual_note"
+      ]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "direction": { "type": "string", "enum": ["positive", "negative", "neutral", "mixed"] },
+    "strength": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "confidence": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "event_date": { "type": "string" },
+    "detected_at": { "type": "string" },
+    "status": { "type": "string", "enum": ["pending", "confirmed", "rejected", "archived"] },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text"],
+        "properties": {
+          "text": { "type": "string" },
+          "source_url": { "type": "string" },
+          "metric": { "type": "string" },
+          "value": { "type": ["string", "number"] }
+        }
+      }
+    },
+    "dedupe_key": { "type": "string", "minLength": 8 },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

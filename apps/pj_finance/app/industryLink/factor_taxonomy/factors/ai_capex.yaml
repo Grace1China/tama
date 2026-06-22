@@ -1,0 +1,75 @@
+id: ai_capex
+label: AI Capex
+group: ai_infrastructure
+aliases:
+- AI资本开支
+- 云厂商资本开支
+- 智算中心投资
+type: demand_capex
+unit: 亿元/亿美元、同比增速、资本开支指引
+direction: 上行通常利好AI算力、光通信、电力设备、散热、存储和铜需求；下修会压制高估值算力链弹性。
+definition: 全球云厂商、互联网平台、运营商和企业为AI训练、推理、数据中心和网络基础设施投入的资本开支强度。
+observables:
+- 海外云厂商季度资本开支、AI基础设施订单和下一财年capex指引
+- 国内运营商、互联网平台、智算中心招标与服务器集采节奏
+- GPU、AI服务器、交换机、光模块、UPS、变压器和液冷订单能见度
+- 数据中心上电指标、机柜交付、PUE约束和电力接入周期
+transmission:
+- step: 资本开支预算上修
+  impact: 云厂商和智算中心扩大GPU集群、网络设备、电力和散热投资
+- step: 设备订单放量
+  impact: AI服务器、光模块、交换机、电源、液冷、存储和PCB进入业绩兑现期
+- step: 大宗材料消耗提升
+  impact: 电网接入、变压器、母线、线缆和铜箔等环节拉动铜需求
+beneficiaries:
+- chain: optical_communication
+  label: 光通信产业链
+  positive_sub_lanes:
+  - 光芯片与激光器
+  - 高速光模块
+  - AI数据中心光互连
+  sensitivity: 高
+- chain: ai_storage
+  label: AI存储产业链
+  positive_sub_lanes:
+  - DRAM_HBM与内存接口
+  - NAND_Flash与存储主控
+  - 存储材料与封装基板
+  sensitivity: 中高
+- chain: transformer_power_equipment
+  label: 变压器与电力设备产业链
+  positive_sub_lanes:
+  - AIDC与高可靠供配电
+  - 大型电力变压器与特高压
+  - 配电变压器与区域电网
+  sensitivity: 中高
+- chain: edge_ai_thermal
+  label: AI散热产业链
+  positive_sub_lanes:
+  - VC均热板与热管模组
+  - 导热界面材料TIM
+  - AIPC与轻薄高性能终端
+  sensitivity: 中高
+- chain: copper
+  label: 铜产业链
+  positive_sub_lanes:
+  - 铜矿资源与伴生金属
+  - 电网与AIDC用铜
+  - 半导体与AI硬件用铜
+  sensitivity: 中
+pressure_segments:
+- 高估值但订单兑现慢的主题标的
+- 与AI capex关联弱、只靠概念映射的设备或材料公司
+- 资本开支下修时库存高、扩产激进的中游制造环节
+signal_rules:
+- signal: 海外云厂商capex连续两个季度上修
+  interpretation: 算力链订单可见度提升，偏利好服务器、光模块、电力和散热
+- signal: GPU供应瓶颈缓解但网络、电力交付成为瓶颈
+  interpretation: 弹性可能从芯片主线扩散到交换机、光模块、电力设备和液冷
+- signal: 资本开支增速高但收入增速放缓
+  interpretation: 需要关注云厂商投资回报压力和后续capex可持续性
+risks:
+- AI应用变现不及预期导致资本开支指引下修
+- GPU、先进制程、HBM或网络芯片供应限制
+- 数据中心电力接入、能耗指标和海外出口管制约束
+- 产业链提前扩产造成价格竞争和毛利率下行

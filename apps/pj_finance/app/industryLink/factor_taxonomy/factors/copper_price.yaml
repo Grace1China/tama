@@ -1,0 +1,61 @@
+id: copper_price
+label: 铜价
+group: commodities
+aliases:
+- LME铜
+- SHFE铜
+- 电解铜价格
+type: commodity_price
+unit: 元/吨、美元/吨
+direction: 上行通常利好资源端和库存收益，抬升下游用铜成本；下行则压缩矿山利润但缓解加工制造成本。
+definition: 铜作为电气化、AI数据中心、电网、新能源和制造业共同使用的基础金属，其价格反映供需缺口、库存周期、美元流动性和风险偏好。
+observables:
+- LME铜、沪铜主力合约和长江有色电解铜现货价格
+- LME、SHFE、COMEX铜库存与保税区库存
+- 铜精矿TC/RC、矿山扰动、冶炼检修和废铜供应
+- 电网投资、空调家电、新能源车、光伏风电和AI数据中心用铜需求
+transmission:
+- step: 铜价上涨
+  impact: 铜矿资源公司收入和毛利弹性放大，冶炼企业可能获得库存收益
+- step: 精矿偏紧且TC下行
+  impact: 矿端议价能力增强，冶炼端加工利润承压
+- step: 下游补库或需求验证
+  impact: 铜加工、线缆、连接器和PCB铜箔订单改善，但毛利取决于传导能力
+beneficiaries:
+- chain: copper
+  label: 铜产业链
+  positive_sub_lanes:
+  - 铜矿资源与伴生金属
+  - 铜冶炼与电解铜
+  - 铜合金与精密铜材
+  - 锂电铜箔与电子铜箔
+  - 电网与AIDC用铜
+  sensitivity: 高
+- chain: transformer_power_equipment
+  label: 变压器与电力设备产业链
+  positive_sub_lanes:
+  - 铜铝绕组与绝缘材料
+  - 电网主网与特高压建设
+  - AIDC与高可靠供配电
+  sensitivity: 中
+- chain: optical_communication
+  label: 光通信产业链
+  positive_sub_lanes:
+  - AI数据中心光互连
+  sensitivity: 中
+pressure_segments:
+- 铜加工费无法同步上调的加工企业
+- 电线电缆、家电和汽车零部件中铜成本占比较高的制造商
+- 高库存且铜价快速下跌时存在跌价损失的贸易和加工环节
+signal_rules:
+- signal: 铜价上涨且全球显性库存继续下降
+  interpretation: 更偏供需驱动，资源端弹性较强
+- signal: 铜价上涨但TC快速下行
+  interpretation: 矿端强于冶炼端，冶炼利润需谨慎
+- signal: 铜价上涨但下游开工率走弱
+  interpretation: 可能由流动性或资金交易驱动，产业链利润传导不稳
+risks:
+- 全球制造业需求走弱或地产链拖累基本金属需求
+- 美元走强、利率上行或风险偏好下降压制商品价格
+- 铜矿供应恢复、再生铜放量或库存回升
+- 下游成本传导失败导致加工企业毛利承压

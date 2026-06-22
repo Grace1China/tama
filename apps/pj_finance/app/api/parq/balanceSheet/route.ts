@@ -6,6 +6,7 @@ import { promisify } from 'util';
 // @ts-ignore - DuckDB may not have TypeScript definitions
 import * as duckdb from 'duckdb';
 import { mapHeadersToChinese } from '../../csv/[category]/route';
+import { resolveBalanceSheetParquet } from '@/app/lib/tuShareParquetPath';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,33 @@ export const dynamic = 'force-dynamic';
   };
 
 const gzip = promisify(zlib.gzip);
+
+function formatDateZhCN(value: unknown): string {
+  if (value == null) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+  const m = raw.match(/^(\d{4})(\d{2})(\d{2})$/);
+  const normalized = m ? `${m[1]}-${m[2]}-${m[3]}` : raw;
+  try {
+    const dt = new Date(normalized.replace(/-/g, '/'));
+    if (Number.isNaN(dt.getTime())) return raw;
+    return Intl.DateTimeFormat('zh-CN').format(dt);
+  } catch {
+    return raw;
+  }
+}
+
+function mapBalanceSheetRow(row: Record<string, any>, headers: string[]): Record<string, any> {
+  const record: Record<string, any> = {};
+  headers.forEach(header => {
+    if (header === 'end_date' || header === 'ann_date' || header === 'f_ann_date') {
+      record[header] = formatDateZhCN(row[header]);
+    } else {
+      record[header] = row[header];
+    }
+  });
+  return record;
+}
 
 /**
  * 使用DuckDB查询parquet文件
@@ -158,12 +186,13 @@ async function queryParquetFile(
           // 字符串字段列表
           const stringFields = ['ts_code', 'report_type', 'comp_type', 'end_type', 'update_flag'];
           
-          // 构建年季表达式 - 使用 end_date
-          const yearExpr = `YEAR(end_date)`;
+          // end_date 为 YYYYMMDD 字符串，需 STRPTIME 解析后再取年/月
+          const endDateParsed = `STRPTIME(end_date, '%Y%m%d')`;
+          const yearExpr = `YEAR(${endDateParsed})`;
           const quarterExpr = `CASE 
-            WHEN MONTH(end_date) <= 3 THEN 1
-            WHEN MONTH(end_date) <= 6 THEN 2
-            WHEN MONTH(end_date) <= 9 THEN 3
+            WHEN MONTH(${endDateParsed}) <= 3 THEN 1
+            WHEN MONTH(${endDateParsed}) <= 6 THEN 2
+            WHEN MONTH(${endDateParsed}) <= 9 THEN 3
             ELSE 4
           END`;
 
@@ -245,14 +274,7 @@ async function queryParquetFile(
               // 获取列名（从第一行数据中提取）
               const originalHeaders = Object.keys(rows[0]);
               const chineseHeaders = mapHeadersToChinese(originalHeaders, 'balanceSheet') || originalHeaders;
-              // 转换数据格式
-              const data = rows.map(row => {
-                const record: Record<string, any> = {};
-                originalHeaders.forEach(header => {
-                  record[header] = row[header];
-                });
-                return record;
-              });
+              const data = rows.map(row => mapBalanceSheetRow(row, originalHeaders));
 
               conn.close();
               db.close();
@@ -269,9 +291,27 @@ async function queryParquetFile(
           });
         });
       } else {
-        // 非分组模式
-        countSql = `SELECT COUNT(*) AS cnt ${fromClause} ${whereClause}`;
-        dataSql = `SELECT * ${fromClause} ${whereClause} ${orderByClause} ${limitOffsetClause}`;
+        // 非分组模式：按 update_flag 去重，日期列保持 VARCHAR 避免 DuckDB 日期绑定异常
+        const dedupedFromClause = `FROM (
+          SELECT *
+          FROM (
+            SELECT
+              *,
+              ROW_NUMBER() OVER (
+                PARTITION BY ts_code, end_date, report_type
+                ORDER BY COALESCE(CAST(update_flag AS INTEGER), 0) DESC
+              ) AS __rn
+            ${fromClause} ${whereClause}
+          )
+          WHERE __rn = 1
+        ) AS t`;
+
+        countSql = `SELECT COUNT(*) AS cnt ${dedupedFromClause}`;
+        dataSql = `SELECT * REPLACE (
+          CAST(ann_date AS VARCHAR) AS ann_date,
+          CAST(end_date AS VARCHAR) AS end_date,
+          CAST(f_ann_date AS VARCHAR) AS f_ann_date
+        ) ${dedupedFromClause} ${orderByClause} ${limitOffsetClause}`;
         
         console.log(`[Parquet API] 执行count查询: ${countSql}`);
         console.log(`[Parquet API] 执行分页查询(page=${safePage}, size=${safeSize}): ${dataSql}`);
@@ -308,21 +348,9 @@ async function queryParquetFile(
               return;
             }
 
-            // 获取列名（从第一行数据中提取）
-            const originalHeaders = Object.keys(rows[0]);
+            const originalHeaders = Object.keys(rows[0]).filter(h => h !== '__rn');
             const chineseHeaders = mapHeadersToChinese(originalHeaders, 'balanceSheet') || originalHeaders;
-            // 转换数据格式
-            const data = rows.map(row => {
-              const record: Record<string, any> = {};
-              originalHeaders.forEach(header => {
-                if (header === 'end_date' || header === 'ann_date') {
-                  record[header] = Intl.DateTimeFormat("zh-CN").format(new Date(row[header]));
-                } else {
-                  record[header] = row[header];
-                }
-              });
-              return record;
-            });
+            const data = rows.map(row => mapBalanceSheetRow(row, originalHeaders));
 
             conn.close();
             db.close();
@@ -353,7 +381,7 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     
     // 构建parquet文件路径
-    const parquetPath = path.join(process.cwd(), 'temp/tuShare/balanceSheet_vip.parquet');
+    const parquetPath = resolveBalanceSheetParquet();
 
     // 获取分页参数
     const page = Number(url.searchParams.get('page') ?? '1');
@@ -373,7 +401,7 @@ export async function GET(request: NextRequest) {
     // 构建响应
     const response = {
       category: 'balanceSheet',
-      filename: 'balanceSheet_vip',
+      filename: 'balancesheet_vip_ss',
       headers: queryData.headers,
       originalHeaders: queryData.originalHeaders,
       data: queryData.data,

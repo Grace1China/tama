@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RawMessage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "source", "title", "fetched_at", "raw_hash"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^raw_[0-9]{8}_[a-zA-Z0-9]+$" },
+    "source": { "type": "string" },
+    "source_url": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "content": { "type": "string" },
+    "published_at": { "type": "string" },
+    "fetched_at": { "type": "string" },
+    "raw_hash": { "type": "string", "minLength": 8 },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

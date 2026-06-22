@@ -5,7 +5,25 @@ import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import DataGrid, { type CSVData } from '../components/DataGrid';
-import { CninfoStockRecentInfoModal } from '../components/CninfoStockRecentInfoModal';
+import { StockDetailModal } from '../components/StockDetailModal';
+import { StockBasicInfoCell } from '../components/StockBasicInfoCell';
+import type { KlineBar } from '../components/StockBasicMiniKLine';
+import {
+  buildChainContextMapsFromSubLaneLink,
+  extractChainCompaniesFromTaxonomy,
+  lookupChainContext,
+  parseTaxonomyYamlContent,
+  type ChainCompanyContext,
+  type ChainContextMaps,
+  type SubLaneDeepLinkContext,
+} from '../industryLink/chainCompanyContext';
+import type { IndustryTaxonomyRegistryItem } from '../industryLink/taxonomyRegistryTypes';
+import {
+  SW_TREE_ROW_COLS,
+  formatSwChgPct,
+  swChgClass,
+  useSwIndexPriceSnapshots,
+} from '../lib/swIndexPriceSnapshots';
 import { formatDateYYMM } from '@/lib/dateFormat';
 import { metrics } from '@/lib/metrics/definitions';
 import { ChevronDown, X } from 'lucide-react';
@@ -67,6 +85,9 @@ function buildStockResolveIndex(rows: StockListRow[]): StockResolveIndex {
   return { bySymbol, byNormalizedName, rowsListed };
 }
 
+/** 条件输入框：股票代码/名称分隔符（空格、斜杠、中英文逗号/分号、换行等） */
+const STOCK_INPUT_SEP_RE = /[\s/,，;；\n\r\t|、]+/;
+
 /**
  * 顶部「开始对比」单段输入：优先完整 ts_code；否则 6 位数字代码；否则按股票名称（全名精确，或全表唯一包含匹配）。
  */
@@ -90,6 +111,38 @@ function resolveStockToken(token: string, idx: StockResolveIndex): { ok: string 
   if (hits.length > 1)
     return { err: `${trimmed}（名称含关键词 ${hits.length} 只，请写全名或代码）` };
   return { err: trimmed };
+}
+
+/** 解析顶部输入框文本为 ts_code 列表 */
+function resolveInputTextToCodes(
+  text: string,
+  idx: StockResolveIndex | null,
+  stockListLoading: boolean,
+  stockListLoadError: string | null,
+): { codes: string[]; errors: string[]; blockingError: string | null } {
+  if (stockListLoading) {
+    return { codes: [], errors: [], blockingError: '股票基础列表加载中，请稍后再点「开始对比」。' };
+  }
+  if (!idx) {
+    return {
+      codes: [],
+      errors: [],
+      blockingError: stockListLoadError ?? '股票基础列表不可用，无法按名称或 6 位代码解析。',
+    };
+  }
+  const parts = text
+    .split(STOCK_INPUT_SEP_RE)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const resolved: string[] = [];
+  const errors: string[] = [];
+  for (const token of parts) {
+    const r = resolveStockToken(token, idx);
+    if ('ok' in r) resolved.push(r.ok);
+    else errors.push(r.err);
+  }
+  const codes = Array.from(new Set(resolved.map((s) => s.trim().toUpperCase())));
+  return { codes, errors, blockingError: null };
 }
 
 /** 图轴为 26Q1 时展开为 2026Q1，便于 tooltip 首行展示 */
@@ -123,6 +176,21 @@ type StockInfo = {
   name: string;
   area: string;
   industry: string;
+};
+
+/** 行情快照：价格/涨跌幅来自 qfqDir（前复权），市值/PE/PB 来自 daily_basic 最近一条 */
+type MarketSnapshot = {
+  trade_date: string | null;
+  close: number | null;
+  total_mv_yi: number | null;
+  pe: number | null;
+  pb: number | null;
+  returns: {
+    d1: number | null;
+    d5: number | null;
+    d20: number | null;
+    d60: number | null;
+  };
 };
 
 type MetricChart = {
@@ -182,6 +250,8 @@ type ContrastRow = {
   loading: boolean;
   error?: string;
   stockInfo: StockInfo | null;
+  marketSnapshot: MarketSnapshot | null;
+  klineBars: KlineBar[];
   charts: Record<MetricKey, MetricChart>;
 };
 
@@ -189,7 +259,10 @@ type ContrastRow = {
 type HotConceptsCellState = { state: 'loading' } | { state: 'ready'; summary: string } | { state: 'error'; err: string };
 
 /** 附带热点：更新走 displayGridData，避免 customCellRenderers 随热点变化触发整表 columnDefs 重建（闪动） */
-type StockBasicGridValue = ContrastRow & { __hotConcepts?: HotConceptsCellState };
+type StockBasicGridValue = ContrastRow & {
+  __hotConcepts?: HotConceptsCellState;
+  __chainContext?: ChainCompanyContext;
+};
 
 function hotConceptsEqual(a: HotConceptsCellState | undefined, b: HotConceptsCellState | undefined): boolean {
   if (a === b) return true;
@@ -674,18 +747,18 @@ const IncomeChartCell = memo(function IncomeChartCell({
             <XAxis dataKey="xLabel" tick={{ fill: '#94a3b8', fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis
               yAxisId="left"
-              tick={{ fill: '#94a3b8', fontSize: 10 }}
+              tick={{ fill: '#60a5fa', fontSize: 10 }}
               width={52}
               tickFormatter={formatYi}
-              label={{ value: '营收/现金流入(亿)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontSize: 10 } }}
+              label={{ value: '营收/现金流入(亿)', angle: -90, position: 'insideLeft', style: { fill: '#60a5fa', fontSize: 10 } }}
             />
             <YAxis
               yAxisId="right"
-              tick={{ fill: '#cbd5e1', fontSize: 10 }}
+              tick={{ fill: '#ef4444', fontSize: 10 }}
               width={52}
               orientation="right"
               tickFormatter={formatYi}
-              label={{ value: '利润/经营净额/自由现金(亿)', angle: 90, position: 'insideRight', style: { fill: '#cbd5e1', fontSize: 10 } }}
+              label={{ value: '利润/经营净额/自由现金(亿)', angle: 90, position: 'insideRight', style: { fill: '#ef4444', fontSize: 10 } }}
             />
             <Tooltip content={compactTooltip} />
             <Line yAxisId="left" type="monotone" dataKey="s0" stroke="#1e40af" strokeWidth={2} dot={false} name={chart.labels[0] ?? '滚动总营收 TTM'} />
@@ -1170,8 +1243,34 @@ function swNodeKey(node: SwTreeNode): string {
   return `${node.level}-${node.industryCode}-${node.indexCode}`;
 }
 
+/** 收集树中所有可展开节点 key（有子节点） */
+function collectExpandableSwNodeKeys(nodes: SwTreeNode[]): string[] {
+  const keys: string[] = [];
+  const walk = (list: SwTreeNode[]) => {
+    for (const n of list) {
+      if ((n.children?.length ?? 0) > 0) {
+        keys.push(swNodeKey(n));
+        walk(n.children);
+      }
+    }
+  };
+  walk(nodes);
+  return keys;
+}
+
+/** 与 taxonomyRegistry.server 一致的 id 规范化 */
+function normalizeTaxonomyId(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
 export default function IncomeContrastPage() {
   const [inputText, setInputText] = useState('603983.SH, 600519.SH');
+  /** 产业链 deep link 传入的子泳道名称（仅展示） */
+  const [urlLaneLabel, setUrlLaneLabel] = useState<string | null>(null);
   /** null：加载中；[]：加载失败或无数据 */
   const [stockListRows, setStockListRows] = useState<StockListRow[] | null>(null);
   const [stockListLoadError, setStockListLoadError] = useState<string | null>(null);
@@ -1192,7 +1291,9 @@ export default function IncomeContrastPage() {
   const [treeFilter, setTreeFilter] = useState('');
   const [memberMatchedNodeCodes, setMemberMatchedNodeCodes] = useState<Set<string>>(new Set());
   const [memberSearchLoading, setMemberSearchLoading] = useState(false);
-  const [treePaneWidth, setTreePaneWidth] = useState(320);
+  const [treePaneWidth, setTreePaneWidth] = useState(480);
+  const { snapshots: swIndexSnapshots, loading: swIndexSnapshotsLoading, tradeDate: swIndexTradeDate } =
+    useSwIndexPriceSnapshots();
   const dragSplitRef = useRef<{ startX: number; startW: number } | null>(null);
   /** 左侧申万节点 industry_growth（%）；顶部「开始对比」会清空 */
   const industryGrowthPctRef = useRef<number | null>(null);
@@ -1207,12 +1308,14 @@ export default function IncomeContrastPage() {
     setBalanceHistoryModal({ title, chart: chartPayload });
   }, []);
 
-  /** 巨潮 p_info3085 最近公开信息弹窗：点击证券代码打开 */
-  const [cninfoRecentTsCode, setCninfoRecentTsCode] = useState<string | null>(null);
-  const closeCninfoRecentModal = useCallback(() => setCninfoRecentTsCode(null), []);
-  const openCninfoRecentModal = useCallback((tsCode: string) => {
+  /** 证券详情弹窗（巨潮 / K线 / 三大报表） */
+  const [stockDetail, setStockDetail] = useState<{ tsCode: string; stockName?: string } | null>(null);
+  const closeStockDetailModal = useCallback(() => setStockDetail(null), []);
+  const openStockDetailModal = useCallback((tsCode: string, stockName?: string) => {
     const c = String(tsCode ?? '').trim().toUpperCase();
-    if (c) setCninfoRecentTsCode(c);
+    if (!c) return;
+    const name = String(stockName ?? '').trim();
+    setStockDetail({ tsCode: c, stockName: name || undefined });
   }, []);
 
   /** 基于定期报告标题归纳的热点概念（键为 tsCode 大写） */
@@ -1250,14 +1353,153 @@ export default function IncomeContrastPage() {
 
   /** 顶部控制区（代码输入、指标过滤）展开/收起，收起后下方分栏占满剩余高度 */
   const [controlPanelExpanded, setControlPanelExpanded] = useState(true);
+  /** 产业链 deep link：隐藏左侧行业树，表格占满内容区 */
+  const [gridLayoutFullscreen, setGridLayoutFullscreen] = useState(false);
 
   /** 仅勾选时对已加载行请求公告热点归纳（走本地大模型，较慢）；不勾选则不请求 */
   const [hotConceptsLlmEnabled, setHotConceptsLlmEnabled] = useState(false);
+
+  const urlBootstrapRef = useRef(false);
+  const autoComparePendingRef = useRef(false);
+  const autoCompareDoneRef = useRef(false);
+  const hasTaxonomyParamRef = useRef(false);
+  const taxonomyBootstrapReadyRef = useRef(false);
+  /** 子泳道 stocks deep link 携带的产业链上下文（确定性/弹性等） */
+  const subLaneDeepLinkRef = useRef<SubLaneDeepLinkContext | null>(null);
+  /** taxonomy 解析出的对比输入文本（避免 setState 与 auto 对比竞态） */
+  const taxonomyCompareTextRef = useRef<string | null>(null);
+  const [taxonomyBootstrapVersion, setTaxonomyBootstrapVersion] = useState(0);
+  const [chainContextMaps, setChainContextMaps] = useState<ChainContextMaps | null>(null);
+  const [taxonomyBootstrapError, setTaxonomyBootstrapError] = useState<string | null>(null);
 
   const stockResolveIdx = useMemo(() => {
     if (stockListRows === null || stockListRows.length === 0) return null;
     return buildStockResolveIndex(stockListRows);
   }, [stockListRows]);
+
+  // 产业链页 deep link：?stocks=...&auto=1&lane=子泳道名&gridFull=1；或 ?taxonomy=...&auto=1
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('gridFull') === '1') {
+      setGridLayoutFullscreen(true);
+      setControlPanelExpanded(false);
+    }
+    const taxonomyRaw = params.get('taxonomy')?.trim();
+    if (taxonomyRaw) {
+      const taxonomyId = normalizeTaxonomyId(taxonomyRaw);
+      hasTaxonomyParamRef.current = true;
+      const lane = params.get('lane')?.trim();
+      if (lane) setUrlLaneLabel(lane);
+      if (params.get('auto') === '1') autoComparePendingRef.current = true;
+
+      let cancelled = false;
+      fetch('/api/industry-link/taxonomies')
+        .then(async (res) => {
+          const payload = (await res.json().catch(() => ({}))) as {
+            taxonomies?: IndustryTaxonomyRegistryItem[];
+            error?: string;
+          };
+          if (!res.ok) throw new Error(payload.error ?? `读取产业链失败 (${res.status})`);
+          const item = (payload.taxonomies ?? []).find((t) => normalizeTaxonomyId(t.id) === taxonomyId);
+          if (!item) throw new Error(`未找到产业链 taxonomy: ${taxonomyRaw}`);
+          return item;
+        })
+        .then((item) => {
+          if (cancelled) return;
+          const tax = parseTaxonomyYamlContent(item.content);
+          const extracted = extractChainCompaniesFromTaxonomy(tax);
+          if (extracted.inputTokens.length === 0) {
+            throw new Error('该产业链 YAML 中暂无企业');
+          }
+          const compareText = extracted.inputTokens.join(',');
+          taxonomyCompareTextRef.current = compareText;
+          setInputText(compareText);
+          setChainContextMaps({
+            byTsCode: extracted.contextByTsCode,
+            byCompanyName: extracted.contextByCompanyName,
+          });
+          setUrlLaneLabel((prev) => prev ?? item.label);
+          setTaxonomyBootstrapError(null);
+          taxonomyBootstrapReadyRef.current = true;
+          setTaxonomyBootstrapVersion((v) => v + 1);
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return;
+          const msg = err instanceof Error ? err.message : String(err);
+          setTaxonomyBootstrapError(msg);
+          autoComparePendingRef.current = false;
+          autoCompareDoneRef.current = true;
+          taxonomyBootstrapReadyRef.current = true;
+          setTaxonomyBootstrapVersion((v) => v + 1);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (urlBootstrapRef.current) return;
+    const stocks = params.get('stocks')?.trim();
+    if (!stocks) return;
+    urlBootstrapRef.current = true;
+    setInputText(stocks);
+    const lane = params.get('lane')?.trim();
+    if (lane) setUrlLaneLabel(lane);
+    const subCertainty = params.get('subCertainty')?.trim() || undefined;
+    const subElasticity = params.get('subElasticity')?.trim() || undefined;
+    const coCtxRaw = params.get('coCtx')?.trim() || undefined;
+    if (lane || subCertainty || subElasticity || coCtxRaw) {
+      subLaneDeepLinkRef.current = {
+        lane: lane ?? '',
+        subCertainty,
+        subElasticity,
+        coCtxRaw,
+      };
+    }
+    if (params.get('auto') === '1') autoComparePendingRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (hasTaxonomyParamRef.current) return;
+    const sub = subLaneDeepLinkRef.current;
+    if (!sub || codes.length === 0) return;
+    setChainContextMaps(buildChainContextMapsFromSubLaneLink(sub, codes, stockListRows));
+  }, [codes, stockListRows]);
+
+  const applyCompareFromInput = useCallback(
+    (text: string, opts?: { clearIndustryGrowth?: boolean }) => {
+      if (opts?.clearIndustryGrowth !== false) industryGrowthPctRef.current = null;
+      setCompareParseError(null);
+      const { codes: parsed, errors, blockingError } = resolveInputTextToCodes(
+        text,
+        stockResolveIdx,
+        stockListRows === null,
+        stockListLoadError,
+      );
+      if (blockingError) {
+        setCompareParseError(blockingError);
+        return false;
+      }
+      if (errors.length > 0) {
+        setCompareParseError(`以下未能解析（代码与名称可混写，空格/斜杠/逗号/分号等分隔）：${errors.join('、')}`);
+      }
+      setCodes(parsed);
+      setAutoPinByRoeTargetKey(parsed.length ? buildCodesKey(parsed) : null);
+      return parsed.length > 0;
+    },
+    [stockListRows, stockResolveIdx, stockListLoadError],
+  );
+
+  useEffect(() => {
+    if (!autoComparePendingRef.current || autoCompareDoneRef.current) return;
+    if (stockListRows === null) return;
+    if (hasTaxonomyParamRef.current && !taxonomyBootstrapReadyRef.current) return;
+    autoCompareDoneRef.current = true;
+    autoComparePendingRef.current = false;
+    const text = taxonomyCompareTextRef.current ?? inputText;
+    applyCompareFromInput(text);
+  }, [stockListRows, inputText, applyCompareFromInput, taxonomyBootstrapVersion]);
 
   // 股票列表（用于顶部输入按名称解析 ts_code）
   useEffect(() => {
@@ -1353,6 +1595,17 @@ export default function IncomeContrastPage() {
         .filter((n): n is SwTreeNode => n != null);
     return walk(swTree);
   }, [swTree, treeFilter, memberMatchedNodeCodes]);
+
+  const swTreeExpandableKeys = useMemo(() => collectExpandableSwNodeKeys(swTree), [swTree]);
+
+  const swTreeAllExpanded = useMemo(() => {
+    if (swTreeExpandableKeys.length === 0) return false;
+    return swTreeExpandableKeys.every((k) => expandedNodes.has(k));
+  }, [swTreeExpandableKeys, expandedNodes]);
+
+  const toggleExpandAllSwTree = useCallback(() => {
+    setExpandedNodes(swTreeAllExpanded ? new Set() : new Set(swTreeExpandableKeys));
+  }, [swTreeAllExpanded, swTreeExpandableKeys]);
 
   const fetchNodeStockCodes = useCallback(async (node: SwTreeNode): Promise<string[]> => {
     const size = 500;
@@ -1455,6 +1708,12 @@ export default function IncomeContrastPage() {
     const hasChildren = (node.children?.length ?? 0) > 0;
     const expanded = expandedNodes.has(key);
     const selected = treeSelection?.kind === 'node' && treeSelection.indexCode === node.indexCode;
+    const snap = swIndexSnapshots.get(String(node.indexCode ?? '').toUpperCase());
+    const rets = snap?.returns;
+    const displayName =
+      node.industry_growth != null && Number.isFinite(node.industry_growth)
+        ? `${node.name}-${node.industry_growth}%`
+        : node.name;
 
     return (
       <div key={key}>
@@ -1483,17 +1742,22 @@ export default function IncomeContrastPage() {
           </button>
           <button
             type="button"
-            className="flex-1 text-left px-2 py-1.5 text-sm text-gray-800 hover:bg-gray-50/80 rounded-r-md truncate"
+            className={`min-w-0 flex-1 text-left px-1 py-1.5 text-sm text-gray-800 hover:bg-gray-50/80 rounded-r-md ${SW_TREE_ROW_COLS}`}
             onClick={() => { void onSelectNode(node); }}
-            title={`${node.name} ${node.indexCode}${node.industry_growth != null && Number.isFinite(node.industry_growth) ? ` 行业增速 ${node.industry_growth}%（分类表）` : ''}`}
+            title={`${displayName} ${node.indexCode}${node.industry_growth != null && Number.isFinite(node.industry_growth) ? ` 行业增速 ${node.industry_growth}%（分类表）` : ''}`}
           >
-            <span className="font-medium">
-              {node.industry_growth != null && Number.isFinite(node.industry_growth)
-                ? `${node.name}-${node.industry_growth}%`
-                : node.name}
+            <span className="truncate font-medium">{displayName}</span>
+            <span className="truncate text-[11px] text-gray-500">{node.indexCode}</span>
+            <span className={`text-[11px] tabular-nums text-right ${swChgClass(rets?.d1)}`}>
+              {formatSwChgPct(rets?.d1)}
             </span>
-            <span className="text-xs text-gray-400 ml-1">{node.indexCode}</span>
-            <span className="text-xs text-gray-400 ml-1">({node.memberCount})</span>
+            <span className={`text-[11px] tabular-nums text-right ${swChgClass(rets?.d5)}`}>
+              {formatSwChgPct(rets?.d5)}
+            </span>
+            <span className={`text-[11px] tabular-nums text-right ${swChgClass(rets?.d20)}`}>
+              {formatSwChgPct(rets?.d20)}
+            </span>
+            <span className="text-[11px] text-gray-400 text-right tabular-nums">({node.memberCount})</span>
           </button>
         </div>
         {hasChildren && expanded && (
@@ -1503,7 +1767,7 @@ export default function IncomeContrastPage() {
         )}
       </div>
     );
-  }, [expandedNodes, onSelectNode, treeSelection]);
+  }, [expandedNodes, onSelectNode, swIndexSnapshots, treeSelection]);
 
   const columnOrder = useMemo(
     () => ['pin_top', 'stock_basic', ...METRIC_COLUMNS.map((c) => c.key)],
@@ -1541,52 +1805,20 @@ export default function IncomeContrastPage() {
     const stockRenderer = (params: any) => {
       const row = params?.value as StockBasicGridValue | undefined;
       if (!row) return <div className="text-xs text-gray-400">—</div>;
-      const hot = row.__hotConcepts;
       const seq = (params.node?.rowIndex ?? 0) + 1;
       return (
-        <div className="flex gap-2 py-1">
-          <div className="shrink-0 pt-0.5 w-6 text-right text-xs tabular-nums text-gray-400">{seq}</div>
-          <div className="min-w-0 flex-1 space-y-1">
-          <button
-            type="button"
-            className="block w-full text-left font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
-            onClick={(e) => {
-              e.stopPropagation();
-              openCninfoRecentModal(row.tsCode);
-            }}
-          >
-            {row.tsCode}
-          </button>
-          {row.loading ? (
-            <div className="text-xs text-gray-500">加载中...</div>
-          ) : row.error ? (
-            <div className="text-xs text-red-500">{row.error}</div>
-          ) : row.stockInfo ? (
-            <>
-              <div className="text-xs text-gray-700">名称: {row.stockInfo.name}</div>
-              <div className="text-xs text-gray-700">所在地: {row.stockInfo.area}</div>
-              <div className="text-xs text-gray-700">行业: {row.stockInfo.industry}</div>
-            </>
-          ) : (
-            <div className="text-xs text-gray-500">无股票信息</div>
-          )}
-          {!row.loading &&
-            (hot?.state === 'loading' ? (
-              <div className="text-[11px] text-gray-500">热点概念：归纳中…</div>
-            ) : hot?.state === 'error' ? (
-              <div
-                className="max-w-[min(100%,22rem)] text-[11px] leading-snug text-amber-800 break-words line-clamp-6"
-                title={hot.err}
-              >
-                热点：{hot.err}
-              </div>
-            ) : hot?.state === 'ready' ? (
-              <div className="text-[11px] leading-snug text-violet-950" title={hot.summary}>
-                热点：{hot.summary || '—'}
-              </div>
-            ) : null)}
-          </div>
-        </div>
+        <StockBasicInfoCell
+          seq={seq}
+          tsCode={row.tsCode}
+          loading={row.loading}
+          error={row.error}
+          stockInfo={row.stockInfo}
+          marketSnapshot={row.marketSnapshot}
+          klineBars={row.klineBars ?? []}
+          hot={row.__hotConcepts}
+          chainContext={row.__chainContext}
+          onOpenDetail={openStockDetailModal}
+        />
       );
     };
 
@@ -1613,7 +1845,7 @@ export default function IncomeContrastPage() {
     }
     return renderers;
     // 热点不进依赖：由行数据 __hotConcepts（displayGridData）刷新，避免每只股票 loading/ready 都换 renderers 引用导致 DataGrid 整表重建列
-  }, [pinnedCodes, toggleRowPin, openBalanceHistoryModal, openCninfoRecentModal]);
+  }, [pinnedCodes, toggleRowPin, openBalanceHistoryModal, openStockDetailModal]);
 
   const rowsRef = useRef<ContrastRow[]>([]);
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1637,6 +1869,8 @@ export default function IncomeContrastPage() {
       tsCode,
       loading: true,
       stockInfo: null,
+      marketSnapshot: null,
+      klineBars: [],
       charts: emptyCharts(),
     }));
     rowsRef.current = initialRows;
@@ -1854,35 +2088,8 @@ export default function IncomeContrastPage() {
   }, [autoPinByRoeTargetKey, codes, rows]);
 
   const startCompare = useCallback(() => {
-    industryGrowthPctRef.current = null;
-    setCompareParseError(null);
-    if (stockListRows === null) {
-      setCompareParseError('股票基础列表加载中，请稍后再点「开始对比」。');
-      return;
-    }
-    if (!stockResolveIdx) {
-      setCompareParseError(stockListLoadError ?? '股票基础列表不可用，无法按名称或 6 位代码解析。');
-      return;
-    }
-
-    const parts = inputText
-      .split(/[,\n，]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const resolved: string[] = [];
-    const errors: string[] = [];
-    for (const token of parts) {
-      const r = resolveStockToken(token, stockResolveIdx);
-      if ('ok' in r) resolved.push(r.ok);
-      else errors.push(r.err);
-    }
-    const parsed = Array.from(new Set(resolved.map((s) => s.trim().toUpperCase())));
-    if (errors.length > 0) {
-      setCompareParseError(`以下未能解析（代码与名称可混写，逗号或换行分隔）：${errors.join('、')}`);
-    }
-    setCodes(parsed);
-    setAutoPinByRoeTargetKey(parsed.length ? buildCodesKey(parsed) : null);
-  }, [inputText, stockListRows, stockResolveIdx, stockListLoadError]);
+    applyCompareFromInput(inputText);
+  }, [inputText, applyCompareFromInput]);
 
   const orderedFilteredRows = useMemo(() => {
     if (pinnedCodes.size === 0) return filteredRows;
@@ -1910,6 +2117,7 @@ export default function IncomeContrastPage() {
     const nextData: ContrastGridRow[] = orderedFilteredRows.map((row) => {
       const code = row.tsCode.trim().toUpperCase();
       const hot = hotConceptsByCode[code];
+      const chainCtx = lookupChainContext(code, row.stockInfo?.name, chainContextMaps);
       const metricData = Object.fromEntries(METRIC_COLUMNS.map((c) => [c.key, row.charts[c.key]])) as Record<MetricKey, MetricChart>;
       const pin = row.tsCode.toUpperCase();
       const prevRow = rowCache.get(code);
@@ -1920,8 +2128,11 @@ export default function IncomeContrastPage() {
           sb.loading === row.loading &&
           sb.error === row.error &&
           sb.stockInfo === row.stockInfo &&
+          sb.marketSnapshot === row.marketSnapshot &&
+          sb.klineBars === row.klineBars &&
           sb.charts === row.charts;
         const hotSame = hotConceptsEqual(sb.__hotConcepts, hot);
+        const chainSame = sb.__chainContext === chainCtx;
         const pinSame = prevRow.pin_top === pin;
         let metricsSame = true;
         for (const c of METRIC_COLUMNS) {
@@ -1930,12 +2141,16 @@ export default function IncomeContrastPage() {
             break;
           }
         }
-        if (baseSame && hotSame && pinSame && metricsSame) {
+        if (baseSame && hotSame && chainSame && pinSame && metricsSame) {
           nextRowCache.set(code, prevRow);
           return prevRow;
         }
       }
-      const built = { pin_top: pin, stock_basic: { ...row, __hotConcepts: hot }, ...metricData } as ContrastGridRow;
+      const built = {
+        pin_top: pin,
+        stock_basic: { ...row, __hotConcepts: hot, __chainContext: chainCtx },
+        ...metricData,
+      } as ContrastGridRow;
       nextRowCache.set(code, built);
       return built;
     });
@@ -1965,7 +2180,9 @@ export default function IncomeContrastPage() {
     };
     displayGridStableRef.current = csv;
     return csv;
-  }, [orderedFilteredRows, columnOrder, hotConceptsByCode]);
+  }, [orderedFilteredRows, columnOrder, hotConceptsByCode, chainContextMaps]);
+
+  const gridRowHeight = chainContextMaps ? 360 : 320;
 
   return (
     <div className="box-border flex max-h-full min-h-0 min-w-0 max-w-full flex-1 basis-0 flex-col gap-4 overflow-hidden p-4">
@@ -1984,7 +2201,9 @@ export default function IncomeContrastPage() {
             aria-hidden
           />
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-semibold text-gray-900">条件</h2>
+            <h2 className="text-base font-semibold text-gray-900">
+              条件{urlLaneLabel ? ` · ${urlLaneLabel}` : ''}
+            </h2>
             {!controlPanelExpanded && (
               <p className="mt-0.5 truncate text-xs text-gray-500">
                 {progressText}
@@ -2002,7 +2221,7 @@ export default function IncomeContrastPage() {
             className="space-y-3 border-t border-gray-100 px-4 pb-4 pt-2"
           >
             <p className="text-sm text-gray-600">
-              左侧行业树点击枝干（一级/二级行业）或叶子（个股）即可在右侧加载对比；亦可手动输入股票代码或股票名称（逗号、中文逗号或换行分隔）后点「开始对比」。指标过滤作用于右侧已加载数据。
+              左侧行业树点击枝干（一级/二级行业）或叶子（个股）即可在右侧加载对比；亦可手动输入股票代码或股票名称（空格、斜杠、逗号、分号或换行分隔）后点「开始对比」。指标过滤作用于右侧已加载数据。
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Input
@@ -2011,7 +2230,7 @@ export default function IncomeContrastPage() {
                   setInputText(e.target.value);
                   if (compareParseError) setCompareParseError(null);
                 }}
-                placeholder="例如：600519.SH，贵州茅台　或　600519, 海天味业（逗号，换行分隔）"
+                placeholder="例如：600519.SH 贵州茅台 / 600519; 海天味业（空格、斜杠、逗号、分号、换行均可分隔）"
                 className="min-w-[24rem] flex-1"
                 aria-invalid={!!compareParseError}
               />
@@ -2028,6 +2247,7 @@ export default function IncomeContrastPage() {
                 <p className="text-red-600">股票列表不可用：{stockListLoadError}</p>
               )}
               {compareParseError && <p className="text-amber-700">{compareParseError}</p>}
+              {taxonomyBootstrapError && <p className="text-red-600">产业链加载失败：{taxonomyBootstrapError}</p>}
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -2056,13 +2276,26 @@ export default function IncomeContrastPage() {
 
       {/* 左侧行业树 + 可拖动分隔条 + 右侧表格：限高避免树展开撑高整页，滚动在左右栏内部 */}
       <div className="flex min-h-0 min-w-0 max-h-full w-full flex-1 basis-0 flex-row overflow-hidden rounded-lg border border-gray-200 bg-white">
+        {!gridLayoutFullscreen && (
         <div
           className="flex min-h-0 max-h-full min-w-0 shrink-0 flex-col self-stretch overflow-hidden border-r border-gray-100 bg-white"
           style={{ width: treePaneWidth }}
         >
           <div className="p-3 border-b border-gray-100 shrink-0 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-gray-900 shrink min-w-0">申万行业分类</h3>
+              <div className="flex min-w-0 items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900 shrink-0">申万行业分类</h3>
+                <button
+                  type="button"
+                  onClick={toggleExpandAllSwTree}
+                  disabled={swTree.length === 0 || treeLoading}
+                  className="shrink-0 rounded border border-gray-300 px-1.5 py-0.5 text-[11px] text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  title={swTreeAllExpanded ? '收起全部申万指数节点' : '展开全部申万指数节点'}
+                  aria-pressed={swTreeAllExpanded}
+                >
+                  {swTreeAllExpanded ? '收起全部' : '展开全部'}
+                </button>
+              </div>
               <label className="flex shrink-0 items-center gap-1.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -2102,11 +2335,31 @@ export default function IncomeContrastPage() {
                 {treeLoading ? '加载分类树中...' : treeLoadError ? treeLoadError : '无匹配结果'}
               </div>
             ) : (
-              industryTree.map((n) => renderTreeNode(n))
+              <>
+                <div
+                  className={`sticky top-0 z-10 mb-1 border-b border-gray-100 bg-white py-1 pl-7 pr-1 text-[10px] text-gray-500 ${SW_TREE_ROW_COLS}`}
+                >
+                  <span>名称</span>
+                  <span>代码</span>
+                  <span className="text-right">1D</span>
+                  <span className="text-right">5D</span>
+                  <span className="text-right">20D</span>
+                  <span className="text-right">支数</span>
+                </div>
+                {swIndexSnapshotsLoading && (
+                  <div className="px-2 pb-1 text-[10px] text-gray-400">加载指数涨跌幅...</div>
+                )}
+                {!swIndexSnapshotsLoading && swIndexTradeDate && (
+                  <div className="px-2 pb-1 text-[10px] text-gray-400">行情截至 {swIndexTradeDate}</div>
+                )}
+                {industryTree.map((n) => renderTreeNode(n))}
+              </>
             )}
           </div>
         </div>
+        )}
 
+        {!gridLayoutFullscreen && (
         <div
           role="separator"
           aria-orientation="vertical"
@@ -2114,6 +2367,7 @@ export default function IncomeContrastPage() {
           onMouseDown={startSplitDrag}
           className="w-1.5 shrink-0 cursor-col-resize bg-gray-100 hover:bg-sky-300 active:bg-sky-400 border-x border-gray-200 transition-colors"
         />
+        )}
 
         <div className="flex min-h-0 min-w-0 max-h-full flex-1 basis-0 flex-col overflow-hidden bg-white">
           {codes.length === 0 ? (
@@ -2136,13 +2390,15 @@ export default function IncomeContrastPage() {
                   ...METRIC_COLUMNS.map((c) => [c.key, c.label]),
                 ])}
                 customCellRenderers={cellRenderers}
-                rowHeight={240}
+                rowHeight={gridRowHeight}
                 gridHeight="100%"
                 uniformColumnWidth={360}
-                columnWidthByField={{ pin_top: 72, stock_basic: 228 }}
+                columnWidthByField={{ pin_top: 72, stock_basic: 360 }}
+                cellStyleByField={{ stock_basic: { overflow: 'visible', padding: '2px 4px' } }}
                 pinnedLeftFields={['pin_top', 'stock_basic']}
                 clientSortResetKey={gridClientSortResetKey}
                 animateRows={false}
+                autoFullscreen={gridLayoutFullscreen}
                 getRowId={(params: any) => params.data?.stock_basic?.tsCode ?? String(params.rowIndex)}
               />
             </div>
@@ -2150,10 +2406,11 @@ export default function IncomeContrastPage() {
         </div>
       </div>
 
-      <CninfoStockRecentInfoModal
-        open={cninfoRecentTsCode != null}
-        tsCode={cninfoRecentTsCode ?? ''}
-        onClose={closeCninfoRecentModal}
+      <StockDetailModal
+        open={stockDetail != null}
+        tsCode={stockDetail?.tsCode ?? ''}
+        stockName={stockDetail?.stockName}
+        onClose={closeStockDetailModal}
       />
 
       {balanceHistoryModal &&
@@ -2264,6 +2521,45 @@ const BALANCE_METRICS = [
   'oth_cur_liab', 'lt_borr', 'oth_ncl',
 ].join(',');
 
+function parseKlineBars(rows: unknown[]): KlineBar[] {
+  return rows
+    .map((r: any) => {
+      const open = parseNum(r?.open);
+      const high = parseNum(r?.high);
+      const low = parseNum(r?.low);
+      const close = parseNum(r?.close);
+      const vol = parseNum(r?.vol);
+      if (open == null || high == null || low == null || close == null || vol == null) return null;
+      return {
+        trade_date: String(r?.trade_date ?? ''),
+        open,
+        high,
+        low,
+        close,
+        vol,
+      };
+    })
+    .filter((b): b is KlineBar => b != null)
+    .reverse();
+}
+
+/** 按 trade_date 合并 daily_basic 换手率（日期统一为 YYYYMMDD 数值键） */
+function mergeKlineTurnoverFromDaily(bars: KlineBar[], dailyRows: unknown[]): KlineBar[] {
+  const turnoverByDate = new Map<number, number>();
+  for (const r of dailyRows as any[]) {
+    const d = parseDateNum(r?.trade_date);
+    const rate = parseNum(r?.turnover_rate);
+    if (!Number.isFinite(d) || rate == null) continue;
+    turnoverByDate.set(d, rate);
+  }
+  if (turnoverByDate.size === 0) return bars;
+  return bars.map((b) => {
+    const d = parseDateNum(b.trade_date);
+    const rate = Number.isFinite(d) ? turnoverByDate.get(d) : undefined;
+    return rate == null ? b : { ...b, turnover_rate: rate };
+  });
+}
+
 async function buildContrastRow(tsCode: string, industryGrowthPct?: number | null): Promise<ContrastRow> {
   const charts = emptyCharts();
   try {
@@ -2274,12 +2570,16 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
     const metricsUrl =
       useIndustryDcf ? `${metricsBase}&industry_growth_pct=${encodeURIComponent(String(industryGrowthPct))}` : metricsBase;
 
-    const [stockJson, allMetricsJson, balanceJson, dailyJson, mainBizJson] = await Promise.all([
+    const [stockJson, allMetricsJson, balanceJson, dailyJson, mainBizJson, priceJson, klineJson, klineDailyJson] = await Promise.all([
       fetchJson(`/api/csv/stockList?ts_code=${enc}`),
       fetchJson(metricsUrl),
       fetchJson(`/api/metrics?stock=${enc}&metrics=${BALANCE_METRICS}&from=2014Q1&to=2026Q4`),
       fetchJson(`/api/parq/daily_basic?ts_code=${enc}&page=1&size=1000000&sortField=trade_date&sortDir=asc&start_date=20140101`),
       fetchJson(`/api/parq/finaMainbzVip?ts_code=${enc}&page=1&size=1000000&sortField=end_date&sortDir=asc&start_date=20140101`),
+      fetchJson(`/api/industry-link/price-snapshots?ts_codes=${enc}`),
+      fetchJson(`/api/parq/qfqDir?ts_code=${enc}&page=1&size=60&sortField=trade_date&sortDir=desc`),
+      // 完整 daily_basic 比 ss 快照更新，用于 K 线 tip 换手率（ss 可能停在较早日期）
+      fetchJson(`/api/parq/daily_basic?ts_code=${enc}&page=1&size=90&sortField=trade_date&sortDir=desc&variant=full`),
     ]);
 
     const stockRow = Array.isArray(stockJson?.data) ? stockJson.data[0] : null;
@@ -2297,6 +2597,28 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
     const dailyRows = (Array.isArray(dailyJson?.data) ? dailyJson.data : [])
       .slice()
       .sort((a: any, b: any) => parseDateNum(a?.trade_date) - parseDateNum(b?.trade_date));
+    const latestDaily = dailyRows.at(-1);
+    const priceRow = Array.isArray(priceJson?.rows) ? priceJson.rows[0] : null;
+    const marketSnapshot: MarketSnapshot = {
+      trade_date: priceRow?.trade_date ? String(priceRow.trade_date) : null,
+      close: parseNum(priceRow?.close),
+      total_mv_yi: (() => {
+        const n = parseNum(latestDaily?.total_mv);
+        return n == null ? null : n / 1e4;
+      })(),
+      pe: parseNum(latestDaily?.pe_ttm) ?? parseNum(latestDaily?.pe),
+      pb: parseNum(latestDaily?.pb),
+      returns: {
+        d1: parseNum(priceRow?.returns?.d1),
+        d5: parseNum(priceRow?.returns?.d5),
+        d20: parseNum(priceRow?.returns?.d20),
+        d60: parseNum(priceRow?.returns?.d60),
+      },
+    };
+    const klineBars = mergeKlineTurnoverFromDaily(
+      parseKlineBars(Array.isArray(klineJson?.data) ? klineJson.data : []),
+      Array.isArray(klineDailyJson?.data) ? klineDailyJson.data : [],
+    );
     const mainBizRows = (Array.isArray(mainBizJson?.data) ? mainBizJson.data : [])
       .slice()
       .sort((a: any, b: any) => parseDateNum(a?.end_date) - parseDateNum(b?.end_date));
@@ -2909,8 +3231,16 @@ async function buildContrastRow(tsCode: string, industryGrowthPct?: number | nul
       };
     }
 
-    return { tsCode, loading: false, stockInfo, charts };
+    return { tsCode, loading: false, stockInfo, marketSnapshot, klineBars, charts };
   } catch (e) {
-    return { tsCode, loading: false, stockInfo: null, error: e instanceof Error ? e.message : '拉取失败', charts };
+    return {
+      tsCode,
+      loading: false,
+      stockInfo: null,
+      marketSnapshot: null,
+      klineBars: [],
+      error: e instanceof Error ? e.message : '拉取失败',
+      charts,
+    };
   }
 }

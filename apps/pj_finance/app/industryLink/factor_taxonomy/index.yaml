@@ -1,0 +1,23 @@
+meta:
+  id: factor_taxonomy
+  label: 产业链因子库
+  version: 0.1.0
+  description: 横向驱动因子字典，用于把宏观变量、商品价格和资本开支变化映射到产业链环节、公司盈利弹性与风险暴露。
+  updated_at: 2026-06-15
+
+groups:
+- id: ai_infrastructure
+  label: AI基础设施
+  order: 10
+  factors:
+  - id: ai_capex
+    file: factors/ai_capex.yaml
+
+- id: commodities
+  label: 大宗商品
+  order: 20
+  factors:
+  - id: copper_price
+    file: factors/copper_price.yaml
+  - id: gold_price
+    file: factors/gold_price.yaml

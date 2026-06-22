@@ -1,0 +1,47 @@
+id: gold_price
+label: 金价
+group: commodities
+aliases:
+- 伦敦金
+- COMEX黄金
+- 上海金
+type: commodity_price
+unit: 元/克、美元/盎司
+direction: 上行通常利好黄金资源公司和贵金属库存收益，也反映避险、实际利率下行或央行购金需求；对黄金珠宝消费可能形成成本压力。
+definition: 黄金作为贵金属、避险资产和央行储备资产，其价格由实际利率、美元指数、地缘风险、央行购金、通胀预期和金融市场波动共同驱动。
+observables:
+- COMEX黄金、伦敦金现货和上海金价格
+- 美国实际利率、美元指数、降息预期和通胀预期
+- 全球央行购金、黄金ETF持仓和投机净多头
+- 地缘政治风险、信用风险和金融市场波动率
+transmission:
+- step: 金价上涨
+  impact: 黄金矿山公司单位利润扩张，资源储量和产量弹性被重估
+- step: 实际利率下行或央行购金持续
+  impact: 金价趋势更具持续性，资源股估值和盈利预期同步改善
+- step: 金价快速上行
+  impact: 金饰终端需求可能受价格压制，珠宝零售以品牌和周转能力分化
+beneficiaries:
+- chain: precious_metals
+  label: 贵金属产业链
+  positive_sub_lanes:
+  - 黄金矿山与资源开发
+  - 银铂钯与伴生贵金属资源
+  - 贵金属冶炼与综合回收
+  sensitivity: 高
+pressure_segments:
+- 以黄金原料成本为主、终端提价滞后的珠宝零售
+- 套保比例过高导致金价上行弹性被削弱的矿企
+- 金价高位回落时存在库存跌价风险的渠道商
+signal_rules:
+- signal: 金价上涨且实际利率下行
+  interpretation: 金价趋势基础更强，黄金资源股弹性更可靠
+- signal: 金价上涨且央行购金持续
+  interpretation: 中长期配置需求支撑增强
+- signal: 金价上涨但ETF持仓下降、美元走强
+  interpretation: 可能由短期避险或地缘事件驱动，持续性需验证
+risks:
+- 实际利率回升、美元走强或降息预期落空
+- 地缘风险缓和导致避险溢价回落
+- 黄金矿企成本上升、品位下降或海外矿山政策风险
+- 金价高位抑制珠宝消费和渠道补库

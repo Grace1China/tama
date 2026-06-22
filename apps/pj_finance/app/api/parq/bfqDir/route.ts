@@ -10,6 +10,34 @@ export const dynamic = 'force-dynamic';
 
 const gzip = promisify(zlib.gzip);
 
+/** YYYYMMDD 或 YYYY-MM-DD → DuckDB DATE 字面量 */
+function toIsoDateLiteral(raw: string): string | null {
+  const t = raw.trim();
+  if (/^\d{8}$/.test(t)) {
+    return `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+    return t;
+  }
+  return null;
+}
+
+/** 返回给前端的 trade_date 统一为 YYYYMMDD */
+function formatTradeDateYmd(v: unknown): string {
+  if (v == null) return '';
+  if (v instanceof Date) {
+    const y = v.getFullYear();
+    const m = String(v.getMonth() + 1).padStart(2, '0');
+    const d = String(v.getDate()).padStart(2, '0');
+    return `${y}${m}${d}`;
+  }
+  const s = String(v).trim();
+  if (/^\d{8}$/.test(s)) return s;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}${m[2]}${m[3]}`;
+  return s;
+}
+
 async function queryParquetFile(
   parquetPath: string,
   query: string,
@@ -52,20 +80,16 @@ async function queryParquetFile(
       }
 
       if (startDate) {
-        const raw = startDate.trim();
-        if (/^\d{8}$/.test(raw)) {
-          conditions.push(`trade_date >= '${raw.replace(/'/g, "''")}'`);
-        } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-          conditions.push(`trade_date >= '${raw.replace(/-/g, '').replace(/'/g, "''")}'`);
+        const iso = toIsoDateLiteral(startDate);
+        if (iso) {
+          conditions.push(`trade_date >= DATE '${iso.replace(/'/g, "''")}'`);
         }
       }
 
       if (endDate) {
-        const raw = endDate.trim();
-        if (/^\d{8}$/.test(raw)) {
-          conditions.push(`trade_date <= '${raw.replace(/'/g, "''")}'`);
-        } else if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-          conditions.push(`trade_date <= '${raw.replace(/-/g, '').replace(/'/g, "''")}'`);
+        const iso = toIsoDateLiteral(endDate);
+        if (iso) {
+          conditions.push(`trade_date <= DATE '${iso.replace(/'/g, "''")}'`);
         }
       }
 
@@ -107,7 +131,8 @@ async function queryParquetFile(
           const data = rows.map((row) => {
             const record: Record<string, any> = {};
             originalHeaders.forEach((header) => {
-              record[header] = row[header];
+              record[header] =
+                header === 'trade_date' ? formatTradeDateYmd(row[header]) : row[header];
             });
             return record;
           });
@@ -129,7 +154,7 @@ export async function GET(request: NextRequest) {
     const supportsGzip = acceptEncoding.includes('gzip');
 
     const url = new URL(request.url);
-    const parquetPath = path.join(process.cwd(), 'temp/tuShare/bfqDir_ss.parquet');
+    const parquetPath = path.join(process.cwd(), 'temp/tuShare/bfqDir.parquet');
 
     if (!fs.existsSync(parquetPath)) {
       return NextResponse.json(

@@ -50,9 +50,15 @@ next-env.d.ts
 # Cache
 .cache/
 /.cache/
+**/__pycache__/
+*.py[cod]
+
+# Local Python environments
+**/.venv*/
 
 # Data (generated)
 /data/bible.json
+apps/pj_finance/app/industryLink/research_logs/
 
 # pj_finance 数据目录：本地为软链接，生产部署后在主机上单独挂载，构建时不参与
 apps/pj_finance/temp

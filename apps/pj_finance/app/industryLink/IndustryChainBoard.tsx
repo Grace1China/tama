@@ -11,6 +11,8 @@ import React, {
   type SetStateAction,
 } from 'react';
 import YAML from 'yaml';
+import { toPng } from 'html-to-image';
+import { Download } from 'lucide-react';
 import ReactFlow, {
   ReactFlowProvider,
   Background,
@@ -31,17 +33,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import aiComputeYamlRaw from './ai_compute_taxonomy.yaml';
-import aiIndustryYamlRaw from './ai_industry_taxonomy.yaml';
-import taoIndustryYamlRaw from './tao_industry_taxonomy.yaml';
-import scQuantumIndustryYamlRaw from './sc_quantum_industry_taxonomy.yaml';
-import commercialSpaceIndustryYamlRaw from './commercial_space_industry_taxonomy.yaml';
-import { AI_COMPUTE_TAXONOMY } from './aiComputeTaxonomy';
-import { COMMERCIAL_SPACE_INDUSTRY_TAXONOMY } from './commercialSpaceIndustryTaxonomy';
-import { SC_QUANTUM_INDUSTRY_TAXONOMY } from './scQuantumIndustryTaxonomy';
-import { TAO_INDUSTRY_TAXONOMY } from './taoIndustryTaxonomy';
 import {
-  AI_INDUSTRY_TAXONOMY,
   buildFlowEdgesFromTaxonomy,
   parseIndustryTaxonomyYaml,
   pricingPowerFromCompanyInfo,
@@ -49,19 +41,15 @@ import {
 } from './aiIndustryTaxonomy';
 import IndustryBoardYamlView from './IndustryBoardYamlView';
 import IndustryNode, { type IndustryNodeData } from './industry';
+import { buildIncomeContrastChainUrl } from './incomeContrastUrl';
 import { tsCodeForCompanyName } from './industryCompanyTsCodes';
 import SwimLaneNode from './SwimLane';
 import { CompanyCardGestureZoom, CompanyCardZoomControls, CompanyCardZoomProvider } from './companyCardZoom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
-/** 顶部 Tab 识别的产业链预设 */
-export type ChainAnalysisPreset =
-  | 'lithium'
-  | 'ai'
-  | 'ai_compute'
-  | 'tao'
-  | 'sc_quantum'
-  | 'commercial_space';
+/** 顶部 Tab 识别的产业链 id（来自 YAML meta.id 或文件名） */
+export type ChainAnalysisPreset = string;
 
 const nodeTypes = { industry: IndustryNode, swimLane: SwimLaneNode };
 
@@ -118,16 +106,9 @@ const NODE_CARD_OUTER_WIDTH_SCREEN = 232;
 const NODE_CARD_OUTER_WIDTH_SCREEN_AI = 220;
 const GAP_X_SCREEN_AI = NODE_CARD_OUTER_WIDTH_SCREEN_AI + 12;
 
-const BOARD_LAYOUT: Record<
-  ChainAnalysisPreset,
-  { gapXScreen: number; nodeOuterWidthScreen: number }
-> = {
-  lithium: { gapXScreen: GAP_X_SCREEN, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN },
-  ai: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
-  ai_compute: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
-  tao: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
-  sc_quantum: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
-  commercial_space: { gapXScreen: GAP_X_SCREEN_AI, nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI },
+const DEFAULT_BOARD_LAYOUT = {
+  gapXScreen: GAP_X_SCREEN_AI,
+  nodeOuterWidthScreen: NODE_CARD_OUTER_WIDTH_SCREEN_AI,
 };
 
 /** 公司卡片距泳道顶部的屏幕像素（默认，无子泳道说明时） */
@@ -139,6 +120,16 @@ function computeSubLaneChildTopScreenPx(info?: Record<string, string>): number {
   let top = CHILD_TOP_SCREEN_PX;
   if (info.产业位置?.trim()) top += 16;
   if (info.确定性?.trim() || info.弹性?.trim()) top += 14;
+  const factorCount = (info.弹性因子 ?? '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean).length;
+  if (factorCount > 0) {
+    top += 24;
+    // 弹性因子换行时（约每行 3 个标签）为公司卡片再让出一行
+    if (factorCount > 3) top += 14;
+    if (factorCount > 6) top += 14;
+  }
   return top;
 }
 /**
@@ -153,7 +144,7 @@ const SWIM_BOARD_VIEWPORT_MAX_CSS = 'min(980px, calc(100vh - 10rem))';
 /** 行内居中时距泳道左右内壁的最小屏幕留白 */
 const ROW_INWARD_PAD_SCREEN_MIN = 32;
 /** 折叠态公司卡片单行占用高度（屏幕像素） */
-const CARD_ROW_HEIGHT_SCREEN_PX = 72;
+const CARD_ROW_HEIGHT_SCREEN_PX = 136;
 /** 换行时行间距（屏幕像素） */
 const CARD_ROW_GAP_Y_SCREEN_PX = 8;
 /** 泳道底部留白（屏幕像素） */
@@ -162,6 +153,116 @@ const LANE_BOTTOM_PAD_SCREEN_PX = 16;
 const ESTIMATED_PANE_WIDTH_PX = 1200;
 
 type BoardCardLayout = { gapXScreen: number; nodeOuterWidthScreen: number };
+
+type PriceSnapshot = NonNullable<IndustryNodeData['priceSnapshot']>;
+type PriceSnapshotMap = Record<string, PriceSnapshot>;
+type AuctionSnapshot = NonNullable<IndustryNodeData['auctionSnapshot']>;
+type AuctionSnapshotMap = Record<string, AuctionSnapshot>;
+type FinancialGrowthSnapshot = NonNullable<IndustryNodeData['financialGrowth']>;
+type FinancialGrowthSnapshotMap = Record<string, FinancialGrowthSnapshot>;
+type FinancialQualitySnapshot = NonNullable<IndustryNodeData['financialQuality']>;
+type FinancialQualitySnapshotMap = Record<string, FinancialQualitySnapshot>;
+
+function normalizeTsCode(code: string | undefined): string | undefined {
+  const c = String(code ?? '').trim().toUpperCase();
+  return c || undefined;
+}
+
+function priceSnapshotForTsCode(
+  tsCode: string | undefined,
+  priceSnapshots: PriceSnapshotMap,
+): PriceSnapshot | undefined {
+  const code = normalizeTsCode(tsCode);
+  return code ? priceSnapshots[code] : undefined;
+}
+
+function auctionSnapshotForTsCode(
+  tsCode: string | undefined,
+  auctionSnapshots: AuctionSnapshotMap,
+): AuctionSnapshot | undefined {
+  const code = normalizeTsCode(tsCode);
+  return code ? auctionSnapshots[code] : undefined;
+}
+
+/** 将行情快照写入已有 industry 节点；布局同步早退时亦须调用 */
+function applyPriceSnapshotsToNodes(nodes: Node[], priceSnapshots: PriceSnapshotMap): Node[] {
+  let changed = false;
+  const next = nodes.map((n) => {
+    if (n.type !== 'industry') return n;
+    const d = n.data as IndustryNodeData;
+    const snap = priceSnapshotForTsCode(d.tsCode, priceSnapshots);
+    const prevJson = JSON.stringify(d.priceSnapshot ?? null);
+    const nextJson = JSON.stringify(snap ?? null);
+    if (prevJson === nextJson) return n;
+    changed = true;
+    return { ...n, data: { ...d, priceSnapshot: snap } };
+  });
+  return changed ? next : nodes;
+}
+
+/** 将集合竞价快照写入已有 industry 节点；布局同步早退时亦须调用 */
+function applyAuctionSnapshotsToNodes(nodes: Node[], auctionSnapshots: AuctionSnapshotMap): Node[] {
+  let changed = false;
+  const next = nodes.map((n) => {
+    if (n.type !== 'industry') return n;
+    const d = n.data as IndustryNodeData;
+    const snap = auctionSnapshotForTsCode(d.tsCode, auctionSnapshots);
+    const prevJson = JSON.stringify(d.auctionSnapshot ?? null);
+    const nextJson = JSON.stringify(snap ?? null);
+    if (prevJson === nextJson) return n;
+    changed = true;
+    return { ...n, data: { ...d, auctionSnapshot: snap } };
+  });
+  return changed ? next : nodes;
+}
+
+function financialGrowthForTsCode(
+  tsCode: string | undefined,
+  financialGrowth: FinancialGrowthSnapshotMap,
+): FinancialGrowthSnapshot | undefined {
+  const code = normalizeTsCode(tsCode);
+  return code ? financialGrowth[code] : undefined;
+}
+
+function financialQualityForTsCode(
+  tsCode: string | undefined,
+  financialQuality: FinancialQualitySnapshotMap,
+): FinancialQualitySnapshot | undefined {
+  const code = normalizeTsCode(tsCode);
+  return code ? financialQuality[code] : undefined;
+}
+
+/** 将财务增长摘要写入已有 industry 节点；布局同步早退时亦须调用 */
+function applyFinancialGrowthToNodes(nodes: Node[], financialGrowth: FinancialGrowthSnapshotMap): Node[] {
+  let changed = false;
+  const next = nodes.map((n) => {
+    if (n.type !== 'industry') return n;
+    const d = n.data as IndustryNodeData;
+    const snap = financialGrowthForTsCode(d.tsCode, financialGrowth);
+    const prevJson = JSON.stringify(d.financialGrowth ?? null);
+    const nextJson = JSON.stringify(snap ?? null);
+    if (prevJson === nextJson) return n;
+    changed = true;
+    return { ...n, data: { ...d, financialGrowth: snap } };
+  });
+  return changed ? next : nodes;
+}
+
+/** 将财务质量摘要写入已有 industry 节点；布局同步早退时亦须调用 */
+function applyFinancialQualityToNodes(nodes: Node[], financialQuality: FinancialQualitySnapshotMap): Node[] {
+  let changed = false;
+  const next = nodes.map((n) => {
+    if (n.type !== 'industry') return n;
+    const d = n.data as IndustryNodeData;
+    const snap = financialQualityForTsCode(d.tsCode, financialQuality);
+    const prevJson = JSON.stringify(d.financialQuality ?? null);
+    const nextJson = JSON.stringify(snap ?? null);
+    if (prevJson === nextJson) return n;
+    changed = true;
+    return { ...n, data: { ...d, financialQuality: snap } };
+  });
+  return changed ? next : nodes;
+}
 
 /** 单行最多可放卡片数（不超出泳道宽） */
 function computeCardsPerRow(
@@ -319,7 +420,7 @@ function tsCodeFromCompanyInfo(
 
 function buildBoardLayersFromTaxonomy(
   tax: AIIndustryTaxonomyFile,
-  nodeIdPrefix: 'aim' | 'aic' | 'lit' | 'tao' | 'scq' | 'csp',
+  nodeIdPrefix: string,
 ): BoardLayer[] {
   const layers: BoardLayer[] = [];
   for (const lane of tax.lanes) {
@@ -336,42 +437,16 @@ function buildBoardLayersFromTaxonomy(
           const info = c.info ?? {};
           const tsCode = tsCodeFromCompanyInfo(info, c.ts_code, c.name);
 
-          if (nodeIdPrefix === 'tao') {
+          if (Object.keys(info).length > 0) {
             return {
               id: `${nodeIdPrefix}-${c.id}`,
               category: lane.tier,
               label: c.name,
-              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
+              pricingPower: pricingPowerFromCompanyInfo(info),
               competitiveAdvantage: '',
               tsCode,
               companyInfo: { ...info },
-              cardDetailVariant: 'tao' as const,
-            };
-          }
-
-          if (nodeIdPrefix === 'scq') {
-            return {
-              id: `${nodeIdPrefix}-${c.id}`,
-              category: lane.tier,
-              label: c.name,
-              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
-              competitiveAdvantage: '',
-              tsCode,
-              companyInfo: { ...info },
-              cardDetailVariant: 'sc_quantum' as const,
-            };
-          }
-
-          if (nodeIdPrefix === 'csp') {
-            return {
-              id: `${nodeIdPrefix}-${c.id}`,
-              category: lane.tier,
-              label: c.name,
-              pricingPower: 'Medium' as IndustryNodeData['pricingPower'],
-              competitiveAdvantage: '',
-              tsCode,
-              companyInfo: { ...info },
-              cardDetailVariant: 'commercial_space' as const,
+              cardDetailVariant: 'taxonomy' as const,
             };
           }
 
@@ -399,25 +474,12 @@ function buildBoardLayersFromTaxonomy(
 }
 
 export function buildBoardLayersForPreset(preset: ChainAnalysisPreset): BoardLayer[] {
-  if (preset === 'lithium') return buildBoardLayersLithium();
-  if (preset === 'ai_compute') return buildBoardLayersFromTaxonomy(AI_COMPUTE_TAXONOMY, 'aic');
-  if (preset === 'tao') return buildBoardLayersFromTaxonomy(TAO_INDUSTRY_TAXONOMY, 'tao');
-  if (preset === 'sc_quantum') return buildBoardLayersFromTaxonomy(SC_QUANTUM_INDUSTRY_TAXONOMY, 'scq');
-  if (preset === 'commercial_space') {
-    return buildBoardLayersFromTaxonomy(COMMERCIAL_SPACE_INDUSTRY_TAXONOMY, 'csp');
-  }
-  return buildBoardLayersFromTaxonomy(AI_INDUSTRY_TAXONOMY, 'aim');
+  return buildBoardLayersLithium();
 }
 
-function nodeIdPrefixForPreset(
-  preset: ChainAnalysisPreset,
-): 'aim' | 'aic' | 'lit' | 'tao' | 'scq' | 'csp' {
-  if (preset === 'ai_compute') return 'aic';
-  if (preset === 'ai') return 'aim';
-  if (preset === 'tao') return 'tao';
-  if (preset === 'sc_quantum') return 'scq';
-  if (preset === 'commercial_space') return 'csp';
-  return 'lit';
+function nodeIdPrefixForTaxonomy(taxonomyId: string): string {
+  const normalized = taxonomyId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return normalized || 'tax';
 }
 
 function buildLithiumDefaultYaml(): string {
@@ -448,29 +510,11 @@ function buildLithiumDefaultYaml(): string {
   return YAML.stringify(categoryMap);
 }
 
-function builtinTaxonomyForPreset(preset: ChainAnalysisPreset): AIIndustryTaxonomyFile {
-  if (preset === 'ai_compute') return AI_COMPUTE_TAXONOMY;
-  if (preset === 'ai') return AI_INDUSTRY_TAXONOMY;
-  if (preset === 'tao') return TAO_INDUSTRY_TAXONOMY;
-  if (preset === 'sc_quantum') return SC_QUANTUM_INDUSTRY_TAXONOMY;
-  if (preset === 'commercial_space') return COMMERCIAL_SPACE_INDUSTRY_TAXONOMY;
-  return parseIndustryTaxonomyYaml(buildLithiumDefaultYaml());
-}
-
-export function defaultYamlTextForPreset(preset: ChainAnalysisPreset): string {
-  if (preset === 'ai') return String(aiIndustryYamlRaw);
-  if (preset === 'ai_compute') return String(aiComputeYamlRaw);
-  if (preset === 'tao') return String(taoIndustryYamlRaw);
-  if (preset === 'sc_quantum') return String(scQuantumIndustryYamlRaw);
-  if (preset === 'commercial_space') return String(commercialSpaceIndustryYamlRaw);
-  return buildLithiumDefaultYaml();
-}
-
 function buildBoardLayersFromYamlTaxonomy(
   preset: ChainAnalysisPreset,
   tax: AIIndustryTaxonomyFile,
 ): BoardLayer[] {
-  return buildBoardLayersFromTaxonomy(tax, nodeIdPrefixForPreset(preset));
+  return buildBoardLayersFromTaxonomy(tax, nodeIdPrefixForTaxonomy(preset));
 }
 
 const LAYOUT_MERGE_EPS = 0.2;
@@ -559,6 +603,10 @@ function buildGroupedNodes(
   layers: BoardLayer[],
   snap: SwimLaneLayoutSnapshot,
   layout: BoardCardLayout,
+  priceSnapshots: PriceSnapshotMap = {},
+  auctionSnapshots: AuctionSnapshotMap = {},
+  financialGrowth: FinancialGrowthSnapshotMap = {},
+  financialQuality: FinancialQualitySnapshotMap = {},
 ): Node[] {
   const lanesW = snap.laneWidthFlow;
   const rowPadMinFlow = ROW_INWARD_PAD_SCREEN_MIN;
@@ -604,6 +652,16 @@ function buildGroupedNodes(
         subLaneInfo: layerMeta.subLaneInfo,
         dividerBottom,
         roundingMode,
+        compareStocks: Array.from(
+          new Set(row.map((c) => c.tsCode?.trim() || c.label.trim()).filter(Boolean)),
+        ),
+        compareCompanyContexts: row
+          .map((c) => ({
+            token: (c.tsCode?.trim() || c.label.trim()),
+            certainty: c.companyInfo?.确定性?.trim(),
+            elasticity: c.companyInfo?.弹性?.trim(),
+          }))
+          .filter((x) => x.token),
       },
       draggable: false,
       selectable: false,
@@ -631,6 +689,10 @@ function buildGroupedNodes(
           tsCode: s.tsCode,
           companyInfo: s.companyInfo,
           cardDetailVariant: s.cardDetailVariant,
+          priceSnapshot: priceSnapshotForTsCode(s.tsCode, priceSnapshots),
+          auctionSnapshot: auctionSnapshotForTsCode(s.tsCode, auctionSnapshots),
+          financialGrowth: financialGrowthForTsCode(s.tsCode, financialGrowth),
+          financialQuality: financialQualityForTsCode(s.tsCode, financialQuality),
         },
         draggable: true,
         selectable: false,
@@ -678,6 +740,37 @@ function industryNodeBizDataClose(da: unknown, db: unknown): boolean {
   if (!a || !b) return false;
   const infoA = JSON.stringify(a.companyInfo ?? {});
   const infoB = JSON.stringify(b.companyInfo ?? {});
+  const priceA = JSON.stringify(a.priceSnapshot ?? null);
+  const priceB = JSON.stringify(b.priceSnapshot ?? null);
+  const auctionA = JSON.stringify(a.auctionSnapshot ?? null);
+  const auctionB = JSON.stringify(b.auctionSnapshot ?? null);
+  const growthA = JSON.stringify(a.financialGrowth ?? null);
+  const growthB = JSON.stringify(b.financialGrowth ?? null);
+  const qualityA = JSON.stringify(a.financialQuality ?? null);
+  const qualityB = JSON.stringify(b.financialQuality ?? null);
+  return (
+    a.label === b.label &&
+    a.category === b.category &&
+    a.pricingPower === b.pricingPower &&
+    a.competitiveAdvantage === b.competitiveAdvantage &&
+    (a.valuationHint ?? '') === (b.valuationHint ?? '') &&
+    (a.tsCode ?? '') === (b.tsCode ?? '') &&
+    (a.cardDetailVariant ?? 'default') === (b.cardDetailVariant ?? 'default') &&
+    infoA === infoB &&
+    priceA === priceB &&
+    auctionA === auctionB &&
+    growthA === growthB &&
+    qualityA === qualityB &&
+    (a.cardWidthScreen ?? 0) === (b.cardWidthScreen ?? 0)
+  );
+}
+
+function industryNodePlacementDataClose(da: unknown, db: unknown): boolean {
+  const a = da as IndustryNodeData | undefined;
+  const b = db as IndustryNodeData | undefined;
+  if (!a || !b) return false;
+  const infoA = JSON.stringify(a.companyInfo ?? {});
+  const infoB = JSON.stringify(b.companyInfo ?? {});
   return (
     a.label === b.label &&
     a.category === b.category &&
@@ -701,15 +794,12 @@ function mergeNodesPreservingStableRefs(prev: Node[], nextBuilt: Node[]): Node[]
       pb.type === 'industry' &&
       nb.type === 'industry' &&
       pb.parentId === nb.parentId &&
-      industryNodeBizDataClose(pb.data, nb.data)
+      industryNodePlacementDataClose(pb.data, nb.data)
     ) {
       return {
         ...nb,
         position: pb.position,
-        data: {
-          ...(pb.data as IndustryNodeData),
-          laneClip: (nb.data as IndustryNodeData).laneClip,
-        },
+        data: nb.data,
       };
     }
     if (
@@ -773,11 +863,19 @@ function clampViewportToSwimLanes(
 function SwimlaneViewportSync({
   layers,
   layout,
+  priceSnapshots,
+  auctionSnapshots,
+  financialGrowth,
+  financialQuality,
   setNodes,
   laneLayoutSyncNotifierRef,
 }: {
   layers: BoardLayer[];
   layout: { gapXScreen: number; nodeOuterWidthScreen: number };
+  priceSnapshots: PriceSnapshotMap;
+  auctionSnapshots: AuctionSnapshotMap;
+  financialGrowth: FinancialGrowthSnapshotMap;
+  financialQuality: FinancialQualitySnapshotMap;
   setNodes: Dispatch<SetStateAction<Node[]>>;
   laneLayoutSyncNotifierRef: React.MutableRefObject<(() => void) | null>;
 }) {
@@ -791,7 +889,7 @@ function SwimlaneViewportSync({
 
   useLayoutEffect(() => {
     lastAppliedRef.current = null;
-  }, [domNode, layerCount]);
+  }, [domNode, layerCount, priceSnapshots, auctionSnapshots, financialGrowth, financialQuality]);
 
   const runSyncLanes = useCallback(
     (_modeIn: 'full' | 'dimensions') => {
@@ -832,6 +930,16 @@ function SwimlaneViewportSync({
         (domNode as SwimLaneLayoutHost).__swimLaneLayout = snap;
         applyContentExtent(snap);
         clampViewportToSwimLanes(getViewport(), snap, setViewport);
+        // 布局未变时仍须把异步返回的数据写入节点（否则卡片一直显示 --）
+        setNodes((p) =>
+          applyFinancialQualityToNodes(
+            applyFinancialGrowthToNodes(
+              applyAuctionSnapshotsToNodes(applyPriceSnapshotsToNodes(p, priceSnapshots), auctionSnapshots),
+              financialGrowth,
+            ),
+            financialQuality,
+          ),
+        );
         return;
       }
 
@@ -839,11 +947,11 @@ function SwimlaneViewportSync({
       (domNode as SwimLaneLayoutHost).__swimLaneLayout = snap;
       applyContentExtent(snap);
 
-      const nextBuilt = buildGroupedNodes(layers, snap, layout);
+      const nextBuilt = buildGroupedNodes(layers, snap, layout, priceSnapshots, auctionSnapshots, financialGrowth, financialQuality);
       setNodes((p) => mergeNodesPreservingStableRefs(p, nextBuilt));
       clampViewportToSwimLanes(getViewport(), snap, setViewport);
     },
-    [domNode, getViewport, setViewport, storeApi, setNodes, layers, layout, layerCount],
+    [domNode, getViewport, setViewport, storeApi, setNodes, layers, layout, priceSnapshots, auctionSnapshots, financialGrowth, financialQuality, layerCount],
   );
 
   const flushQueuedSync = useCallback(() => {
@@ -902,16 +1010,24 @@ function SwimLaneViewportClamp() {
 }
 
 function FlowContent({
-  preset,
   layers,
   flowEdges,
+  priceSnapshots,
+  auctionSnapshots,
+  financialGrowth,
+  financialQuality,
+  flowInstanceRef,
 }: {
-  preset: ChainAnalysisPreset;
   layers: BoardLayer[];
   flowEdges: Edge[];
+  priceSnapshots: PriceSnapshotMap;
+  auctionSnapshots: AuctionSnapshotMap;
+  financialGrowth: FinancialGrowthSnapshotMap;
+  financialQuality: FinancialQualitySnapshotMap;
+  flowInstanceRef: React.MutableRefObject<ReactFlowInstance | null>;
 }) {
   const laneLayoutSyncNotifierRef = useRef<(() => void) | null>(null);
-  const layout = BOARD_LAYOUT[preset];
+  const layout = DEFAULT_BOARD_LAYOUT;
   const boardContentHeightPx = computeSwimBoardCanvasHeightPx(
     layers,
     ESTIMATED_PANE_WIDTH_PX,
@@ -939,11 +1055,29 @@ function FlowContent({
     viewportYMax: 0,
     viewportYMin: 0,
   };
-  const initialNodes = buildGroupedNodes(layers, initialSnap, layout);
+  const initialNodes = buildGroupedNodes(layers, initialSnap, layout, priceSnapshots, auctionSnapshots, financialGrowth, financialQuality);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges);
 
+  /** price-snapshots 异步返回后，useNodesState 不会重读 initialNodes，须单独同步到节点 data */
+  useLayoutEffect(() => {
+    setNodes((prev) => applyPriceSnapshotsToNodes(prev, priceSnapshots));
+  }, [priceSnapshots, setNodes]);
+
+  useLayoutEffect(() => {
+    setNodes((prev) => applyAuctionSnapshotsToNodes(prev, auctionSnapshots));
+  }, [auctionSnapshots, setNodes]);
+
+  useLayoutEffect(() => {
+    setNodes((prev) => applyFinancialGrowthToNodes(prev, financialGrowth));
+  }, [financialGrowth, setNodes]);
+
+  useLayoutEffect(() => {
+    setNodes((prev) => applyFinancialQualityToNodes(prev, financialQuality));
+  }, [financialQuality, setNodes]);
+
   const onFlowInit = useCallback((inst: ReactFlowInstance) => {
+    flowInstanceRef.current = inst;
     inst.setViewport({ x: 0, y: 0, zoom: SWIM_LANE_FIXED_ZOOM }, { duration: 0 });
     requestAnimationFrame(() => laneLayoutSyncNotifierRef.current?.());
   }, []);
@@ -990,6 +1124,10 @@ function FlowContent({
       <SwimlaneViewportSync
         layers={layers}
         layout={layout}
+        priceSnapshots={priceSnapshots}
+        auctionSnapshots={auctionSnapshots}
+        financialGrowth={financialGrowth}
+        financialQuality={financialQuality}
         setNodes={setNodes}
         laneLayoutSyncNotifierRef={laneLayoutSyncNotifierRef}
       />
@@ -1000,21 +1138,37 @@ function FlowContent({
 }
 
 function IndustryChainFlow({
-  preset,
   layers,
   flowKey,
   flowEdges,
+  priceSnapshots,
+  auctionSnapshots,
+  financialGrowth,
+  financialQuality,
+  flowInstanceRef,
 }: {
-  preset: ChainAnalysisPreset;
   layers: BoardLayer[];
   flowKey: string;
   flowEdges: Edge[];
+  priceSnapshots: PriceSnapshotMap;
+  auctionSnapshots: AuctionSnapshotMap;
+  financialGrowth: FinancialGrowthSnapshotMap;
+  financialQuality: FinancialQualitySnapshotMap;
+  flowInstanceRef: React.MutableRefObject<ReactFlowInstance | null>;
 }) {
   return (
     <CompanyCardZoomProvider key={flowKey}>
       <div className="relative h-full w-full min-h-0 min-w-0">
         <ReactFlowProvider key={flowKey}>
-          <FlowContent preset={preset} layers={layers} flowEdges={flowEdges} />
+          <FlowContent
+            layers={layers}
+            flowEdges={flowEdges}
+            priceSnapshots={priceSnapshots}
+            auctionSnapshots={auctionSnapshots}
+            financialGrowth={financialGrowth}
+            financialQuality={financialQuality}
+            flowInstanceRef={flowInstanceRef}
+          />
         </ReactFlowProvider>
         <CompanyCardZoomControls />
       </div>
@@ -1022,22 +1176,37 @@ function IndustryChainFlow({
   );
 }
 
-export default function IndustryChainBoard({ preset }: { preset: ChainAnalysisPreset }) {
-  const defaultYaml = useMemo(() => defaultYamlTextForPreset(preset), [preset]);
+export default function IndustryChainBoard({
+  taxonomyId,
+  taxonomyLabel,
+  defaultYaml,
+}: {
+  taxonomyId: string;
+  taxonomyLabel: string;
+  defaultYaml: string;
+}) {
   const [yamlDraft, setYamlDraft] = useState(defaultYaml);
   const [lastAppliedYaml, setLastAppliedYaml] = useState<string | null>(null);
   const [yamlApplied, setYamlApplied] = useState<AIIndustryTaxonomyFile | null>(null);
   const [yamlParseError, setYamlParseError] = useState<string | null>(null);
   const [yamlSaving, setYamlSaving] = useState(false);
   const [flowRevision, setFlowRevision] = useState(0);
+  const [priceSnapshots, setPriceSnapshots] = useState<PriceSnapshotMap>({});
+  const [auctionSnapshots, setAuctionSnapshots] = useState<AuctionSnapshotMap>({});
+  const [financialGrowth, setFinancialGrowth] = useState<FinancialGrowthSnapshotMap>({});
+  const [financialQuality, setFinancialQuality] = useState<FinancialQualitySnapshotMap>({});
 
   useEffect(() => {
     setYamlDraft(defaultYaml);
     setLastAppliedYaml(null);
     setYamlApplied(null);
     setYamlParseError(null);
+    setPriceSnapshots({});
+    setAuctionSnapshots({});
+    setFinancialGrowth({});
+    setFinancialQuality({});
     setFlowRevision((r) => r + 1);
-  }, [preset, defaultYaml]);
+  }, [taxonomyId, defaultYaml]);
 
   const pendingApply = yamlDraft !== (lastAppliedYaml ?? defaultYaml);
 
@@ -1061,7 +1230,7 @@ export default function IndustryChainBoard({ preset }: { preset: ChainAnalysisPr
       const res = await fetch('/api/industry-link/taxonomy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ preset, content: yamlDraft }),
+        body: JSON.stringify({ taxonomyId, content: yamlDraft }),
       });
       const payload = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
@@ -1077,56 +1246,327 @@ export default function IndustryChainBoard({ preset }: { preset: ChainAnalysisPr
     } finally {
       setYamlSaving(false);
     }
-  }, [yamlDraft, preset]);
+  }, [yamlDraft, taxonomyId]);
 
   const handleYamlReset = useCallback(() => {
-    const d = defaultYamlTextForPreset(preset);
-    setYamlDraft(d);
+    setYamlDraft(defaultYaml);
     setYamlApplied(null);
     setLastAppliedYaml(null);
     setYamlParseError(null);
     setFlowRevision((r) => r + 1);
-  }, [preset]);
+  }, [defaultYaml]);
+
+  const builtinTaxonomy = useMemo(() => parseIndustryTaxonomyYaml(defaultYaml), [defaultYaml]);
 
   const activeTaxonomy = useMemo(
-    () => yamlApplied ?? builtinTaxonomyForPreset(preset),
-    [preset, yamlApplied],
+    () => yamlApplied ?? builtinTaxonomy,
+    [builtinTaxonomy, yamlApplied],
   );
 
   const layers = useMemo(
-    () => buildBoardLayersFromYamlTaxonomy(preset, activeTaxonomy),
-    [preset, activeTaxonomy],
+    () => buildBoardLayersFromYamlTaxonomy(taxonomyId, activeTaxonomy),
+    [taxonomyId, activeTaxonomy],
   );
 
+  const priceTsCodes = useMemo(() => {
+    const seen = new Set<string>();
+    for (const layer of layers) {
+      for (const row of layer.row) {
+        const code = row.tsCode?.trim().toUpperCase();
+        if (code) seen.add(code);
+      }
+    }
+    return [...seen].sort();
+  }, [layers]);
+
+  useEffect(() => {
+    if (priceTsCodes.length === 0) {
+      setPriceSnapshots({});
+      setAuctionSnapshots({});
+      setFinancialGrowth({});
+      setFinancialQuality({});
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetch(`/api/industry-link/price-snapshots?ts_codes=${encodeURIComponent(priceTsCodes.join(','))}`, {
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        const payload = (await res.json().catch(() => ({}))) as {
+          rows?: Array<PriceSnapshot & { ts_code?: string }>;
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok) throw new Error(payload.message ?? payload.error ?? `行情快照请求失败 (${res.status})`);
+        const next: PriceSnapshotMap = {};
+        for (const row of payload.rows ?? []) {
+          const code = String(row.ts_code ?? '').trim().toUpperCase();
+          if (!code) continue;
+          next[code] = {
+            trade_date: String(row.trade_date ?? ''),
+            close: row.close ?? null,
+            returns: {
+              d1: row.returns?.d1 ?? null,
+              d5: row.returns?.d5 ?? null,
+              d20: row.returns?.d20 ?? null,
+              d60: row.returns?.d60 ?? null,
+            },
+          };
+        }
+        if (!cancelled) setPriceSnapshots(next);
+      })
+      .catch((err) => {
+        if (cancelled || err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('读取产业链价格快照失败:', err);
+        setPriceSnapshots({});
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [priceTsCodes]);
+
+  useEffect(() => {
+    if (priceTsCodes.length === 0) {
+      setAuctionSnapshots({});
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    const load = () => {
+      fetch(`/api/industry-link/auction-snapshots?ts_codes=${encodeURIComponent(priceTsCodes.join(','))}`, {
+        signal: controller.signal,
+      })
+        .then(async (res) => {
+          const payload = (await res.json().catch(() => ({}))) as {
+            rows?: Array<AuctionSnapshot & { ts_code?: string }>;
+            error?: string;
+            message?: string;
+          };
+          if (!res.ok) throw new Error(payload.message ?? payload.error ?? `集合竞价快照请求失败 (${res.status})`);
+          const next: AuctionSnapshotMap = {};
+          for (const row of payload.rows ?? []) {
+            const code = String(row.ts_code ?? '').trim().toUpperCase();
+            if (!code) continue;
+            next[code] = {
+              snapshot_at: String(row.snapshot_at ?? ''),
+              received_at: String(row.received_at ?? ''),
+              last_price: row.last_price ?? null,
+              pre_close: row.pre_close ?? null,
+              pct_chg: row.pct_chg ?? null,
+              volume: row.volume ?? null,
+              amount: row.amount ?? null,
+              source: String(row.source ?? 'myquant'),
+              status: String(row.status ?? 'unknown'),
+            };
+          }
+          if (!cancelled) setAuctionSnapshots(next);
+        })
+        .catch((err) => {
+          if (cancelled || err instanceof DOMException && err.name === 'AbortError') return;
+          console.error('读取集合竞价快照失败:', err);
+          setAuctionSnapshots({});
+        });
+    };
+
+    load();
+    const timer = window.setInterval(load, 3000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      controller.abort();
+    };
+  }, [priceTsCodes]);
+
+  useEffect(() => {
+    if (priceTsCodes.length === 0) {
+      setFinancialGrowth({});
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetch(`/api/industry-link/financial-growth?ts_codes=${encodeURIComponent(priceTsCodes.join(','))}`, {
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        const payload = (await res.json().catch(() => ({}))) as {
+          rows?: Array<FinancialGrowthSnapshot & { ts_code?: string }>;
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok) throw new Error(payload.message ?? payload.error ?? `财务增长请求失败 (${res.status})`);
+        const next: FinancialGrowthSnapshotMap = {};
+        for (const row of payload.rows ?? []) {
+          const code = String(row.ts_code ?? '').trim().toUpperCase();
+          if (!code) continue;
+          next[code] = {
+            report_date: String(row.report_date ?? ''),
+            revenue_cagr: row.revenue_cagr ?? null,
+            revenue_years: row.revenue_years ?? null,
+            profit_cagr: row.profit_cagr ?? null,
+            profit_years: row.profit_years ?? null,
+          };
+        }
+        if (!cancelled) setFinancialGrowth(next);
+      })
+      .catch((err) => {
+        if (cancelled || err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('读取产业链财务增长失败:', err);
+        setFinancialGrowth({});
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [priceTsCodes]);
+
+  useEffect(() => {
+    if (priceTsCodes.length === 0) {
+      setFinancialQuality({});
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    fetch(`/api/industry-link/financial-quality?ts_codes=${encodeURIComponent(priceTsCodes.join(','))}`, {
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        const payload = (await res.json().catch(() => ({}))) as {
+          rows?: Array<FinancialQualitySnapshot & { ts_code?: string }>;
+          error?: string;
+          message?: string;
+        };
+        if (!res.ok) throw new Error(payload.message ?? payload.error ?? `财务质量请求失败 (${res.status})`);
+        const next: FinancialQualitySnapshotMap = {};
+        for (const row of payload.rows ?? []) {
+          const code = String(row.ts_code ?? '').trim().toUpperCase();
+          if (!code) continue;
+          next[code] = {
+            report_date: String(row.report_date ?? ''),
+            roe: row.roe ?? null,
+            leverage: row.leverage ?? null,
+            gross_margin: row.gross_margin ?? null,
+          };
+        }
+        if (!cancelled) setFinancialQuality(next);
+      })
+      .catch((err) => {
+        if (cancelled || err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('读取产业链财务质量失败:', err);
+        setFinancialQuality({});
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [priceTsCodes]);
+
   const flowEdges = useMemo(
-    () => buildFlowEdgesFromTaxonomy(activeTaxonomy, nodeIdPrefixForPreset(preset)) as Edge[],
-    [activeTaxonomy, preset],
+    () => buildFlowEdgesFromTaxonomy(activeTaxonomy, nodeIdPrefixForTaxonomy(taxonomyId)) as Edge[],
+    [activeTaxonomy, taxonomyId],
   );
 
   const boardViewportHeightCss = computeSwimBoardViewportHeightCss(
     layers,
     ESTIMATED_PANE_WIDTH_PX,
-    BOARD_LAYOUT[preset],
+    DEFAULT_BOARD_LAYOUT,
   );
-  const flowKey = `${preset}-${flowRevision}`;
+  const flowKey = `${taxonomyId}-${flowRevision}`;
+  const graphContainerRef = useRef<HTMLDivElement>(null);
+  const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
+
+  const handleExportScreenshot = useCallback(async () => {
+    const container = graphContainerRef.current;
+    const inst = flowInstanceRef.current;
+    if (!container || !inst) return;
+    const rfEl = container.querySelector('.react-flow') as HTMLElement | null;
+    if (!rfEl) return;
+
+    // Calculate full content height from layers
+    const fullH = computeSwimBoardCanvasHeightPx(layers, container.clientWidth, DEFAULT_BOARD_LAYOUT);
+    const fullW = Math.max(container.clientWidth, 800);
+
+    // Save state
+    const prevVp = inst.getViewport();
+    const prevHeight = rfEl.style.height || '';
+
+    try {
+      // Temporarily expand for full capture
+      rfEl.style.height = `${fullH + 60}px`;
+      rfEl.style.width = `${fullW}px`;
+      inst.setViewport({ x: 0, y: 0, zoom: 1 }, { duration: 0 });
+
+      // Wait for ReactFlow to re-render
+      await new Promise((r) => setTimeout(r, 300));
+
+      const dataUrl = await toPng(rfEl, { backgroundColor: '#ffffff', pixelRatio: 2 });
+      const link = document.createElement('a');
+      link.download = `${taxonomyLabel}_产业链.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('截图导出失败:', err);
+    } finally {
+      // Restore
+      rfEl.style.height = prevHeight;
+      rfEl.style.width = '';
+      inst.setViewport(prevVp, { duration: 0 });
+    }
+  }, [taxonomyLabel, layers]);
+
+  const openChainCompare = useCallback(() => {
+    const url = buildIncomeContrastChainUrl(taxonomyId, taxonomyLabel);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, [taxonomyId, taxonomyLabel]);
 
   return (
     <div className="flex w-full min-h-0 flex-col gap-2">
       <Tabs defaultValue="graph" className="flex w-full flex-col gap-2">
-        <TabsList className="h-9 w-fit shrink-0">
-          <TabsTrigger value="graph">图形视图</TabsTrigger>
-          <TabsTrigger value="yaml">YAML 编辑器</TabsTrigger>
-        </TabsList>
+        <div className="flex shrink-0 items-center gap-2">
+          <TabsList className="h-9 w-fit">
+            <TabsTrigger value="graph">图形视图</TabsTrigger>
+            <TabsTrigger value="yaml">YAML 编辑器</TabsTrigger>
+          </TabsList>
+          <Button type="button" variant="outline" size="sm" onClick={openChainCompare}>
+            整条链对比
+          </Button>
+        </div>
         <TabsContent value="graph" className="mt-0 focus-visible:outline-none">
           <div
+            ref={graphContainerRef}
             style={{ height: boardViewportHeightCss }}
             className="relative min-h-[420px] w-full overflow-hidden rounded-md border border-border bg-muted/20"
           >
+            <button
+              type="button"
+              onClick={handleExportScreenshot}
+              title="导出泳道截图"
+              className="absolute right-2 top-2 z-20 flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 shadow-sm hover:bg-gray-100 transition-colors"
+            >
+              <Download className="h-3.5 w-3.5" />
+              截图
+            </button>
             <IndustryChainFlow
-              preset={preset}
               layers={layers}
               flowKey={flowKey}
               flowEdges={flowEdges}
+              priceSnapshots={priceSnapshots}
+              auctionSnapshots={auctionSnapshots}
+              financialGrowth={financialGrowth}
+              financialQuality={financialQuality}
+              flowInstanceRef={flowInstanceRef}
             />
           </div>
         </TabsContent>

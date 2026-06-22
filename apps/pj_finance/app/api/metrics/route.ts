@@ -7,6 +7,7 @@ import { createMetricEngine, type FinancialData, type MetricValue } from '@/lib/
 import { metrics } from '@/lib/metrics/definitions';
 import { buildIndustryMetrics } from '@/lib/metrics/industryAggregate';
 import { isValidPeriod, parsePeriod } from '@/lib/metrics/period';
+import { resolveBalanceSheetParquet, resolveTuShareParquet } from '@/app/lib/tuShareParquetPath';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,17 +161,20 @@ function queryParquetRows(parquetPath: string, stockCode: string): Promise<RawRo
 
   return new Promise((resolve, reject) => {
     const db = new duckdb.Database(':memory:');
-    const conn = db.connect();
     const escapedStockCode = stockCode.replace(/'/g, "''");
     const sql = `SELECT * FROM read_parquet('${absolutePath}') WHERE ts_code='${escapedStockCode}'`;
-    conn.all(sql, (err: Error | null, rows: RawRow[]) => {
-      conn.close();
-      db.close();
-      if (err) {
-        reject(new Error(`DuckDB query failed: ${err.message}`));
-        return;
-      }
-      resolve(rows ?? []);
+    db.all(sql, (queryError: Error | null, rows: RawRow[]) => {
+      db.close((closeError: Error | null) => {
+        if (queryError) {
+          reject(new Error(`DuckDB query failed: ${queryError.message}`));
+          return;
+        }
+        if (closeError) {
+          reject(new Error(`DuckDB close failed: ${closeError.message}`));
+          return;
+        }
+        resolve(rows ?? []);
+      });
     });
   });
 }
@@ -411,10 +415,10 @@ function buildQuarterLastValueMap(rows: RawRow[], valueKey: string): Record<stri
 async function queryFinancialDataByStock(stockCode: string): Promise<FinancialData> {
   const [incomeRows, balanceRows, cashflowRows, dailyBasicRows, dividendRows] = await Promise.all([
     queryParquetRows(path.join(process.cwd(), 'temp/tuShare/income_vip_ss.parquet'), stockCode),
-    // 使用按股票筛选后的 ss 文件；旧的 balanceSheet_vip.parquet 在部分股票上无 ts_code 对应行
-    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/balancesheet_vip_ss.parquet'), stockCode),
+    // 使用按股票筛选后的 ss 文件；旧的 balancesheet_vip_ss.parquet 在部分股票上无 ts_code 对应行
+    queryParquetRows(resolveBalanceSheetParquet(), stockCode),
     queryParquetRows(path.join(process.cwd(), 'temp/tuShare/cashflow_vip_ss.parquet'), stockCode),
-    queryParquetRows(path.join(process.cwd(), 'temp/tuShare/daily_basic_ss.parquet'), stockCode),
+    queryParquetRows(resolveTuShareParquet('daily_basic_ss.parquet', 'daily_basic.parquet'), stockCode),
     queryParquetRows(path.join(process.cwd(), 'temp/tuShare/dividend_ss.parquet'), stockCode),
   ]);
   return normalizeFinancialData(incomeRows, balanceRows, cashflowRows, dailyBasicRows, dividendRows ?? []);

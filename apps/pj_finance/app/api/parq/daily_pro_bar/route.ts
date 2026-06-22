@@ -6,6 +6,7 @@ import { promisify } from 'util';
 // @ts-ignore
 import * as duckdb from 'duckdb';
 import { mapHeadersToChinese } from '../../csv/[category]/route';
+import { resolveDailyBasicParquet } from '@/app/lib/tuShareParquetPath';
 
 export const dynamic = 'force-dynamic';
 
@@ -202,9 +203,10 @@ export async function GET(request: NextRequest) {
     const acceptEncoding = request.headers.get('accept-encoding') || '';
     const supportsGzip = acceptEncoding.includes('gzip');
     const url = new URL(request.url);
-    const parquetPath = path.join(process.cwd(), 'temp/tuShare/daily_basic_ss.parquet');
-
-    if (!fs.existsSync(parquetPath)) {
+    let parquetPath: string;
+    try {
+      parquetPath = resolveDailyBasicParquet(null);
+    } catch {
       return NextResponse.json({ error: 'Parquet file not found' }, { status: 404 });
     }
 

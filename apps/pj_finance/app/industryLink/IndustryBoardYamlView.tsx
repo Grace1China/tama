@@ -86,7 +86,7 @@ export default function IndustryBoardYamlEditor({
         <strong className="font-medium text-foreground">两层嵌套</strong>
         <code className="mx-1 rounded bg-muted px-1">根泳道: {'{ 子泳道: [公司…] }'}</code>
         或子泳道带说明
-        <code className="mx-1 rounded bg-muted px-1">{'{ 产业位置, 确定性, 弹性, 公司: […] }'}</code>
+        <code className="mx-1 rounded bg-muted px-1">{'{ 产业位置, 确定性, 弹性, 弹性因子, 公司: […] }'}</code>
         （根名显示在条带上方）。公司下用
         <code className="mx-1 rounded bg-muted px-1">link</code>
         /

@@ -6,6 +6,7 @@ import { promisify } from 'util';
 // @ts-ignore - DuckDB may not have TypeScript definitions
 import * as duckdb from 'duckdb';
 import { mapHeadersToChinese } from '../../csv/[category]/route';
+import { resolveDailyBasicParquet } from '@/app/lib/tuShareParquetPath';
 
 export const dynamic = 'force-dynamic';
 
@@ -188,7 +189,8 @@ export async function GET(request: NextRequest) {
     const supportsGzip = acceptEncoding.includes('gzip');
 
     const url = new URL(request.url);
-    const parquetPath = path.join(process.cwd(), 'temp/tuShare/daily_basic_ss.parquet');
+    const variant = url.searchParams.get('variant');
+    const parquetPath = resolveDailyBasicParquet(variant);
 
     const page = Number(url.searchParams.get('page') ?? '1');
     const size = Number(url.searchParams.get('size') ?? '50');
@@ -198,6 +200,7 @@ export async function GET(request: NextRequest) {
     q.delete('page');
     q.delete('size');
     q.delete('file');
+    q.delete('variant');
     const queryString = q.toString() ? `?${q.toString()}` : '';
     // console.log(`[Parquet API] 执行查询: parquetPath, queryString, pageCfg`,parquetPath, queryString, pageCfg);
     const queryData = await queryParquetFile(parquetPath, queryString, pageCfg);
