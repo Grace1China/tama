@@ -1,0 +1,27 @@
+{
+  "name": "tamar-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "tamar App：一个进程提供产业链、财务指标对比、个股详情三个只读 MCP 入口。",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test test/unit.test.ts test/mcp-smoke.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "duckdb": "1.4.4",
+    "express": "^5.1.0",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
