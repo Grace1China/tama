@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "tamar-industry": {
+      "url": "http://127.0.0.1:3012/industry/mcp"
+    },
+    "tamar-contrast": {
+      "url": "http://127.0.0.1:3012/contrast/mcp"
+    },
+    "tamar-stock": {
+      "url": "http://127.0.0.1:3012/stock/mcp"
+    }
+  }
+}
